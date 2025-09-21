@@ -1,8 +1,8 @@
-<div align="center">
-  <img src="pgbudget.png" alt="pgbudget" width="200"/>
-</div>
-
 # pgbudget
+
+<!--markdownlint-disable MD033-->
+![pgbudget](pgbudget.png)
+<!--markdownlint-enable MD033-->
 
 A PostgreSQL-based zero-sum budgeting database engine that implements double-entry accounting principles for personal finance applications.
 
@@ -31,17 +31,18 @@ The system implements proper double-entry accounting where every transaction aff
 ## Setup
 
 1. Create a PostgreSQL database
+
 2. Run migrations:
 
-```bash
-goose -dir migrations postgres "your-connection-string" up
-```
+    ```bash
+    goose -dir migrations postgres "your-connection-string" up
+    ```
 
 3. Set user context for each session:
 
-```sql
-SELECT set_config('app.current_user_id', 'your_user_id', false);
-```
+    ```sql
+    SELECT set_config('app.current_user_id', 'your_user_id', false);
+    ```
 
 ## API Reference
 
@@ -50,43 +51,50 @@ All monetary amounts are stored as integers (cents). $10.00 = 1000 cents.
 ### Core Functions
 
 **Create a ledger (budget):**
+
 ```sql
 INSERT INTO api.ledgers (name) VALUES ('My Budget') RETURNING uuid;
 ```
 
 Example output:
-```
+
+```sql
    uuid   
 ----------
  d3pOOf6t
 ```
 
 **Create an account:**
+
 ```sql
 INSERT INTO api.accounts (ledger_uuid, name, type)
 VALUES ('d3pOOf6t', 'Checking', 'asset') RETURNING uuid;
 ```
 
 Example output:
-```
+
+```sql
    uuid   
 ----------
  aK9sLp0Q
 ```
 
 **Create a budget category:**
+
 ```sql
 SELECT uuid FROM api.add_category('d3pOOf6t', 'Groceries');
 ```
 
 Example output:
-```
+
+```sql
    uuid   
 ----------
  mN8xPqR3
 ```
 
 **Add income:**
+
 ```sql
 SELECT api.add_transaction(
     'd3pOOf6t', NOW(), 'Paycheck', 'inflow', 100000,
@@ -96,13 +104,15 @@ SELECT api.add_transaction(
 ```
 
 Example output:
-```
+
+```sql
  add_transaction 
 -----------------
  xY7zPqR2
 ```
 
 **Assign money to category:**
+
 ```sql
 SELECT uuid FROM api.assign_to_category(
     'd3pOOf6t', NOW(), 'Budget: Groceries', 20000, 'mN8xPqR3'
@@ -110,13 +120,15 @@ SELECT uuid FROM api.assign_to_category(
 ```
 
 Example output:
-```
+
+```sql
    uuid   
 ----------
  bK2tQw9L
 ```
 
 **Record spending:**
+
 ```sql
 SELECT api.add_transaction(
     'd3pOOf6t', NOW(), 'Grocery shopping', 'outflow', 5000,
@@ -125,7 +137,8 @@ SELECT api.add_transaction(
 ```
 
 Example output:
-```
+
+```sql
  add_transaction 
 -----------------
  cL3uRx8M
@@ -134,12 +147,14 @@ Example output:
 ### Reporting Functions
 
 **Budget status:**
+
 ```sql
 SELECT * FROM api.get_budget_status('d3pOOf6t');
 ```
 
 Example output:
-```
+
+```sql
  category_uuid | category_name | budgeted | activity | balance 
 ---------------+---------------+----------+----------+---------
  r95bZcwu      | Groceries     |    40000 |    -8500 |   31500
@@ -148,12 +163,14 @@ Example output:
 ```
 
 **Budget status for specific month:**
+
 ```sql
 SELECT * FROM api.get_budget_status('d3pOOf6t', '202508');
 ```
 
 Example output:
-```
+
+```sql
  category_uuid | category_name | budgeted | activity | balance 
 ---------------+---------------+----------+----------+---------
  r95bZcwu      | Groceries     |    20000 |    -4250 |   15750
@@ -162,54 +179,63 @@ Example output:
 ```
 
 **Budget totals:**
+
 ```sql
 SELECT * FROM api.get_budget_totals('d3pOOf6t');
 ```
 
 Example output:
-```
+
+```sql
  income | income_remaining_from_last_month | budgeted | left_to_budget 
 --------+----------------------------------+----------+----------------
  350000 |                                0 |   175000 |         175000
 ```
 
 **Budget totals for specific month:**
+
 ```sql
 SELECT * FROM api.get_budget_totals('d3pOOf6t', '202508');
 ```
 
 Example output:
-```
+
+```sql
  income | income_remaining_from_last_month | budgeted | left_to_budget 
 --------+----------------------------------+----------+----------------
  175000 |                            87500 |    87500 |          87500
 ```
 
 **Understanding budget totals:**
+
 - **income**: Total income received in the period
 - **income_remaining_from_last_month**: Income balance carried over from previous month (month view only)
 - **budgeted**: Total amount assigned to all categories in the period
 - **left_to_budget**: Current balance of Income account (available to assign)
 
 **Account balance:**
+
 ```sql
 SELECT api.get_account_balance('aK9sLp0Q');
 ```
 
 Example output:
-```
+
+```sql
  get_account_balance 
 ---------------------
                95000
 ```
 
 **Transaction history:**
+
 ```sql
 SELECT * FROM api.get_account_transactions('aK9sLp0Q');
 ```
 
 Example output:
-```
+
+```sql
     date    |  category  |   description    |  type   | amount | running_balance 
 ------------+------------+------------------+---------+--------+-----------------
  2025-08-24 | Groceries  | Grocery shopping | outflow |   5000 |           95000
@@ -217,12 +243,14 @@ Example output:
 ```
 
 **All account balances:**
+
 ```sql
 SELECT * FROM api.get_ledger_balances('d3pOOf6t');
 ```
 
 Example output:
-```
+
+```sql
  account_uuid | account_name  | account_type | current_balance 
 --------------+---------------+--------------+-----------------
  aK9sLp0Q     | Checking      | asset        |           95000
@@ -236,6 +264,7 @@ Example output:
 ### Transaction Management
 
 **Correct a transaction:**
+
 ```sql
 SELECT api.correct_transaction(
     'cL3uRx8M', 'outflow', 'aK9sLp0Q', 'mN8xPqR3',
@@ -244,19 +273,22 @@ SELECT api.correct_transaction(
 ```
 
 Example output:
-```
+
+```sql
  correct_transaction 
 ---------------------
  dM4vSy9N
 ```
 
 **Delete a transaction:**
+
 ```sql
 SELECT api.delete_transaction('cL3uRx8M', 'Duplicate transaction');
 ```
 
 Example output:
-```
+
+```sql
  delete_transaction 
 --------------------
  eN5wTz0O
