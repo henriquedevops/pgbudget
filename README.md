@@ -30,6 +30,8 @@ The system implements proper double-entry accounting where every transaction aff
 
 ## Setup
 
+### Database Setup
+
 1. Create a PostgreSQL database
 
 2. Run migrations:
@@ -43,6 +45,37 @@ The system implements proper double-entry accounting where every transaction aff
     ```sql
     SELECT set_config('app.current_user_id', 'your_user_id', false);
     ```
+
+### Web Interface Setup (Optional)
+
+The repository includes a PHP-based web interface for interacting with the budget system.
+
+1. **Environment Configuration:**
+   - Copy `.env.example` to `.env`
+   - Update `.env` with your database credentials:
+     ```
+     DB_HOST=your_database_host
+     DB_PORT=5432
+     DB_NAME=your_database_name
+     DB_USER=your_database_username
+     DB_PASSWORD=your_database_password
+     ```
+
+2. **Security Note:** 
+   - Never commit `.env` to version control (it's already in `.gitignore`)
+   - The `.env` file contains sensitive database credentials
+   - Share `.env.example` with other developers, not `.env`
+
+3. **PHP Requirements:**
+   - PHP 7.4 or higher
+   - PDO PostgreSQL extension
+   - A web server (Apache, Nginx, or PHP built-in server)
+
+4. **Testing the setup:**
+   ```bash
+   php -S localhost:8000 -t public/
+   ```
+   Then visit `http://localhost:8000` in your browser.
 
 ## API Reference
 

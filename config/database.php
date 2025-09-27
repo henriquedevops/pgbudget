@@ -1,15 +1,37 @@
 <?php
 session_start();
 
+// Load environment variables from .env file if it exists
+if (file_exists(__DIR__ . '/../.env')) {
+    $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) {
+            continue; // Skip comments
+        }
+        list($name, $value) = explode('=', $line, 2);
+        $name = trim($name);
+        $value = trim($value);
+        if (!array_key_exists($name, $_ENV)) {
+            $_ENV[$name] = $value;
+        }
+    }
+}
+
 function getDbConnection() {
     static $pdo = null;
 
     if ($pdo === null) {
-        $host = $_ENV['DB_HOST'] ?? '191.252.195.118';
+        // Get database configuration from environment variables
+        $host = $_ENV['DB_HOST'] ?? null;
         $port = $_ENV['DB_PORT'] ?? '5432';
-        $dbname = $_ENV['DB_NAME'] ?? 'pgbudget';
-        $username = $_ENV['DB_USER'] ?? 'pgbudget';
-        $password = $_ENV['DB_PASSWORD'] ?? '';
+        $dbname = $_ENV['DB_NAME'] ?? null;
+        $username = $_ENV['DB_USER'] ?? null;
+        $password = $_ENV['DB_PASSWORD'] ?? null;
+
+        // Validate required environment variables
+        if (!$host || !$dbname || !$username || !$password) {
+            die("Database configuration missing. Please check your .env file contains DB_HOST, DB_NAME, DB_USER, and DB_PASSWORD.");
+        }
 
         $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
 
