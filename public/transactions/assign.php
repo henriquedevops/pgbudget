@@ -1,5 +1,9 @@
 <?php
 require_once '../../config/database.php';
+require_once '../../includes/auth.php';
+
+// Require authentication
+requireAuth();
 
 $ledger_uuid = $_GET['ledger'] ?? '';
 $category_uuid = $_GET['category'] ?? '';

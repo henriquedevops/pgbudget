@@ -1,19 +1,17 @@
 <?php
 require_once '../config/database.php';
+require_once '../includes/auth.php';
 require_once '../includes/header.php';
 
-// Set user context if not already set
-if (!isset($_SESSION['user_id'])) {
-    $_SESSION['user_id'] = 'demo_user';
-}
+// Require authentication - redirect to login if not logged in
+requireAuth(true); // Allow demo mode for backward compatibility
 
 // Set PostgreSQL user context
 $db = getDbConnection();
-$stmt = $db->prepare("SELECT set_config('app.current_user_id', ?, false)");
-$stmt->execute([$_SESSION['user_id']]);
+setUserContext($db);
 
 // Get user's ledgers
-$stmt = $db->prepare("SELECT uuid, name, description, created_at FROM api.ledgers ORDER BY created_at DESC");
+$stmt = $db->prepare("SELECT uuid, name, description FROM api.ledgers ORDER BY name");
 $stmt->execute();
 $ledgers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -43,7 +41,6 @@ $ledgers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <a href="budget/dashboard.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-primary">Open Budget</a>
                             <a href="accounts/list.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-secondary">Accounts</a>
                         </div>
-                        <small class="created-date">Created: <?= date('M j, Y', strtotime($ledger['created_at'])) ?></small>
                     </div>
                 <?php endforeach; ?>
             </div>

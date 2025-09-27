@@ -1,5 +1,9 @@
 <?php
 require_once '../../config/database.php';
+require_once '../../includes/auth.php';
+
+// Require authentication
+requireAuth();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = sanitizeInput($_POST['name']);

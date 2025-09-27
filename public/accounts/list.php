@@ -1,5 +1,9 @@
 <?php
 require_once '../../config/database.php';
+require_once '../../includes/auth.php';
+
+// Require authentication
+requireAuth();
 
 $ledger_uuid = $_GET['ledger'] ?? '';
 
@@ -113,6 +117,7 @@ require_once '../../includes/header.php';
                                         </td>
                                         <td class="account-actions">
                                             <a href="../transactions/account.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-secondary">View</a>
+                                            <a href="balance-history.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-info" title="Balance History">📊</a>
                                             <?php if ($account['account_type'] === 'equity' && !in_array($account['account_name'], ['Income', 'Off-budget', 'Unassigned'])): ?>
                                                 <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $account['account_uuid'] ?>" class="btn btn-small btn-primary">Assign</a>
                                             <?php endif; ?>
