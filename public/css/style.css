@@ -55,6 +55,23 @@ body {
     color: #bee3f8;
 }
 
+.nav-user {
+    color: #bee3f8;
+    font-weight: 500;
+}
+
+.nav-logout {
+    background-color: #e53e3e;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.nav-logout:hover {
+    background-color: #c53030;
+    color: white;
+}
+
 /* Main content */
 .main-content {
     flex: 1;
@@ -368,4 +385,234 @@ body {
     .table td {
         padding: 0.5rem;
     }
+
+    .period-form {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .period-form select {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* Enhanced message system styles */
+.messages-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.message {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.3s ease-out;
+}
+
+.message-success {
+    background: #f0fff4;
+    border-left: 4px solid #38a169;
+    color: #2f855a;
+}
+
+.message-error {
+    background: #fef5e7;
+    border-left: 4px solid #e53e3e;
+    color: #c53030;
+}
+
+.message-warning {
+    background: #fffaf0;
+    border-left: 4px solid #ed8936;
+    color: #dd6b20;
+}
+
+.message-info {
+    background: #ebf8ff;
+    border-left: 4px solid #3182ce;
+    color: #2c5aa0;
+}
+
+.message-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.message-icon {
+    font-size: 1.1rem;
+}
+
+.message-text {
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.message-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: currentColor;
+    opacity: 0.7;
+    padding: 0;
+    margin-left: 1rem;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Legacy alert styles for backward compatibility */
+.alert {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: #f0fff4;
+    border: 1px solid #9ae6b4;
+    color: #2f855a;
+}
+
+.alert-error {
+    background: #fef5e7;
+    border: 1px solid #feb2b2;
+    color: #c53030;
+}
+
+/* New Phase 1 feature styles */
+.btn-edit {
+    background: #f7fafc;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.btn-edit:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+    color: #2d3748;
+}
+
+.actions-cell {
+    text-align: center;
+    width: 80px;
+}
+
+.transaction-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.period-selector {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+}
+
+.period-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.period-form label {
+    font-weight: 600;
+    color: #2d3748;
+    white-space: nowrap;
+}
+
+.period-form select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background: white;
+    color: #2d3748;
+    font-size: 0.875rem;
+    min-width: 150px;
+}
+
+.period-form select:focus {
+    outline: none;
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.period-info {
+    color: #718096;
+    font-size: 0.875rem;
+    font-style: italic;
+}
+
+.category-type {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.category-type.system {
+    background: #e9d8fd;
+    color: #553c9a;
+}
+
+.category-type.user {
+    background: #c6f6d5;
+    color: #2f855a;
+}
+
+.btn-info {
+    background: #3182ce;
+    color: white;
+    border: 1px solid #3182ce;
+    text-decoration: none;
+}
+
+.btn-info:hover {
+    background: #2c5aa0;
+    border-color: #2c5aa0;
+    color: white;
 }

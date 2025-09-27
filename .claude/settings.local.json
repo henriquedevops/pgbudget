@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go install:*)",
+      "Bash(goose:*)",
+      "Bash(php:*)",
+      "Bash(curl -X POST -d \"username=testuser&email=test@example.com&password=testpass123&password_confirm=testpass123&first_name=Test&last_name=User\" http://localhost:8000/../auth/register.php)",
+      "Bash(curl:*)",
+      "Bash(psql:*)",
+      "Bash(tree:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
