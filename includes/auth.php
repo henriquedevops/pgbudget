@@ -9,12 +9,12 @@ function requireAuth($allowDemo = false) {
             return;
         }
         // Redirect to login
-        header('Location: /auth/login.php');
+        header('Location: /pgbudget/auth/login.php');
         exit;
     }
 
     if (!$allowDemo && $_SESSION['user_id'] === 'demo_user') {
-        header('Location: /auth/login.php?message=This feature requires a registered account');
+        header('Location: /pgbudget/auth/login.php?message=This feature requires a registered account');
         exit;
     }
 }

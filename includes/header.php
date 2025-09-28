@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PgBudget - Zero-Sum Budgeting</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/pgbudget/css/style.css">
     <script>
         // Auto-dismiss messages after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
@@ -32,46 +32,46 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-logo">💰 PgBudget</a>
+            <a href="/pgbudget/" class="nav-logo">💰 PgBudget</a>
             <ul class="nav-menu">
                 <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] !== 'demo_user'): ?>
                     <li class="nav-item">
-                        <a href="/" class="nav-link">Dashboard</a>
+                        <a href="/pgbudget/" class="nav-link">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a href="/ledgers/create.php" class="nav-link">New Budget</a>
+                        <a href="/pgbudget/ledgers/create.php" class="nav-link">New Budget</a>
                     </li>
                     <li class="nav-item">
-                        <a href="/transactions/add.php" class="nav-link">Add Transaction</a>
+                        <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
                     </li>
                     <li class="nav-item">
                         <span class="nav-user">Hello, <?= htmlspecialchars($_SESSION['user_id']) ?>!</span>
                     </li>
                     <li class="nav-item">
-                        <a href="/auth/logout.php" class="nav-link nav-logout">Logout</a>
+                        <a href="/pgbudget/auth/logout.php" class="nav-link nav-logout">Logout</a>
                     </li>
                 <?php elseif (isset($_SESSION['user_id']) && $_SESSION['user_id'] === 'demo_user'): ?>
                     <li class="nav-item">
-                        <a href="/" class="nav-link">Dashboard</a>
+                        <a href="/pgbudget/" class="nav-link">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a href="/ledgers/create.php" class="nav-link">New Budget</a>
+                        <a href="/pgbudget/ledgers/create.php" class="nav-link">New Budget</a>
                     </li>
                     <li class="nav-item">
-                        <a href="/transactions/add.php" class="nav-link">Add Transaction</a>
+                        <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
                     </li>
                     <li class="nav-item">
                         <span class="nav-user">Demo Mode</span>
                     </li>
                     <li class="nav-item">
-                        <a href="/auth/login.php" class="nav-link">Login</a>
+                        <a href="/pgbudget/auth/login.php" class="nav-link">Login</a>
                     </li>
                 <?php else: ?>
                     <li class="nav-item">
-                        <a href="/auth/login.php" class="nav-link">Login</a>
+                        <a href="/pgbudget/auth/login.php" class="nav-link">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a href="/auth/register.php" class="nav-link">Register</a>
+                        <a href="/pgbudget/auth/register.php" class="nav-link">Register</a>
                     </li>
                 <?php endif; ?>
             </ul>

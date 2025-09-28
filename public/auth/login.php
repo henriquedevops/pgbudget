@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$username]);
 
                 // Redirect to dashboard
-                header('Location: /');
+                header('Location: /pgbudget/');
                 exit;
             } else {
                 $error = $result['message'];
