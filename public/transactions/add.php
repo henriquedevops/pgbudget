@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $type,
                 $amount,
                 $account_uuid,
-                $category_uuid ?: null
+                ($category_uuid && $category_uuid !== 'unassigned') ? $category_uuid : null
             ]);
 
             $result = $stmt->fetch();
@@ -124,7 +124,7 @@ require_once '../../includes/header.php';
                 <div class="form-group">
                     <label for="amount" class="form-label">Amount *</label>
                     <input type="text" id="amount" name="amount" class="form-input" required
-                           placeholder="$0.00"
+                           placeholder="0.00 or 0,00"
                            value="<?= isset($_POST['amount']) ? htmlspecialchars($_POST['amount']) : '' ?>">
                 </div>
             </div>
@@ -304,14 +304,63 @@ function updateFormForType() {
     }
 }
 
-// Format amount input
+// Handle amount input with both comma and period decimal separators
 document.getElementById('amount').addEventListener('input', function(e) {
-    let value = e.target.value.replace(/[^0-9.]/g, '');
-    if (value && !value.startsWith('$')) {
-        const numValue = parseFloat(value);
-        if (!isNaN(numValue)) {
-            e.target.value = '$' + numValue.toFixed(2);
+    let value = e.target.value;
+
+    // Remove any characters that aren't digits, comma, or period
+    value = value.replace(/[^0-9,.]/g, '');
+
+    // If there's both comma and period, keep only the last one as decimal separator
+    const commaIndex = value.lastIndexOf(',');
+    const periodIndex = value.lastIndexOf('.');
+
+    if (commaIndex !== -1 && periodIndex !== -1) {
+        if (commaIndex > periodIndex) {
+            // Comma is the decimal separator, remove periods
+            value = value.replace(/\./g, '');
+        } else {
+            // Period is the decimal separator, remove commas
+            value = value.replace(/,/g, '');
         }
+    }
+
+    // Ensure only one decimal separator and at most 2 decimal places
+    if (value.includes(',')) {
+        const parts = value.split(',');
+        if (parts.length > 2) {
+            value = parts[0] + ',' + parts.slice(1).join('');
+        }
+        if (parts[1] && parts[1].length > 2) {
+            value = parts[0] + ',' + parts[1].substring(0, 2);
+        }
+    } else if (value.includes('.')) {
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+        }
+        if (parts[1] && parts[1].length > 2) {
+            value = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+    }
+
+    e.target.value = value;
+});
+
+// Validate amount before form submission
+document.querySelector('.transaction-form').addEventListener('submit', function(e) {
+    const amountInput = document.getElementById('amount');
+    let value = amountInput.value.replace(/[^0-9,.]/g, '');
+
+    // Convert comma to period for validation
+    const normalizedValue = value.replace(',', '.');
+    const numValue = parseFloat(normalizedValue);
+
+    if (isNaN(numValue) || numValue <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid amount greater than 0');
+        amountInput.focus();
+        return false;
     }
 });
 

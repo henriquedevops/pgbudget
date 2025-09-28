@@ -54,8 +54,30 @@ function formatCurrency($cents) {
 }
 
 function parseCurrency($amount) {
-    // Remove currency symbols and convert to cents
-    $amount = preg_replace('/[^0-9.-]/', '', $amount);
+    // Remove currency symbols, keeping only digits, comma, and period
+    $amount = preg_replace('/[^0-9,.-]/', '', $amount);
+
+    // Handle both comma and period as decimal separators
+    // If both exist, the last one is the decimal separator
+    $commaPos = strrpos($amount, ',');
+    $periodPos = strrpos($amount, '.');
+
+    if ($commaPos !== false && $periodPos !== false) {
+        if ($commaPos > $periodPos) {
+            // Comma is decimal separator, remove periods
+            $amount = str_replace('.', '', $amount);
+            $amount = str_replace(',', '.', $amount);
+        } else {
+            // Period is decimal separator, remove commas
+            $amount = str_replace(',', '', $amount);
+        }
+    } else if ($commaPos !== false) {
+        // Only comma exists, treat as decimal separator
+        $amount = str_replace(',', '.', $amount);
+    }
+    // If only period exists, leave as is
+
+    // Convert to float and then to cents (multiply by 100)
     return intval(floatval($amount) * 100);
 }
 
