@@ -194,3 +194,6 @@ migrations_old
 # Crush directory
 .crush
 .crush.json
+
+# Claude Code configuration (contains sensitive data)
+.claude/
