@@ -15,13 +15,19 @@ if (empty($ledger_uuid)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Debug: Log the received POST data
+    error_log("POST data received: " . print_r($_POST, true));
+
     $amount = parseCurrency($_POST['amount']);
     $description = sanitizeInput($_POST['description']) ?: 'Budget assignment';
     $date = $_POST['date'];
     $target_category = sanitizeInput($_POST['category']);
 
+    // Debug: Log the parsed values
+    error_log("Parsed amount: $amount, date: $date, category: $target_category");
+
     if ($amount <= 0 || empty($target_category)) {
-        $_SESSION['error'] = 'Please enter a valid amount and select a category.';
+        $_SESSION['error'] = 'Please enter a valid amount and select a category. Amount: ' . $amount . ', Category: ' . $target_category;
     } else {
         try {
             $db = getDbConnection();
@@ -110,6 +116,16 @@ require_once '../../includes/header.php';
         <p>Move money from Income to budget categories in <?= htmlspecialchars($ledger['name']) ?></p>
     </div>
 
+    <!-- Debug: Show budget totals -->
+    <div class="alert alert-info">
+        <strong>Debug Info:</strong><br>
+        Budget totals object: <?= $budget_totals ? 'exists' : 'null' ?><br>
+        <?php if ($budget_totals): ?>
+            Left to budget: <?= $budget_totals['left_to_budget'] ?? 'not set' ?><br>
+            Formatted: <?= isset($budget_totals['left_to_budget']) ? formatCurrency($budget_totals['left_to_budget']) : 'N/A' ?>
+        <?php endif; ?>
+    </div>
+
     <?php if ($budget_totals && $budget_totals['left_to_budget'] > 0): ?>
         <div class="available-funds">
             <h3>Available to Budget</h3>
@@ -135,7 +151,7 @@ require_once '../../includes/header.php';
                 <div class="form-group">
                     <label for="amount" class="form-label">Amount to Assign *</label>
                     <input type="text" id="amount" name="amount" class="form-input" required
-                           placeholder="$0.00"
+                           placeholder="0.00 or 0,00"
                            value="<?= isset($_POST['amount']) ? htmlspecialchars($_POST['amount']) : '' ?>">
                     <?php if ($budget_totals && $budget_totals['left_to_budget'] > 0): ?>
                         <small class="form-help">
@@ -322,45 +338,9 @@ require_once '../../includes/header.php';
 }
 </style>
 
+<!-- JavaScript temporarily disabled for testing -->
 <script>
-// Format amount input and validate against available funds
-document.getElementById('amount').addEventListener('input', function(e) {
-    let value = e.target.value.replace(/[^0-9.]/g, '');
-    if (value && !value.startsWith('$')) {
-        const numValue = parseFloat(value);
-        if (!isNaN(numValue)) {
-            e.target.value = '$' + numValue.toFixed(2);
-
-            // Check against available funds
-            <?php if ($budget_totals): ?>
-            const available = <?= $budget_totals['left_to_budget'] ?>;
-            const entered = Math.round(numValue * 100);
-
-            if (entered > available) {
-                e.target.style.borderColor = '#e53e3e';
-                e.target.nextElementSibling.style.color = '#e53e3e';
-            } else {
-                e.target.style.borderColor = '#d2d6dc';
-                if (e.target.nextElementSibling) {
-                    e.target.nextElementSibling.style.color = '#718096';
-                }
-            }
-            <?php endif; ?>
-        }
-    }
-});
-
-// Pre-fill description based on selected category
-document.getElementById('category').addEventListener('change', function(e) {
-    const categoryName = e.target.options[e.target.selectedIndex].text;
-    const descriptionField = document.getElementById('description');
-
-    if (categoryName && categoryName !== 'Choose category...') {
-        if (!descriptionField.value) {
-            descriptionField.value = `Budget: ${categoryName}`;
-        }
-    }
-});
+console.log('Basic script loaded - no event listeners');
 </script>
 
 <?php require_once '../../includes/footer.php'; ?>
