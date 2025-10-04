@@ -788,6 +788,29 @@ require_once '../../includes/header.php';
     line-height: 1.6;
 }
 
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.form-actions .btn {
+    flex: 1;
+}
+
+/* Override default btn-secondary for modal cancel button */
+.modal-content .btn-secondary {
+    background-color: #f7fafc;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
+}
+
+.modal-content .btn-secondary:hover {
+    background-color: #edf2f7;
+    color: #2d3748;
+    border-color: #cbd5e0;
+}
+
 .move-money-help {
     margin-top: 2rem;
     padding: 1rem;
