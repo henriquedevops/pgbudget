@@ -189,7 +189,15 @@ require_once '../../includes/header.php';
                                     <td class="amount category-balance <?= $category['balance'] > 0 ? 'positive' : ($category['balance'] < 0 ? 'negative' : 'zero') ?>">
                                         <?= formatCurrency($category['balance']) ?>
                                     </td>
-                                    <td>
+                                    <td class="category-actions-cell">
+                                        <button type="button"
+                                                class="btn btn-small btn-move move-money-btn"
+                                                data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>"
+                                                data-category-name="<?= htmlspecialchars($category['category_name']) ?>"
+                                                title="Move money from this category"
+                                                <?= $category['balance'] <= 0 ? 'disabled' : '' ?>>
+                                            💸 Move
+                                        </button>
                                         <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $category['category_uuid'] ?>" class="btn btn-small btn-secondary">Assign</a>
                                     </td>
                                 </tr>
@@ -672,7 +680,194 @@ require_once '../../includes/header.php';
 }
 </style>
 
+<!-- Move Money Modal Styles -->
+<style>
+.btn-move {
+    background-color: #9f7aea;
+    color: white;
+    border: none;
+}
+
+.btn-move:hover:not(:disabled) {
+    background-color: #805ad5;
+}
+
+.btn-move:disabled {
+    background-color: #e2e8f0;
+    color: #a0aec0;
+    cursor: not-allowed;
+}
+
+.category-actions-cell {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+}
+
+/* Modal Content */
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.9);
+    transition: transform 0.3s ease-out;
+}
+
+.modal-backdrop.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #2d3748;
+    font-size: 1.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    line-height: 1;
+    color: #718096;
+    cursor: pointer;
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background-color: #f7fafc;
+    color: #2d3748;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-description {
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.move-money-help {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #f7fafc;
+    border-radius: 8px;
+    border-left: 4px solid #3182ce;
+}
+
+.move-money-help h4 {
+    margin: 0 0 0.75rem 0;
+    color: #2d3748;
+}
+
+.move-money-help ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.move-money-help li {
+    margin-bottom: 0.5rem;
+    color: #4a5568;
+}
+
+.move-money-help strong {
+    color: #2d3748;
+}
+
+.move-money-notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-weight: 500;
+    z-index: 1001;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease-out;
+}
+
+.move-money-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .modal-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .category-actions-cell {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .btn-small {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.625rem;
+    }
+
+    .move-money-notification {
+        right: 1rem;
+        left: 1rem;
+    }
+}
+</style>
+
 <!-- Include inline editing JavaScript -->
 <script src="../js/budget-inline-edit.js"></script>
+
+<!-- Include move money modal JavaScript -->
+<script src="../js/move-money-modal.js"></script>
 
 <?php require_once '../../includes/footer.php'; ?>
