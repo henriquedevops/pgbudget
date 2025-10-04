@@ -236,17 +236,24 @@
 
         // Setup source category change handler
         const fromSelect = modal.querySelector('#move-from-category');
-        fromSelect.addEventListener('change', handleSourceCategoryChange);
+        if (fromSelect) {
+            fromSelect.addEventListener('change', handleSourceCategoryChange);
+
+            // Initial balance display
+            if (sourceUuid && fromSelect.value) {
+                // Trigger the change handler after a short delay to ensure DOM is ready
+                setTimeout(() => {
+                    handleSourceCategoryChange.call(fromSelect);
+                }, 10);
+            }
+        }
 
         // Setup amount validation
         const amountInput = modal.querySelector('#move-amount');
-        amountInput.addEventListener('input', function(e) {
-            validateCurrencyInput(e.target);
-        });
-
-        // Initial balance display
-        if (sourceUuid) {
-            handleSourceCategoryChange.call(fromSelect);
+        if (amountInput) {
+            amountInput.addEventListener('input', function(e) {
+                validateCurrencyInput(e.target);
+            });
         }
 
         return modal;
@@ -256,9 +263,15 @@
      * Handle source category change
      */
     function handleSourceCategoryChange() {
+        // Ensure 'this' is a select element
+        if (!this || !this.options) {
+            console.error('handleSourceCategoryChange called without valid select element');
+            return;
+        }
+
         const selectedOption = this.options[this.selectedIndex];
         const balance = selectedOption ? selectedOption.dataset.balance : 0;
-        const helpText = this.parentElement.querySelector('.available-balance-help');
+        const helpText = this.parentElement ? this.parentElement.querySelector('.available-balance-help') : null;
 
         if (helpText && balance) {
             helpText.textContent = `Available to move: ${formatCurrency(parseInt(balance))}`;
@@ -267,6 +280,10 @@
 
         // Update to-category options (disable selected from-category)
         const toSelect = document.getElementById('move-to-category');
+        if (!toSelect) {
+            return;
+        }
+
         const fromValue = this.value;
 
         Array.from(toSelect.options).forEach(option => {
