@@ -121,28 +121,35 @@ require_once '../../includes/header.php';
         </form>
     </div>
 
-    <div class="budget-grid">
-        <div class="budget-main">
-            <!-- Budget Totals -->
-            <div class="budget-summary">
-                <h2>Budget Overview</h2>
-                <?php if ($budget_totals): ?>
-                    <div class="summary-row">
-                        <span>Income this period:</span>
-                        <span class="amount positive"><?= formatCurrency($budget_totals['income']) ?></span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Budgeted:</span>
-                        <span class="amount"><?= formatCurrency($budget_totals['budgeted']) ?></span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Left to budget:</span>
-                        <span class="amount <?= $budget_totals['left_to_budget'] > 0 ? 'positive' : ($budget_totals['left_to_budget'] < 0 ? 'negative' : 'zero') ?>">
-                            <?= formatCurrency($budget_totals['left_to_budget']) ?>
-                        </span>
-                    </div>
+    <!-- Ready to Assign Banner -->
+    <?php if ($budget_totals): ?>
+        <div class="ready-to-assign-banner <?= $budget_totals['left_to_budget'] > 0 ? 'has-funds' : ($budget_totals['left_to_budget'] < 0 ? 'negative-funds' : 'zero-funds') ?>">
+            <div class="ready-to-assign-content">
+                <div class="ready-to-assign-label">Ready to Assign</div>
+                <div class="ready-to-assign-amount"><?= formatCurrency($budget_totals['left_to_budget']) ?></div>
+                <?php if ($budget_totals['left_to_budget'] > 0): ?>
+                    <div class="ready-to-assign-hint">💡 Click a category amount below to assign money</div>
+                <?php elseif ($budget_totals['left_to_budget'] === 0): ?>
+                    <div class="ready-to-assign-hint">✓ All income assigned! Great job!</div>
+                <?php else: ?>
+                    <div class="ready-to-assign-hint">⚠️ Overbudgeted by <?= formatCurrency(abs($budget_totals['left_to_budget'])) ?></div>
                 <?php endif; ?>
             </div>
+            <div class="ready-to-assign-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Income</span>
+                    <span class="stat-value"><?= formatCurrency($budget_totals['income']) ?></span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Budgeted</span>
+                    <span class="stat-value total-budgeted-amount"><?= formatCurrency($budget_totals['budgeted']) ?></span>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <div class="budget-grid">
+        <div class="budget-main">
 
             <!-- Budget Categories -->
             <div class="categories-section">
@@ -165,17 +172,25 @@ require_once '../../includes/header.php';
                         </thead>
                         <tbody>
                             <?php foreach ($budget_status as $category): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($category['category_name']) ?></td>
-                                    <td class="amount"><?= formatCurrency($category['budgeted']) ?></td>
-                                    <td class="amount <?= $category['activity'] < 0 ? 'negative' : 'positive' ?>">
+                                <tr class="category-row <?= $category['balance'] < 0 ? 'overspent' : '' ?>">
+                                    <td class="category-name-cell">
+                                        <span class="category-name"><?= htmlspecialchars($category['category_name']) ?></span>
+                                    </td>
+                                    <td class="amount budget-amount-editable"
+                                        data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>"
+                                        data-category-name="<?= htmlspecialchars($category['category_name']) ?>"
+                                        data-current-amount="<?= $category['budgeted'] ?>"
+                                        title="Click to assign budget">
+                                        <?= formatCurrency($category['budgeted']) ?>
+                                    </td>
+                                    <td class="amount category-activity <?= $category['activity'] < 0 ? 'negative' : 'positive' ?>">
                                         <?= formatCurrency($category['activity']) ?>
                                     </td>
-                                    <td class="amount <?= $category['balance'] > 0 ? 'positive' : ($category['balance'] < 0 ? 'negative' : 'zero') ?>">
+                                    <td class="amount category-balance <?= $category['balance'] > 0 ? 'positive' : ($category['balance'] < 0 ? 'negative' : 'zero') ?>">
                                         <?= formatCurrency($category['balance']) ?>
                                     </td>
                                     <td>
-                                        <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $category['category_uuid'] ?>" class="btn btn-small">Assign</a>
+                                        <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $category['category_uuid'] ?>" class="btn btn-small btn-secondary">Assign</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -426,6 +441,238 @@ require_once '../../includes/header.php';
         min-width: auto;
     }
 }
+
+/* Ready to Assign Banner */
+.ready-to-assign-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ready-to-assign-banner.has-funds {
+    background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+}
+
+.ready-to-assign-banner.zero-funds {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.ready-to-assign-banner.negative-funds {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+}
+
+.ready-to-assign-content {
+    flex: 1;
+}
+
+.ready-to-assign-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ready-to-assign-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.ready-to-assign-hint {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.ready-to-assign-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.ready-to-assign-stats .stat-item {
+    text-align: center;
+}
+
+.ready-to-assign-stats .stat-label {
+    display: block;
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.ready-to-assign-stats .stat-value {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Inline Budget Editing */
+.budget-amount-editable {
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+.budget-amount-editable:hover {
+    background-color: #f7fafc;
+}
+
+.budget-amount-editable::after {
+    content: '✎';
+    position: absolute;
+    right: 0.25rem;
+    opacity: 0;
+    font-size: 0.75rem;
+    color: #718096;
+    transition: opacity 0.2s;
+}
+
+.budget-amount-editable:hover::after {
+    opacity: 1;
+}
+
+.inline-edit-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.inline-edit-input {
+    width: 100px;
+    padding: 0.25rem 0.5rem;
+    border: 2px solid #3182ce;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.inline-edit-input:focus {
+    outline: none;
+    border-color: #2c5aa0;
+}
+
+.inline-edit-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.inline-edit-save,
+.inline-edit-cancel {
+    padding: 0.25rem 0.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.inline-edit-save {
+    background-color: #38a169;
+    color: white;
+}
+
+.inline-edit-save:hover {
+    background-color: #2f855a;
+}
+
+.inline-edit-cancel {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+.inline-edit-cancel:hover {
+    background-color: #cbd5e0;
+}
+
+.inline-edit-loading {
+    color: #718096;
+    font-style: italic;
+}
+
+.budget-updated {
+    animation: highlight 0.6s ease-out;
+}
+
+@keyframes highlight {
+    0% { background-color: #c6f6d5; }
+    100% { background-color: transparent; }
+}
+
+/* Overspent row styling */
+.category-row.overspent {
+    background-color: #fff5f5;
+}
+
+.category-row.overspent td {
+    border-left: 3px solid #fc8181;
+}
+
+/* Notifications */
+.inline-edit-notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-weight: 500;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease-out;
+}
+
+.inline-edit-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.notification-success {
+    background-color: #38a169;
+    color: white;
+}
+
+.notification-error {
+    background-color: #e53e3e;
+    color: white;
+}
+
+.notification-info {
+    background-color: #3182ce;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .ready-to-assign-banner {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .ready-to-assign-amount {
+        font-size: 2rem;
+    }
+
+    .ready-to-assign-stats {
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    .inline-edit-notification {
+        right: 1rem;
+        left: 1rem;
+    }
+}
 </style>
+
+<!-- Include inline editing JavaScript -->
+<script src="../js/budget-inline-edit.js"></script>
 
 <?php require_once '../../includes/footer.php'; ?>
