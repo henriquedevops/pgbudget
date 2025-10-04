@@ -172,7 +172,8 @@ require_once '../../includes/header.php';
                         </thead>
                         <tbody>
                             <?php foreach ($budget_status as $category): ?>
-                                <tr class="category-row <?= $category['balance'] < 0 ? 'overspent' : '' ?>">
+                                <tr class="category-row <?= $category['balance'] < 0 ? 'overspent' : '' ?>"
+                                    data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>">
                                     <td class="category-name-cell">
                                         <span class="category-name"><?= htmlspecialchars($category['category_name']) ?></span>
                                     </td>

@@ -35,7 +35,10 @@
         // Setup event listeners
         setupEventListeners();
 
-        console.log('Move money modal initialized');
+        // Verify buttons exist
+        const moveButtons = document.querySelectorAll('.move-money-btn');
+        console.log('Move money modal initialized. Found ' + moveButtons.length + ' move buttons');
+        console.log('Ledger UUID:', ledgerUuid);
     }
 
     /**
@@ -50,14 +53,21 @@
             const budgetCell = row.querySelector('.budget-amount-editable');
             const balanceCell = row.querySelector('.category-balance');
 
-            if (budgetCell && nameCell) {
+            if (budgetCell && nameCell && balanceCell) {
+                // Parse balance from formatted currency (e.g., "$50.00" -> 5000 cents)
+                const balanceText = balanceCell.textContent.trim();
+                const balanceValue = parseFloat(balanceText.replace(/[^0-9.-]/g, '')) || 0;
+                const balanceInCents = Math.round(balanceValue * 100);
+
                 allCategories.push({
                     uuid: budgetCell.dataset.categoryUuid,
                     name: budgetCell.dataset.categoryName || nameCell.textContent.trim(),
-                    balance: parseInt(balanceCell.textContent.replace(/[^0-9-]/g, '')) || 0
+                    balance: balanceInCents
                 });
             }
         });
+
+        console.log('Loaded categories:', allCategories);
     }
 
     /**
@@ -69,8 +79,10 @@
             const moveBtn = e.target.closest('.move-money-btn');
             if (moveBtn) {
                 e.preventDefault();
+                console.log('Move button clicked:', moveBtn);
                 const categoryUuid = moveBtn.dataset.categoryUuid;
                 const categoryName = moveBtn.dataset.categoryName;
+                console.log('Category UUID:', categoryUuid, 'Name:', categoryName);
                 openMoveMoneyModal(categoryUuid, categoryName);
             }
 
