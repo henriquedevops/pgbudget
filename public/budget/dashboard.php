@@ -71,6 +71,17 @@ try {
     $stmt->execute([$ledger_uuid]);
     $recent_transactions = $stmt->fetchAll();
 
+    // Get accounts for quick-add transaction modal
+    $stmt = $db->prepare("
+        SELECT uuid, name, type
+        FROM api.accounts
+        WHERE ledger_uuid = ?
+        AND type IN ('asset', 'liability')
+        ORDER BY type, name
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $ledger_accounts = $stmt->fetchAll();
+
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
     header('Location: ../index.php');
@@ -81,6 +92,13 @@ require_once '../../includes/header.php';
 ?>
 
 <div class="container">
+    <!-- Hidden data for JavaScript -->
+    <div id="ledger-accounts-data"
+         data-accounts='<?= json_encode(array_map(function($acc) {
+             return ['uuid' => $acc['uuid'], 'name' => $acc['name'], 'type' => $acc['type']];
+         }, $ledger_accounts)) ?>'
+         style="display: none;"></div>
+
     <div class="budget-header">
         <div class="budget-title">
             <h1><?= htmlspecialchars($ledger['name']) ?></h1>
@@ -888,10 +906,301 @@ require_once '../../includes/header.php';
 }
 </style>
 
+<!-- Additional styles for Phase 1.3 enhancements -->
+<style>
+/* Sticky Header */
+.sticky-budget-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateY(-100%);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.sticky-budget-header.show-sticky {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.sticky-budget-header .ready-to-assign-amount {
+    font-size: 1.75rem;
+}
+
+.sticky-budget-header .ready-to-assign-stats {
+    gap: 1rem;
+}
+
+/* Enhanced Color Coding */
+.category-row.category-green {
+    background-color: rgba(72, 187, 120, 0.05);
+}
+
+.category-row.category-green:hover {
+    background-color: rgba(72, 187, 120, 0.1);
+}
+
+.category-row.category-yellow {
+    background-color: rgba(237, 137, 54, 0.05);
+}
+
+.category-row.category-yellow:hover {
+    background-color: rgba(237, 137, 54, 0.1);
+}
+
+.category-row.category-red {
+    background-color: rgba(245, 101, 101, 0.08);
+    border-left: 4px solid #fc8181;
+}
+
+.category-row.category-red:hover {
+    background-color: rgba(245, 101, 101, 0.12);
+}
+
+/* Quick Add Transaction Button */
+.quick-add-transaction-btn {
+    background-color: #38a169;
+    color: white;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.quick-add-transaction-btn:hover {
+    background-color: #2f855a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(56, 161, 105, 0.3);
+}
+
+/* Overspending Warning Banner */
+.overspending-warning-banner {
+    background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
+    animation: slideInDown 0.5s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.warning-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.warning-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.warning-text strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.warning-text span {
+    font-size: 0.875rem;
+    opacity: 0.95;
+}
+
+.btn-warning-action {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    white-space: nowrap;
+}
+
+.btn-warning-action:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Cover Overspending Button */
+.cover-overspending-btn {
+    background-color: #f56565;
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.cover-overspending-btn:hover {
+    background-color: #e53e3e;
+}
+
+/* Overspending Summary in Modal */
+.overspending-summary {
+    background-color: #fff5f5;
+    border-left: 4px solid #fc8181;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.overspending-summary p {
+    margin: 0.5rem 0;
+}
+
+.overspending-summary .negative {
+    color: #c53030;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Quick Add Modal */
+.quick-add-modal .modal-content {
+    max-width: 600px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.form-help {
+    display: block;
+    font-size: 0.75rem;
+    color: #718096;
+    margin-top: 0.25rem;
+}
+
+/* Dashboard Notification */
+.dashboard-notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-weight: 500;
+    z-index: 1002;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease-out;
+}
+
+.dashboard-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Success button styling */
+.btn-success {
+    background-color: #38a169;
+    color: white;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #2f855a;
+}
+
+.btn-danger {
+    background-color: #e53e3e;
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #c53030;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .overspending-warning-banner {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .warning-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .btn-warning-action {
+        width: 100%;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .sticky-budget-header .ready-to-assign-amount {
+        font-size: 1.5rem;
+    }
+
+    .category-actions-cell {
+        flex-wrap: wrap;
+    }
+
+    .cover-overspending-btn {
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+
+    .dashboard-notification {
+        right: 1rem;
+        left: 1rem;
+    }
+}
+</style>
+
 <!-- Include inline editing JavaScript -->
 <script src="../js/budget-inline-edit.js"></script>
 
 <!-- Include move money modal JavaScript -->
 <script src="../js/move-money-modal.js"></script>
+
+<!-- Include dashboard enhancements JavaScript (Phase 1.3) -->
+<script src="../js/budget-dashboard-enhancements.js"></script>
 
 <?php require_once '../../includes/footer.php'; ?>
