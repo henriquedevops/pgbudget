@@ -447,8 +447,10 @@
             <div class="warning-content">
                 <span class="warning-icon">⚠️</span>
                 <div class="warning-text">
-                    <strong>Overspending Detected</strong>
-                    <span>You have ${count} ${count === 1 ? 'category' : 'categories'} with negative balance. Consider covering the overspending from another category.</span>
+                    <strong>Overspending Detected
+                        <span class="info-tooltip" title="When a category is overspent, it means you spent more than you budgeted. This reduces your overall available funds and should be addressed by either covering it now or handling it next month.">ℹ️</span>
+                    </strong>
+                    <span>You have ${count} ${count === 1 ? 'category' : 'categories'} with negative balance. Click the 🔧 Cover button to handle ${count === 1 ? 'it' : 'them'}.</span>
                 </div>
             </div>
             <button type="button" class="btn btn-small btn-warning-action" onclick="document.querySelector('.categories-section').scrollIntoView({behavior: 'smooth'})">
@@ -519,49 +521,102 @@
         modal.innerHTML = `
             <div class="modal-content cover-overspending-modal">
                 <div class="modal-header">
-                    <h2>🔧 Cover Overspending</h2>
+                    <h2>🔧 Handle Overspending</h2>
                     <button type="button" class="modal-close" aria-label="Close">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="overspending-summary">
                         <p><strong>${categoryName}</strong> is overspent by <span class="negative">$${overspentAmount.toFixed(2)}</span></p>
-                        <p class="modal-description">Move money from another category to cover this overspending.</p>
+                        <p class="modal-description">Choose how you want to handle this overspending.</p>
+                    </div>
+
+                    <!-- What overspending means section -->
+                    <div class="overspending-explanation">
+                        <h4>⚠️ What Does This Mean?</h4>
+                        <p>When a category is overspent, it means you've spent more money than you budgeted for this category. This creates a negative balance that needs to be addressed.</p>
+                        <p><strong>Important:</strong> Overspending reduces your overall available funds. You need to account for this by either:</p>
+                        <ul>
+                            <li><strong>Cover it now</strong> - Move money from another category (recommended)</li>
+                            <li><strong>Handle next month</strong> - Deduct from next month's budget</li>
+                        </ul>
                     </div>
 
                     <form id="cover-overspending-form">
+                        <!-- Handling method selection -->
                         <div class="form-group">
-                            <label for="cover-from-category" class="form-label">Cover From Category *</label>
-                            <select id="cover-from-category" class="form-select" required>
-                                <option value="">Choose category...</option>
-                                ${availableCategories.map(cat => `
-                                    <option value="${cat.uuid}" data-balance="${cat.balance}">
-                                        ${cat.name} (Available: ${formatCurrency(cat.balance)})
-                                    </option>
-                                `).join('')}
-                            </select>
-                            <small class="form-help available-balance-help"></small>
+                            <label class="form-label">How do you want to handle this? *</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="handling-method" value="cover-now" checked>
+                                    <span class="radio-label">
+                                        <strong>Cover Now</strong>
+                                        <small>Move money from another category to fix this immediately (YNAB Rule 3)</small>
+                                    </span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="handling-method" value="next-month">
+                                    <span class="radio-label">
+                                        <strong>Deduct From Next Month</strong>
+                                        <small>Let this carry over and reduce next month's available budget</small>
+                                    </span>
+                                </label>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="cover-amount" class="form-label">Amount to Cover *</label>
-                            <input type="text" id="cover-amount" class="form-input" required
-                                   value="${overspentAmount.toFixed(2)}"
-                                   placeholder="0.00" autocomplete="off">
-                            <small class="form-help">Defaults to full overspent amount. You can cover partially.</small>
+                        <!-- Cover now section -->
+                        <div id="cover-now-section" class="conditional-section">
+                            <div class="form-group">
+                                <label for="cover-from-category" class="form-label">Cover From Category *</label>
+                                <select id="cover-from-category" class="form-select" required>
+                                    <option value="">Choose category...</option>
+                                    ${availableCategories.map(cat => `
+                                        <option value="${cat.uuid}" data-balance="${cat.balance}">
+                                            ${cat.name} (Available: ${formatCurrency(cat.balance)})
+                                        </option>
+                                    `).join('')}
+                                </select>
+                                <small class="form-help available-balance-help"></small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cover-amount" class="form-label">Amount to Cover *</label>
+                                <input type="text" id="cover-amount" class="form-input" required
+                                       value="${overspentAmount.toFixed(2)}"
+                                       placeholder="0.00" autocomplete="off">
+                                <small class="form-help">Defaults to full overspent amount. You can cover partially.</small>
+                            </div>
+                        </div>
+
+                        <!-- Next month section -->
+                        <div id="next-month-section" class="conditional-section" style="display: none;">
+                            <div class="info-box info-warning">
+                                <p><strong>⏭️ Carrying Over to Next Month</strong></p>
+                                <p>When you choose this option:</p>
+                                <ul>
+                                    <li>The negative balance of <strong>$${overspentAmount.toFixed(2)}</strong> will remain in this category</li>
+                                    <li>Next month, you'll need to budget extra to cover both this overspending and your regular budget</li>
+                                    <li>This category will start next month at <strong>-$${overspentAmount.toFixed(2)}</strong></li>
+                                    <li>Best for rare overspending situations or when you genuinely don't have funds to cover it now</li>
+                                </ul>
+                                <p class="warning-text">⚠️ Note: It's generally better to cover overspending immediately to maintain accurate budget awareness.</p>
+                            </div>
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">Cover Overspending</button>
+                            <button type="submit" class="btn btn-primary" id="submit-overspending-btn">Cover Overspending</button>
                             <button type="button" class="btn btn-secondary modal-close">Cancel</button>
                         </div>
                     </form>
 
                     <div class="move-money-help">
-                        <h4>💡 About Covering Overspending</h4>
+                        <h4>💡 Best Practice (YNAB Rule 3: Roll With The Punches)</h4>
+                        <p>Life happens! Budget categories aren't predictions—they're plans that can change.</p>
+                        <p><strong>When you overspend:</strong></p>
                         <ul>
-                            <li>This moves budget from another category to cover the negative balance</li>
-                            <li>Choose a category that has enough available balance</li>
-                            <li>This follows YNAB Rule 3: "Roll With The Punches"</li>
+                            <li>✅ <strong>Cover immediately</strong> by moving money from another category</li>
+                            <li>✅ This keeps your budget accurate and shows your true financial picture</li>
+                            <li>✅ Common practice: Move from flexible categories (Dining Out, Entertainment) to cover essentials</li>
+                            <li>⚠️ Carrying over to next month can make it harder to budget accurately</li>
                         </ul>
                     </div>
                 </div>
@@ -579,7 +634,7 @@
         // Setup handlers
         modal.querySelector('.modal-close').addEventListener('click', () => closeCoverOverspendingModal());
         modal.querySelector('#cover-overspending-form').addEventListener('submit', function(e) {
-            handleCoverOverspendingSubmit(e, categoryUuid, categoryName);
+            handleCoverOverspendingSubmit(e, categoryUuid, categoryName, overspentAmount);
         });
         modal.querySelector('#cover-amount').addEventListener('input', function(e) {
             validateCurrencyInput(e.target);
@@ -597,6 +652,32 @@
             }
         });
 
+        // Handle handling method radio buttons
+        const radioButtons = modal.querySelectorAll('input[name="handling-method"]');
+        const coverNowSection = modal.querySelector('#cover-now-section');
+        const nextMonthSection = modal.querySelector('#next-month-section');
+        const submitBtn = modal.querySelector('#submit-overspending-btn');
+        const coverFromCategory = modal.querySelector('#cover-from-category');
+        const coverAmount = modal.querySelector('#cover-amount');
+
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'cover-now') {
+                    coverNowSection.style.display = 'block';
+                    nextMonthSection.style.display = 'none';
+                    submitBtn.textContent = 'Cover Overspending';
+                    coverFromCategory.required = true;
+                    coverAmount.required = true;
+                } else if (this.value === 'next-month') {
+                    coverNowSection.style.display = 'none';
+                    nextMonthSection.style.display = 'block';
+                    submitBtn.textContent = 'Handle Next Month';
+                    coverFromCategory.required = false;
+                    coverAmount.required = false;
+                }
+            });
+        });
+
         // Close on backdrop click
         modal.addEventListener('click', function(e) {
             if (e.target.classList.contains('modal-backdrop')) {
@@ -608,21 +689,46 @@
     /**
      * Handle cover overspending form submission
      */
-    async function handleCoverOverspendingSubmit(e, toCategory, toCategoryName) {
+    async function handleCoverOverspendingSubmit(e, toCategory, toCategoryName, overspentAmount) {
         e.preventDefault();
 
         const form = e.target;
+        const handlingMethod = form.querySelector('input[name="handling-method"]:checked')?.value;
+
+        // Show loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+
+        // Handle "next month" option
+        if (handlingMethod === 'next-month') {
+            submitBtn.textContent = 'Acknowledged...';
+
+            // Just acknowledge and close - the negative balance will naturally carry forward
+            showNotification(
+                `Overspending of $${overspentAmount.toFixed(2)} in ${toCategoryName} will be handled next month. ` +
+                `Remember to budget extra next month to cover this.`,
+                'info'
+            );
+
+            closeCoverOverspendingModal();
+            return;
+        }
+
+        // Handle "cover now" option
         const fromCategory = document.getElementById('cover-from-category').value;
         const amountStr = document.getElementById('cover-amount').value;
 
         if (!fromCategory || !amountStr) {
             showNotification('Please fill in all required fields', 'error');
+            submitBtn.disabled = false;
             return;
         }
 
         const amount = parseCurrencyInput(amountStr);
         if (amount <= 0) {
             showNotification('Amount must be greater than zero', 'error');
+            submitBtn.disabled = false;
             return;
         }
 
@@ -632,13 +738,10 @@
 
         if (amount > availableBalance) {
             showNotification(`Insufficient funds. Available: ${formatCurrency(availableBalance)}`, 'error');
+            submitBtn.disabled = false;
             return;
         }
 
-        // Show loading
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.disabled = true;
         submitBtn.textContent = '🔧 Covering...';
 
         try {

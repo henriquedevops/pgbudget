@@ -1065,6 +1065,163 @@ require_once '../../includes/header.php';
     font-size: 1.1rem;
 }
 
+/* Overspending Explanation Section */
+.overspending-explanation {
+    background-color: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.overspending-explanation h4 {
+    color: #92400e;
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+}
+
+.overspending-explanation p {
+    margin: 0.5rem 0;
+    color: #78350f;
+    line-height: 1.5;
+}
+
+.overspending-explanation ul {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+    color: #78350f;
+}
+
+.overspending-explanation li {
+    margin-bottom: 0.5rem;
+}
+
+/* Radio Group Styles */
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.radio-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.radio-option:hover {
+    border-color: #cbd5e0;
+    background-color: #f7fafc;
+}
+
+.radio-option input[type="radio"] {
+    margin-top: 0.25rem;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.radio-option input[type="radio"]:checked + .radio-label {
+    color: #2d3748;
+}
+
+.radio-option:has(input[type="radio"]:checked) {
+    border-color: #3182ce;
+    background-color: #ebf8ff;
+}
+
+.radio-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: #4a5568;
+    flex: 1;
+}
+
+.radio-label strong {
+    font-size: 0.95rem;
+    color: #2d3748;
+}
+
+.radio-label small {
+    font-size: 0.8rem;
+    color: #718096;
+    line-height: 1.4;
+}
+
+/* Conditional Sections */
+.conditional-section {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Info Boxes */
+.info-box {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid;
+    margin-bottom: 1rem;
+}
+
+.info-box p {
+    margin: 0.5rem 0;
+    line-height: 1.5;
+}
+
+.info-box ul {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.info-box li {
+    margin-bottom: 0.5rem;
+}
+
+.info-warning {
+    background-color: #fffbeb;
+    border-color: #f59e0b;
+    color: #78350f;
+}
+
+.info-warning strong {
+    color: #92400e;
+}
+
+.warning-text {
+    color: #b45309;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+}
+
+/* Tooltip Styles */
+.info-tooltip {
+    display: inline-block;
+    margin-left: 0.5rem;
+    cursor: help;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.info-tooltip:hover {
+    opacity: 1;
+}
+
 /* Quick Add Modal */
 .quick-add-modal .modal-content {
     max-width: 600px;
