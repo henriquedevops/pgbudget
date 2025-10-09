@@ -5,7 +5,7 @@
 Phase 1 of the pgbudget enhancement plan has been successfully completed! This phase focused on making daily budgeting as smooth as YNAB (You Need A Budget) by eliminating friction points and implementing intuitive workflows.
 
 **Timeline:** Completed ahead of schedule
-**Status:** ✅ All features implemented and integrated
+**Status:** ✅ All features implemented and integrated (1.1 + 1.2 + 1.3 + 1.4)
 **Breaking Changes:** None - all enhancements are additive
 
 ---
@@ -108,13 +108,60 @@ Phase 1 of the pgbudget enhancement plan has been successfully completed! This p
 
 ---
 
+### 1.4 Overspending Indicators & Handling ✅
+
+**Goal:** Provide comprehensive guidance and flexible options for handling overspending.
+
+**Features Implemented:**
+
+#### A. Enhanced Educational Content
+- ✅ "What Does This Mean?" explanation section
+- ✅ Clear guidance on overspending impact
+- ✅ Info tooltip on warning banner
+- ✅ YNAB Rule 3 best practices
+- ✅ Visual indicators (red backgrounds, bold borders)
+
+#### B. Multiple Handling Options
+- ✅ **Cover Now** - Move money from another category (recommended)
+  - Select source category
+  - Validate sufficient balance
+  - Create move transaction
+  - Instant UI update
+- ✅ **Handle Next Month** - Let overspending carry forward
+  - Detailed impact explanation
+  - Warning about next month implications
+  - No transaction created (balance persists)
+  - Acknowledgment notification
+
+#### C. Comprehensive Guidance
+- ✅ Radio button interface for option selection
+- ✅ Conditional sections with smooth animations
+- ✅ Warning boxes with impact details
+- ✅ Best practice recommendations
+- ✅ Common scenarios and solutions
+
+**UI Enhancements:**
+- ✅ Two-option radio button selector
+- ✅ Dynamic section toggling (Cover Now vs Next Month)
+- ✅ Info boxes with color-coded warnings
+- ✅ Tooltip help icons
+- ✅ Enhanced modal with educational content
+
+**Files:**
+- `/public/js/budget-dashboard-enhancements.js` (Enhanced modal)
+- `/public/budget/dashboard.php` (Additional CSS ~3KB)
+
+**Documentation:** `OVERSPENDING_INDICATORS_FEATURE.md`
+
+---
+
 ## Technical Architecture
 
-### JavaScript Files (Total: ~1,753 lines)
+### JavaScript Files (Total: ~1,800 lines)
 ```
 budget-inline-edit.js              420 lines
 move-money-modal.js                587 lines
-budget-dashboard-enhancements.js   746 lines
+budget-dashboard-enhancements.js   790 lines (enhanced with Phase 1.4)
 ```
 
 ### PHP API Endpoints
@@ -135,10 +182,11 @@ api.get_budget_status(...)          - Category balances
 api.get_budget_totals(...)          - Budget totals
 ```
 
-### CSS Styling (~480 lines total)
+### CSS Styling (~550 lines total)
 - Inline budget editing styles
 - Move money modal styles
 - Dashboard enhancement styles (sticky header, color coding, modals)
+- Overspending guidance styles (Phase 1.4: radio groups, info boxes, tooltips)
 - Responsive breakpoints for mobile
 
 ---
@@ -152,6 +200,8 @@ api.get_budget_totals(...)          - Budget totals
 ❌ Scroll to top to check budget totals
 ❌ No quick transaction entry
 ❌ Unclear what to do when overspent
+❌ No guidance on overspending impact
+❌ Only one handling option (cover now)
 
 ### After Phase 1:
 ✅ Click-to-edit budget amounts inline
@@ -159,7 +209,9 @@ api.get_budget_totals(...)          - Budget totals
 ✅ Color-coded categories (green/yellow/red)
 ✅ Sticky header keeps totals visible
 ✅ Press 'T' for quick transaction entry
-✅ "Cover" button with step-by-step guidance
+✅ "Cover" button with comprehensive guidance
+✅ Educational content explaining overspending
+✅ Two flexible options: Cover Now or Handle Next Month
 
 **Result:** Daily budgeting is now **10× faster and more intuitive**!
 
@@ -301,7 +353,8 @@ All keyboard-friendly for power users:
 1. `INLINE_BUDGET_ASSIGNMENT_FEATURE.md` - Phase 1.1 details
 2. `MOVE_MONEY_FEATURE.md` - Phase 1.2 details
 3. `ENHANCED_BUDGET_DASHBOARD.md` - Phase 1.3 details
-4. `PHASE_1_COMPLETE.md` - This summary (Phase 1 overview)
+4. `OVERSPENDING_INDICATORS_FEATURE.md` - Phase 1.4 details
+5. `PHASE_1_COMPLETE.md` - This summary (Phase 1 overview)
 
 ### Existing Documentation Updated:
 - `README.md` - Added Phase 1 features to feature list
@@ -427,5 +480,14 @@ pgbudget now offers a **YNAB-level budgeting experience** while maintaining its 
 Users can now budget faster, adjust easier, and stay on track effortlessly.
 
 **Phase 1 Status: ✅ SHIPPED AND READY FOR USERS**
+
+**Phase 1.4 Additions:**
+- Enhanced overspending modal with educational content
+- Two handling options: Cover Now & Handle Next Month
+- Comprehensive guidance following YNAB Rule 3
+- Tooltip help icons for quick explanations
+- Radio button interface with smooth transitions
+- ~50 additional lines of JavaScript
+- ~70 additional lines of CSS
 
 Next stop: Phase 2 - Goals & Planning! 🚀
