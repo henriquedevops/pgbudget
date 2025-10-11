@@ -38,6 +38,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Live preview of goals as user configures them
   - Seamless integration with budget dashboard
   - Files: `public/api/goals.php`, `public/js/goals-manager.js`, `public/css/goals.css`, `public/goals/dashboard-integration.php`
+- **Quick Fund Goals - Auto-funding Suggestions (Phase 2.5)**: Intelligent budget assignment recommendations
+  - Smart funding algorithm that prioritizes underfunded goals
+  - One-click budget assignments for multiple goals
+  - "Quick Fund Goals" button in underfunded goals sidebar
+  - Interactive modal with funding suggestions and live totals
+  - Monthly funding goals: suggests full monthly amount
+  - Target by date goals: suggests monthly needed amount
+  - Target balance goals: suggests 10% of available funds
+  - Editable suggestion amounts with real-time total updates
+  - Checkbox selection for choosing which goals to fund
+  - Summary showing available, suggested, and remaining amounts
+  - Files: `public/api/quick-fund-goals.php`, `public/js/quick-fund-goals.js`, `public/css/quick-fund-goals.css`
 
 ## [0.3.0] - 2025-08-23
 

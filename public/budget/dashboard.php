@@ -252,6 +252,11 @@ require_once '../../includes/header.php';
                             <span class="goal-stat-label">Total Goals</span>
                         </div>
                     </div>
+                    <?php if ($budget_totals && $budget_totals['left_to_budget'] > 0): ?>
+                        <button type="button" class="quick-fund-goals-btn">
+                            ⚡ Quick Fund Goals
+                        </button>
+                    <?php endif; ?>
                     <?php foreach (array_slice($underfunded_goals, 0, 5) as $ug): ?>
                         <div class="underfunded-goal-item">
                             <div class="underfunded-goal-category"><?= htmlspecialchars($ug['category_name']) ?></div>
@@ -1412,6 +1417,9 @@ require_once '../../includes/header.php';
 <!-- Goal Styles -->
 <link rel="stylesheet" href="../css/goals.css">
 
+<!-- Quick Fund Goals Styles (Phase 2.5) -->
+<link rel="stylesheet" href="../css/quick-fund-goals.css">
+
 <!-- Include inline editing JavaScript -->
 <script src="../js/budget-inline-edit.js"></script>
 
@@ -1423,5 +1431,8 @@ require_once '../../includes/header.php';
 
 <!-- Include goals manager JavaScript -->
 <script src="../js/goals-manager.js"></script>
+
+<!-- Include quick fund goals JavaScript (Phase 2.5) -->
+<script src="../js/quick-fund-goals.js"></script>
 
 <?php require_once '../../includes/footer.php'; ?>
