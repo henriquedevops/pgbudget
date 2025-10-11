@@ -315,11 +315,14 @@ where goal_type = 'monthly_funding'
 - [x] Integration with budget dashboard
 - Files: `public/api/goals.php`, `public/js/goals-manager.js`, `public/css/goals.css`, `public/goals/dashboard-integration.php`
 
-### Phase 2.5: Goal Calculations
-- [ ] Calculate funded amount for month/all-time
-- [ ] Calculate monthly needed for target-by-date
-- [ ] Identify underfunded categories
-- [ ] Suggest assignment amounts
+### Phase 2.5: Quick Fund Goals - Auto-funding Suggestions ✅ COMPLETE
+- [x] Calculate funded amount for month/all-time (implemented in Phase 2.2)
+- [x] Calculate monthly needed for target-by-date (implemented in Phase 2.2)
+- [x] Identify underfunded categories (implemented via `api.get_underfunded_goals()`)
+- [x] Smart funding algorithm with priority scoring
+- [x] Quick Fund Goals button and modal interface
+- [x] One-click budget assignments for multiple goals
+- Files: `public/api/quick-fund-goals.php`, `public/js/quick-fund-goals.js`, `public/css/quick-fund-goals.css`
 
 ---
 

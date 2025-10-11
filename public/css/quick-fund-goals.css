@@ -1,0 +1,300 @@
+/**
+ * Quick Fund Goals Styles - Phase 2.5
+ * Styles for auto-funding suggestions
+ */
+
+/* Quick Fund Button */
+.quick-fund-goals-btn {
+    background-color: #805ad5;
+    color: white;
+    border: none;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quick-fund-goals-btn:hover {
+    background-color: #6b46c1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(128, 90, 213, 0.3);
+}
+
+.quick-fund-goals-btn:disabled {
+    background-color: #e2e8f0;
+    color: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Quick Fund Modal */
+#quick-fund-modal .modal-content {
+    max-width: 700px;
+}
+
+/* Summary Section */
+.quick-fund-summary {
+    background-color: #faf5ff;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #805ad5;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9d8fd;
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-label {
+    font-weight: 600;
+    color: #553c9a;
+    font-size: 0.875rem;
+}
+
+.summary-value {
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: #2d3748;
+}
+
+.summary-value.qf-suggested {
+    color: #805ad5;
+}
+
+/* Suggestions List */
+.quick-fund-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+
+#quick-fund-suggestions h4 {
+    margin: 0 0 1rem 0;
+    color: #2d3748;
+    font-size: 1rem;
+}
+
+/* Suggestion Item */
+.qf-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s;
+}
+
+.qf-suggestion-item:hover {
+    border-color: #cbd5e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.qf-checkbox-container {
+    flex-shrink: 0;
+}
+
+.qf-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.qf-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.qf-category-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.qf-category-name label {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    margin: 0;
+}
+
+.qf-goal-type {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background-color: #e9d8fd;
+    color: #553c9a;
+    border-radius: 12px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.qf-reason {
+    font-size: 0.8125rem;
+    color: #718096;
+    line-height: 1.4;
+}
+
+.qf-amount {
+    flex-shrink: 0;
+}
+
+.qf-amount-input {
+    width: 120px;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: right;
+    transition: border-color 0.2s;
+}
+
+.qf-amount-input:focus {
+    outline: none;
+    border-color: #805ad5;
+    box-shadow: 0 0 0 3px rgba(128, 90, 213, 0.1);
+}
+
+/* Loading State */
+#quick-fund-loading {
+    text-align: center;
+    padding: 2rem;
+    color: #718096;
+}
+
+#quick-fund-loading p {
+    margin: 0;
+    font-size: 0.9375rem;
+}
+
+/* Error Message */
+.error-message {
+    background-color: #fff5f5;
+    border-left: 4px solid #fc8181;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    color: #742a2a;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+}
+
+.empty-state .success-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin: 0.5rem 0;
+    color: #4a5568;
+}
+
+.empty-state strong {
+    color: #2d3748;
+    font-size: 1.125rem;
+}
+
+/* Notifications */
+.qf-notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-weight: 500;
+    z-index: 1004;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease-out;
+}
+
+.qf-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.qf-notification.notification-success {
+    background-color: #38a169;
+    color: white;
+}
+
+.qf-notification.notification-error {
+    background-color: #e53e3e;
+    color: white;
+}
+
+.qf-notification.notification-info {
+    background-color: #805ad5;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #quick-fund-modal .modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .qf-suggestion-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .qf-checkbox-container {
+        order: -1;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .qf-details {
+        width: 100%;
+    }
+
+    .qf-amount {
+        width: 100%;
+    }
+
+    .qf-amount-input {
+        width: 100%;
+    }
+
+    .qf-notification {
+        right: 1rem;
+        left: 1rem;
+    }
+
+    .quick-fund-summary {
+        padding: 0.75rem 1rem;
+    }
+
+    .summary-value {
+        font-size: 1rem;
+    }
+}
