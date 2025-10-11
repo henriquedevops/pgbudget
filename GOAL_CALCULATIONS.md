@@ -480,13 +480,14 @@ All functions handle edge cases:
 
 ## Next Steps
 
-### Phase 2.3: API Functions (Next)
-- [ ] `api.create_category_goal()` - Wrapper for creating goals
-- [ ] `api.update_category_goal()` - Update goal parameters
-- [ ] `api.delete_category_goal()` - Remove goals
-- [ ] `api.get_goal_status()` - Public wrapper for calculate_goal_status
-- [ ] `api.get_ledger_goals()` - Get all goals for a ledger with status
-- [ ] `api.get_underfunded_goals()` - Goals needing attention
+### Phase 2.3: API Functions ✅ COMPLETE
+- [x] `api.create_category_goal()` - Wrapper for creating goals
+- [x] `api.update_category_goal()` - Update goal parameters
+- [x] `api.delete_category_goal()` - Remove goals
+- [x] `api.get_category_goal_status()` - Public wrapper for calculate_goal_status
+- [x] `api.get_ledger_goals()` - Get all goals for a ledger with status
+- [x] `api.get_underfunded_goals()` - Goals needing attention
+- See [Phase 2.3 migration](migrations/20251010000003_add_goal_api_functions.sql) for implementation
 
 ### Phase 2.4: UI Components
 - Goal creation modal
