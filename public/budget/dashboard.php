@@ -82,6 +82,9 @@ try {
     $stmt->execute([$ledger_uuid]);
     $ledger_accounts = $stmt->fetchAll();
 
+    // Load goals for this ledger
+    require_once __DIR__ . '/../goals/dashboard-integration.php';
+
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
     header('Location: ../index.php');
@@ -97,6 +100,7 @@ require_once '../../includes/header.php';
          data-accounts='<?= json_encode(array_map(function($acc) {
              return ['uuid' => $acc['uuid'], 'name' => $acc['name'], 'type' => $acc['type']];
          }, $ledger_accounts)) ?>'
+         data-ledger-uuid="<?= htmlspecialchars($ledger_uuid) ?>"
          style="display: none;"></div>
 
     <div class="budget-header">
@@ -190,10 +194,15 @@ require_once '../../includes/header.php';
                         </thead>
                         <tbody>
                             <?php foreach ($budget_status as $category): ?>
-                                <tr class="category-row <?= $category['balance'] < 0 ? 'overspent' : '' ?>"
+                                <tr class="category-row <?= $category['balance'] < 0 ? 'overspent' : '' ?> <?= hasGoal($category['category_uuid']) ? 'has-goal' : '' ?>"
                                     data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>">
                                     <td class="category-name-cell">
-                                        <span class="category-name"><?= htmlspecialchars($category['category_name']) ?></span>
+                                        <div class="category-name-with-goal">
+                                            <span class="category-name"><?= htmlspecialchars($category['category_name']) ?></span>
+                                            <?php if (hasGoal($category['category_uuid'])): ?>
+                                                <?= renderGoalIndicator($category['category_uuid']) ?>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                     <td class="amount budget-amount-editable"
                                         data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>"
@@ -218,6 +227,7 @@ require_once '../../includes/header.php';
                                             💸 Move
                                         </button>
                                         <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $category['category_uuid'] ?>" class="btn btn-small btn-secondary">Assign</a>
+                                        <?= renderGoalButton($category['category_uuid'], $category['category_name']) ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -228,6 +238,54 @@ require_once '../../includes/header.php';
         </div>
 
         <div class="budget-sidebar">
+            <!-- Underfunded Goals -->
+            <?php if (!empty($underfunded_goals)): ?>
+                <div class="underfunded-goals-section">
+                    <h3>Goals Needing Attention</h3>
+                    <div class="goal-summary-stats">
+                        <div class="goal-stat">
+                            <span class="goal-stat-value"><?= count($underfunded_goals) ?></span>
+                            <span class="goal-stat-label">Underfunded</span>
+                        </div>
+                        <div class="goal-stat">
+                            <span class="goal-stat-value"><?= count($ledger_goals) ?></span>
+                            <span class="goal-stat-label">Total Goals</span>
+                        </div>
+                    </div>
+                    <?php foreach (array_slice($underfunded_goals, 0, 5) as $ug): ?>
+                        <div class="underfunded-goal-item">
+                            <div class="underfunded-goal-category"><?= htmlspecialchars($ug['category_name']) ?></div>
+                            <div class="underfunded-goal-details">
+                                <?php if ($ug['goal_type'] === 'monthly_funding' && $ug['needed_this_month'] > 0): ?>
+                                    Need <?= formatCurrency($ug['needed_this_month']) ?> this month
+                                <?php elseif ($ug['goal_type'] === 'target_by_date'): ?>
+                                    <?= formatCurrency($ug['needed_per_month']) ?>/month needed
+                                    <?php if (!$ug['is_on_track']): ?>
+                                        <span class="underfunded-goal-amount">⚠️ Behind schedule</span>
+                                    <?php endif; ?>
+                                <?php elseif ($ug['goal_type'] === 'target_balance'): ?>
+                                    <?= formatCurrency($ug['remaining_amount']) ?> remaining
+                                <?php endif; ?>
+                            </div>
+                            <div class="goal-progress-container" style="margin-top: 0.5rem;">
+                                <div class="goal-progress-bar <?= $ug['percent_complete'] >= 75 ? 'good' : ($ug['percent_complete'] >= 50 ? 'fair' : 'low') ?>">
+                                    <div class="goal-progress-fill" style="width: <?= min(100, $ug['percent_complete']) ?>%"></div>
+                                </div>
+                                <div class="goal-progress-text"><?= number_format($ug['percent_complete'], 0) ?>%</div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php elseif (!empty($ledger_goals)): ?>
+                <div class="underfunded-goals-section">
+                    <div class="empty-underfunded">
+                        <div class="success-icon">🎯</div>
+                        <p><strong>All goals on track!</strong></p>
+                        <p>Great job staying on top of your budget.</p>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- Recent Transactions -->
             <div class="recent-transactions">
                 <h3>Recent Transactions</h3>
@@ -1351,6 +1409,9 @@ require_once '../../includes/header.php';
 }
 </style>
 
+<!-- Goal Styles -->
+<link rel="stylesheet" href="../css/goals.css">
+
 <!-- Include inline editing JavaScript -->
 <script src="../js/budget-inline-edit.js"></script>
 
@@ -1359,5 +1420,8 @@ require_once '../../includes/header.php';
 
 <!-- Include dashboard enhancements JavaScript (Phase 1.3) -->
 <script src="../js/budget-dashboard-enhancements.js"></script>
+
+<!-- Include goals manager JavaScript -->
+<script src="../js/goals-manager.js"></script>
 
 <?php require_once '../../includes/footer.php'; ?>

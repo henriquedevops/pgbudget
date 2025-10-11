@@ -307,11 +307,13 @@ where goal_type = 'monthly_funding'
 - [x] `api.get_underfunded_goals()`
 - Migration: `20251010000003_add_goal_api_functions.sql`
 
-### Phase 2.4: Goal UI Components
-- [ ] Goal creation modal
-- [ ] Goal progress indicators
-- [ ] "Quick Fund Goals" button
-- [ ] Goal summary sidebar
+### Phase 2.4: Goal UI Components ✅ COMPLETE
+- [x] Goal creation modal with type selector
+- [x] Goal progress indicators on dashboard
+- [x] Goal editing and deletion
+- [x] Underfunded goals sidebar
+- [x] Integration with budget dashboard
+- Files: `public/api/goals.php`, `public/js/goals-manager.js`, `public/css/goals.css`, `public/goals/dashboard-integration.php`
 
 ### Phase 2.5: Goal Calculations
 - [ ] Calculate funded amount for month/all-time
