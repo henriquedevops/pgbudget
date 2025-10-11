@@ -158,17 +158,36 @@ try {
         $transaction_uuid = $result['uuid'] ?? null;
     } else {
         // Decrease budget: move money FROM category TO Income
+        // BUT: can only move what's actually available (balance), not what was budgeted
+        $available_to_move = min(abs($difference), $category['balance']);
+
+        if ($available_to_move <= 0) {
+            // Category has been overspent or has no balance
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'error' => sprintf(
+                    'Cannot decrease budget below current spending. Category has %s remaining. Consider moving money from another category first.',
+                    formatCurrency($category['balance'])
+                )
+            ]);
+            exit;
+        }
+
         $stmt = $db->prepare("SELECT api.move_between_categories(?, ?, ?, ?, ?, ?) as uuid");
         $stmt->execute([
             $ledger_uuid,
             $category_uuid,          // from_category
             $income_account['uuid'], // to_category (Income)
-            abs($difference),        // amount (positive)
+            $available_to_move,      // amount (only what's available)
             $date,
             $description
         ]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $transaction_uuid = $result['uuid'] ?? null;
+
+        // Recalculate the actual difference we achieved
+        $difference = -$available_to_move;
     }
 
     if ($transaction_uuid) {
