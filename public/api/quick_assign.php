@@ -129,22 +129,49 @@ try {
         exit;
     }
 
+    // Get the Income account UUID for this ledger (needed for decreasing budget)
+    $stmt = $db->prepare("SELECT uuid FROM api.accounts WHERE ledger_uuid = ? AND name = 'Income'");
+    $stmt->execute([$ledger_uuid]);
+    $income_account = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$income_account) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Income account not found']);
+        exit;
+    }
+
     // Create assignment description
     $description = 'Budget: ' . $category['category_name'];
 
-    // Assign the difference (positive = add, negative = remove)
-    $stmt = $db->prepare("SELECT uuid FROM api.assign_to_category(?, ?, ?, ?, ?)");
-    $stmt->execute([
-        $ledger_uuid,
-        $date,
-        $description,
-        $difference,
-        $category_uuid
-    ]);
+    // Handle positive difference (increase budget) vs negative (decrease budget)
+    if ($difference > 0) {
+        // Increase budget: assign money TO the category FROM Income
+        $stmt = $db->prepare("SELECT uuid FROM api.assign_to_category(?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $ledger_uuid,
+            $date,
+            $description,
+            $difference,
+            $category_uuid
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $transaction_uuid = $result['uuid'] ?? null;
+    } else {
+        // Decrease budget: move money FROM category TO Income
+        $stmt = $db->prepare("SELECT api.move_between_categories(?, ?, ?, ?, ?, ?) as uuid");
+        $stmt->execute([
+            $ledger_uuid,
+            $category_uuid,          // from_category
+            $income_account['uuid'], // to_category (Income)
+            abs($difference),        // amount (positive)
+            $date,
+            $description
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $transaction_uuid = $result['uuid'] ?? null;
+    }
 
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($result && $result['uuid']) {
+    if ($transaction_uuid) {
         // Get updated budget totals
         $stmt = $db->prepare("SELECT * FROM api.get_budget_totals(?)");
         $stmt->execute([$ledger_uuid]);
@@ -171,7 +198,7 @@ try {
 
         echo json_encode([
             'success' => true,
-            'transaction_uuid' => $result['uuid'],
+            'transaction_uuid' => $transaction_uuid,
             'message' => $change_msg . ' for ' . $category['category_name'],
             'updated_totals' => [
                 'left_to_budget' => $updated_totals['left_to_budget'],
