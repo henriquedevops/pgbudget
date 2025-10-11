@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Category Goals Table (Phase 2.1)**: Database schema for goal-based budgeting (YNAB Rule 2)
+  - Three goal types: `monthly_funding`, `target_balance`, `target_by_date`
+  - Support for tracking budget targets and irregular expense planning
+  - One goal per category with automatic RLS enforcement
+  - Migration: `20251010000001_add_category_goals_table.sql`
+
 ## [0.3.0] - 2025-08-23
 
 ### Added

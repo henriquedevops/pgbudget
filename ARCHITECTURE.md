@@ -23,7 +23,7 @@ The database is structured into three main schemas: `data`, `utils`, and `api`.
 
 ### 3.1. `data` Schema
 
-The `data` schema contains the core tables where all persistent information is stored. This includes ledgers, accounts, transactions, balances, etc. Direct access to this schema for mutations is generally discouraged for end-users; they should use the `api` schema functions instead.
+The `data` schema contains the core tables where all persistent information is stored. This includes ledgers, accounts, transactions, balances, category_goals, etc. Direct access to this schema for mutations is generally discouraged for end-users; they should use the `api` schema functions instead.
 
 Key characteristics:
 -   **Tables**: Store the raw data (e.g., `data.ledgers`, `data.accounts`, `data.transactions`).
@@ -63,6 +63,58 @@ create policy ledgers_policy on data.ledgers
     using (user_data = utils.get_user())
     with check (user_data = utils.get_user());
 ```
+
+#### Category Goals (YNAB Rule 2: Embrace Your True Expenses)
+
+The `data.category_goals` table supports goal-based budgeting, enabling users to plan for irregular expenses. This implements YNAB's Rule 2 by allowing users to set targets for their budget categories.
+
+Example table definition (`data.category_goals` from `migrations/20251010000001_add_category_goals_table.sql`):
+```sql
+create table data.category_goals
+(
+    id               bigint generated always as identity primary key,
+    uuid             text        not null default utils.nanoid(8),
+
+    created_at       timestamptz not null default current_timestamp,
+    updated_at       timestamptz not null default current_timestamp,
+
+    category_id      bigint      not null,
+    goal_type        text        not null,
+    target_amount    bigint      not null,
+    target_date      date,
+    repeat_frequency text,
+
+    user_data        text        not null default utils.get_user(),
+
+    constraint category_goals_uuid_unique unique (uuid),
+    constraint category_goals_one_per_category unique (category_id),
+    constraint category_goals_category_fk foreign key (category_id)
+        references data.accounts (id) on delete cascade,
+    constraint category_goals_goal_type_check check (goal_type in ('monthly_funding', 'target_balance', 'target_by_date')),
+    constraint category_goals_target_amount_check check (target_amount > 0),
+    constraint category_goals_repeat_frequency_check check (repeat_frequency is null or repeat_frequency in ('weekly', 'monthly', 'yearly')),
+    constraint category_goals_target_date_required_check check (
+        (goal_type = 'target_by_date' and target_date is not null) or
+        (goal_type != 'target_by_date')
+    )
+);
+
+alter table data.category_goals enable row level security;
+create policy category_goals_policy on data.category_goals
+    using (user_data = utils.get_user())
+    with check (user_data = utils.get_user());
+```
+
+**Goal Types:**
+- **`monthly_funding`**: Budget a fixed amount every month (e.g., $300/month for groceries). Resets monthly.
+- **`target_balance`**: Save up to a total amount across all time (e.g., $2,000 emergency fund). Cumulative, doesn't reset.
+- **`target_by_date`**: Reach a target amount by a specific date (e.g., $600 for Christmas by Dec 2025). Calculates monthly needed amount based on remaining months.
+
+**Key Constraints:**
+- One goal per category (`category_goals_one_per_category`)
+- `target_date` is required for `target_by_date` goals, optional for others
+- `target_amount` must be positive (stored in cents)
+- Category must be an equity account (enforced by foreign key to `data.accounts`)
 
 ### 3.2. `utils` Schema
 
