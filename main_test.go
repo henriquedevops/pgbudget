@@ -3635,4 +3635,180 @@ func TestDatabase(t *testing.T) {
 			)
 		},
 	)
+
+	// Test split transactions
+	t.Run(
+		"SplitTransactions", func(t *testing.T) {
+			is := is_.New(t)
+			ctx := context.Background()
+
+			conn, err := pgx.Connect(ctx, testDSN)
+			is.NoErr(err)
+			defer conn.Close(ctx)
+
+			// Set user context
+			err = setTestUserContext(ctx, conn, "testuser123")
+			is.NoErr(err)
+
+			// Create a ledger and get account UUIDs
+			ledgerUUID, accountUUIDs, _, err := setupTestLedger(ctx, conn, "Split Test Ledger")
+			is.NoErr(err)
+
+			// Create a checking account
+			var checkingUUID string
+			err = conn.QueryRow(
+				ctx,
+				"INSERT INTO api.accounts (ledger_uuid, name, type, initial_balance) VALUES ($1, $2, $3, $4) RETURNING uuid",
+				ledgerUUID, "Checking", "asset", int64(100000), // $1000
+			).Scan(&checkingUUID)
+			is.NoErr(err)
+
+			t.Run(
+				"AddSplitTransaction", func(t *testing.T) {
+					is := is_.New(t)
+
+					// Create categories for the split
+					var groceriesUUID, gasolineUUID string
+					err = conn.QueryRow(
+						ctx,
+						"INSERT INTO api.accounts (ledger_uuid, name, type) VALUES ($1, $2, $3) RETURNING uuid",
+						ledgerUUID, "Groceries", "equity",
+					).Scan(&groceriesUUID)
+					is.NoErr(err)
+
+					err = conn.QueryRow(
+						ctx,
+						"INSERT INTO api.accounts (ledger_uuid, name, type) VALUES ($1, $2, $3) RETURNING uuid",
+						ledgerUUID, "Gasoline", "equity",
+					).Scan(&gasolineUUID)
+					is.NoErr(err)
+
+					// Create a split transaction
+					// Total: $100 split into Groceries: $60, Gasoline: $40
+					splits := `[
+						{"category_uuid": "` + groceriesUUID + `", "amount": 6000, "memo": "Food items"},
+						{"category_uuid": "` + gasolineUUID + `", "amount": 4000, "memo": "Gas for car"}
+					]`
+
+					var transactionUUID string
+					err = conn.QueryRow(
+						ctx,
+						"SELECT api.add_split_transaction($1, $2, $3, $4, $5, $6, $7::jsonb)",
+						ledgerUUID,
+						time.Now().Format("2006-01-02"),
+						"Walmart - split purchase",
+						"outflow",
+						int64(10000), // $100
+						checkingUUID,
+						splits,
+					).Scan(&transactionUUID)
+					is.NoErr(err)
+					is.True(transactionUUID != "") // Should return a transaction UUID
+
+					// Get the splits for this transaction
+					rows, err := conn.Query(
+						ctx,
+						"SELECT category_uuid, category_name, amount, memo FROM api.get_transaction_splits($1)",
+						transactionUUID,
+					)
+					is.NoErr(err)
+					defer rows.Close()
+
+					splitCount := 0
+					var totalSplitAmount int64
+					for rows.Next() {
+						var categoryUUID, categoryName, memo string
+						var amount int64
+						err = rows.Scan(&categoryUUID, &categoryName, &amount, &memo)
+						is.NoErr(err)
+						splitCount++
+						totalSplitAmount += amount
+
+						// Verify split details
+						if categoryName == "Groceries" {
+							is.Equal(amount, int64(6000)) // $60
+							is.Equal(memo, "Food items")
+						} else if categoryName == "Gasoline" {
+							is.Equal(amount, int64(4000)) // $40
+							is.Equal(memo, "Gas for car")
+						}
+					}
+
+					is.Equal(splitCount, 2)                       // Should have 2 splits
+					is.Equal(totalSplitAmount, int64(10000))      // Total should be $100
+				},
+			)
+
+			t.Run(
+				"SplitValidation_MismatchedTotal", func(t *testing.T) {
+					is := is_.New(t)
+
+					// Create categories
+					var testCategory1UUID, testCategory2UUID string
+					err = conn.QueryRow(
+						ctx,
+						"INSERT INTO api.accounts (ledger_uuid, name, type) VALUES ($1, $2, $3) RETURNING uuid",
+						ledgerUUID, "Test Cat 1", "equity",
+					).Scan(&testCategory1UUID)
+					is.NoErr(err)
+
+					err = conn.QueryRow(
+						ctx,
+						"INSERT INTO api.accounts (ledger_uuid, name, type) VALUES ($1, $2, $3) RETURNING uuid",
+						ledgerUUID, "Test Cat 2", "equity",
+					).Scan(&testCategory2UUID)
+					is.NoErr(err)
+
+					// Try to create a split where splits don't add up to total
+					splits := `[
+						{"category_uuid": "` + testCategory1UUID + `", "amount": 5000, "memo": ""},
+						{"category_uuid": "` + testCategory2UUID + `", "amount": 3000, "memo": ""}
+					]`
+
+					var transactionUUID string
+					err = conn.QueryRow(
+						ctx,
+						"SELECT api.add_split_transaction($1, $2, $3, $4, $5, $6, $7::jsonb)",
+						ledgerUUID,
+						time.Now().Format("2006-01-02"),
+						"Test split - should fail",
+						"outflow",
+						int64(10000), // Total is $100 but splits add to $80
+						checkingUUID,
+						splits,
+					).Scan(&transactionUUID)
+
+					// Should fail with error about mismatched total
+					is.True(err != nil)
+					is.True(strings.Contains(err.Error(), "must equal total"))
+				},
+			)
+
+			t.Run(
+				"SplitValidation_EmptySplits", func(t *testing.T) {
+					is := is_.New(t)
+
+					// Try to create a split with no splits
+					splits := `[]`
+
+					var transactionUUID string
+					err = conn.QueryRow(
+						ctx,
+						"SELECT api.add_split_transaction($1, $2, $3, $4, $5, $6, $7::jsonb)",
+						ledgerUUID,
+						time.Now().Format("2006-01-02"),
+						"Test split - no splits",
+						"outflow",
+						int64(10000),
+						checkingUUID,
+						splits,
+					).Scan(&transactionUUID)
+
+					// Should fail with error about needing at least one split
+					is.True(err != nil)
+					is.True(strings.Contains(err.Error(), "at least one split"))
+				},
+			)
+		},
+	)
 }

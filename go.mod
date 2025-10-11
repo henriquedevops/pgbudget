@@ -1,6 +1,6 @@
 module github.com/j0lvera/pgbudget
 
-go 1.23.3
+go 1.23
 
 require (
 	github.com/jackc/pgx/v5 v5.7.4
