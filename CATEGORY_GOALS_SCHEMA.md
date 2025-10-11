@@ -292,10 +292,11 @@ where goal_type = 'monthly_funding'
 
 ## Next Steps (Remaining Phase 2 Components)
 
-### Phase 2.2: Goal Types Implementation
-- [ ] Goal calculation logic
-- [ ] Progress tracking functions
-- [ ] Monthly vs cumulative calculations
+### Phase 2.2: Goal Types Implementation ✅ COMPLETE
+- [x] Goal calculation logic
+- [x] Progress tracking functions
+- [x] Monthly vs cumulative calculations
+- See [GOAL_CALCULATIONS.md](GOAL_CALCULATIONS.md) for details
 
 ### Phase 2.3: Goal API Functions
 - [ ] `api.create_category_goal()`

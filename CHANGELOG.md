@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Support for tracking budget targets and irregular expense planning
   - One goal per category with automatic RLS enforcement
   - Migration: `20251010000001_add_category_goals_table.sql`
+- **Goal Calculation Functions (Phase 2.2)**: Complete calculation logic for all goal types
+  - `utils.calculate_monthly_funding_goal()` - Track monthly budget progress
+  - `utils.calculate_target_balance_goal()` - Track cumulative savings goals
+  - `utils.calculate_target_by_date_goal()` - Calculate monthly needed with deadline tracking
+  - `utils.calculate_goal_status()` - Unified function for any goal type
+  - Helper functions: balance lookups, budgeted amount calculations, date math
+  - Migration: `20251010000002_add_goal_calculation_functions.sql`
 
 ## [0.3.0] - 2025-08-23
 
