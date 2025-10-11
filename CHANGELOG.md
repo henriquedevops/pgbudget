@@ -29,6 +29,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `api.get_ledger_goals()` - Get all goals for a ledger with current status
   - `api.get_underfunded_goals()` - Get goals needing attention, sorted by priority
   - Migration: `20251010000003_add_goal_api_functions.sql`
+- **Goal UI Components (Phase 2.4)**: Complete user interface for goal management
+  - Interactive goal creation modal with three goal types (monthly_funding, target_balance, target_by_date)
+  - Visual goal progress indicators with progress bars and status icons
+  - Goal editing and deletion with confirmation dialogs
+  - Underfunded goals sidebar showing goals needing attention
+  - Priority-based sorting for underfunded goals
+  - Live preview of goals as user configures them
+  - Seamless integration with budget dashboard
+  - Files: `public/api/goals.php`, `public/js/goals-manager.js`, `public/css/goals.css`, `public/goals/dashboard-integration.php`
 
 ## [0.3.0] - 2025-08-23
 
