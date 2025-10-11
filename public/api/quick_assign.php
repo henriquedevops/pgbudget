@@ -60,7 +60,7 @@ try {
     $stmt = $db->prepare("SELECT set_config('app.current_user_id', ?, false)");
     $stmt->execute([$_SESSION['user_id']]);
 
-    // Get current budget totals to check available funds
+    // Get current budget totals
     $stmt = $db->prepare("SELECT * FROM api.get_budget_totals(?)");
     $stmt->execute([$ledger_uuid]);
     $budget_totals = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -71,8 +71,56 @@ try {
         exit;
     }
 
-    // Check if sufficient funds available
-    if ($amount > $budget_totals['left_to_budget']) {
+    // Get category current status and name
+    $stmt = $db->prepare("SELECT * FROM api.get_budget_status(?)");
+    $stmt->execute([$ledger_uuid]);
+    $all_categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Find the category
+    $category = null;
+    foreach ($all_categories as $cat) {
+        if ($cat['category_uuid'] === $category_uuid) {
+            $category = $cat;
+            break;
+        }
+    }
+
+    if (!$category) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Category not found']);
+        exit;
+    }
+
+    // Calculate the difference between desired amount and current budgeted amount
+    // $amount is the NEW total budget the user wants
+    // $category['budgeted'] is the CURRENT budgeted amount
+    $difference = $amount - $category['budgeted'];
+
+    // If difference is 0, nothing to do
+    if ($difference == 0) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Budget amount unchanged',
+            'updated_totals' => [
+                'left_to_budget' => $budget_totals['left_to_budget'],
+                'left_to_budget_formatted' => formatCurrency($budget_totals['left_to_budget']),
+                'budgeted' => $budget_totals['budgeted'],
+                'budgeted_formatted' => formatCurrency($budget_totals['budgeted'])
+            ],
+            'updated_category' => [
+                'budgeted' => $category['budgeted'],
+                'budgeted_formatted' => formatCurrency($category['budgeted']),
+                'activity' => $category['activity'],
+                'activity_formatted' => formatCurrency($category['activity']),
+                'balance' => $category['balance'],
+                'balance_formatted' => formatCurrency($category['balance'])
+            ]
+        ]);
+        exit;
+    }
+
+    // Check if sufficient funds available (only for positive difference)
+    if ($difference > 0 && $difference > $budget_totals['left_to_budget']) {
         http_response_code(400);
         echo json_encode([
             'success' => false,
@@ -81,27 +129,16 @@ try {
         exit;
     }
 
-    // Get category name for description
-    $stmt = $db->prepare("SELECT name FROM api.accounts WHERE uuid = ? AND ledger_uuid = ?");
-    $stmt->execute([$category_uuid, $ledger_uuid]);
-    $category = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$category) {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Category not found']);
-        exit;
-    }
-
     // Create assignment description
-    $description = 'Budget: ' . $category['name'];
+    $description = 'Budget: ' . $category['category_name'];
 
-    // Assign money to category
+    // Assign the difference (positive = add, negative = remove)
     $stmt = $db->prepare("SELECT uuid FROM api.assign_to_category(?, ?, ?, ?, ?)");
     $stmt->execute([
         $ledger_uuid,
         $date,
         $description,
-        $amount,
+        $difference,
         $category_uuid
     ]);
 
@@ -127,10 +164,15 @@ try {
             }
         }
 
+        // Create success message based on the change
+        $change_msg = $difference > 0
+            ? 'Increased budget by ' . formatCurrency($difference)
+            : 'Decreased budget by ' . formatCurrency(abs($difference));
+
         echo json_encode([
             'success' => true,
             'transaction_uuid' => $result['uuid'],
-            'message' => 'Successfully assigned ' . formatCurrency($amount) . ' to ' . $category['name'],
+            'message' => $change_msg . ' for ' . $category['category_name'],
             'updated_totals' => [
                 'left_to_budget' => $updated_totals['left_to_budget'],
                 'left_to_budget_formatted' => formatCurrency($updated_totals['left_to_budget']),
