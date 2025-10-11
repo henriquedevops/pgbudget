@@ -298,11 +298,14 @@ where goal_type = 'monthly_funding'
 - [x] Monthly vs cumulative calculations
 - See [GOAL_CALCULATIONS.md](GOAL_CALCULATIONS.md) for details
 
-### Phase 2.3: Goal API Functions
-- [ ] `api.create_category_goal()`
-- [ ] `api.update_category_goal()`
-- [ ] `api.delete_category_goal()`
-- [ ] `api.get_category_goal_status()`
+### Phase 2.3: Goal API Functions ✅ COMPLETE
+- [x] `api.create_category_goal()`
+- [x] `api.update_category_goal()`
+- [x] `api.delete_category_goal()`
+- [x] `api.get_category_goal_status()`
+- [x] `api.get_ledger_goals()`
+- [x] `api.get_underfunded_goals()`
+- Migration: `20251010000003_add_goal_api_functions.sql`
 
 ### Phase 2.4: Goal UI Components
 - [ ] Goal creation modal

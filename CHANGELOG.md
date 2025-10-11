@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `utils.calculate_goal_status()` - Unified function for any goal type
   - Helper functions: balance lookups, budgeted amount calculations, date math
   - Migration: `20251010000002_add_goal_calculation_functions.sql`
+- **Goal API Functions (Phase 2.3)**: Public API layer for goal management
+  - `api.category_goals` view - Exposes goals with UUIDs for API consumption
+  - `api.create_category_goal()` - Create new goals with comprehensive validation
+  - `api.update_category_goal()` - Update goal parameters (target, date, frequency)
+  - `api.delete_category_goal()` - Delete goals with ownership verification
+  - `api.get_category_goal_status()` - Get detailed status for a specific goal
+  - `api.get_ledger_goals()` - Get all goals for a ledger with current status
+  - `api.get_underfunded_goals()` - Get goals needing attention, sorted by priority
+  - Migration: `20251010000003_add_goal_api_functions.sql`
 
 ## [0.3.0] - 2025-08-23
 
