@@ -30,8 +30,8 @@ try {
         WHERE ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
           AND type = 'equity'
           AND name NOT IN ('Income', 'Unassigned', 'Off-budget')
-          AND deleted_at IS NULL
           AND user_data = ?
+          AND (metadata->>'is_cc_payment_category' IS NULL OR metadata->>'is_cc_payment_category' != 'true')
         ORDER BY name
     ");
     $stmt->execute([$ledger_uuid, $_SESSION['user_id']]);
