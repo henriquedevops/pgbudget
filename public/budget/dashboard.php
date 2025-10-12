@@ -114,6 +114,9 @@ require_once '../../includes/header.php';
             <button type="button" class="btn btn-primary quick-add-transaction-btn" onclick="QuickAddModal.open({ledger_uuid: '<?= htmlspecialchars($ledger_uuid) ?>'})">
                 ⚡ Quick Add
             </button>
+            <button type="button" class="btn btn-primary" onclick="TransferModal.open({ledger_uuid: '<?= htmlspecialchars($ledger_uuid) ?>'})">
+                ⇄ Transfer
+            </button>
             <a href="../transactions/add.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">+ Add Transaction</a>
             <a href="../categories/manage.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">Manage Categories</a>
             <a href="../recurring/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">🔄 Recurring</a>
