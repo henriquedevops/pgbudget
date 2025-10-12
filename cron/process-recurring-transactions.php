@@ -17,6 +17,7 @@ chdir(dirname(__DIR__));
 
 // Load configuration
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/email/EmailService.php';
 
 // Ensure this script is run from CLI only
 if (php_sapi_name() !== 'cli') {
@@ -63,6 +64,7 @@ if ($dryRun) {
 
 try {
     $db = getDbConnection();
+    $emailService = new EmailService();
 
     // Get all users with recurring transactions
     $stmt = $db->prepare("
@@ -85,9 +87,25 @@ try {
     foreach ($users as $userId) {
         logMessage("Processing user: $userId");
 
+        // Track transactions and failures for this user
+        $userCreatedTransactions = [];
+        $userFailedTransactions = [];
+
         // Set user context for this user
         $stmt = $db->prepare("SELECT set_config('app.current_user_id', ?, false)");
         $stmt->execute([$userId]);
+
+        // Get user email and notification preferences
+        $stmt = $db->prepare("
+            SELECT u.email, u.first_name, u.last_name,
+                   np.email_on_recurring_transaction,
+                   np.email_on_recurring_transaction_failed
+            FROM data.users u
+            LEFT JOIN data.notification_preferences np ON np.username = u.username
+            WHERE u.username = ?
+        ");
+        $stmt->execute([$userId]);
+        $userInfo = $stmt->fetch();
 
         // Get all due recurring transactions for this user
         $stmt = $db->prepare("
@@ -97,6 +115,7 @@ try {
                 rt.amount,
                 rt.frequency,
                 rt.next_date,
+                rt.transaction_type,
                 l.name as ledger_name,
                 a.name as account_name,
                 c.name as category_name
@@ -133,6 +152,7 @@ try {
             if ($dryRun) {
                 logMessage("    [DRY RUN] Would create transaction", 'INFO');
                 $totalCreated++;
+                $userCreatedTransactions[] = $recurring;
                 continue;
             }
 
@@ -147,6 +167,9 @@ try {
                     logMessage("    ✓ Created transaction: $transactionUuid", 'SUCCESS');
                     $totalCreated++;
 
+                    // Track successful creation for email
+                    $userCreatedTransactions[] = $recurring;
+
                     // Log details for audit
                     logMessage(sprintf(
                         "    Transaction details: %s -> %s | %s | Amount: %s",
@@ -158,11 +181,13 @@ try {
                 } else {
                     logMessage("    ✗ Failed to create transaction (no UUID returned)", 'ERROR', true);
                     $totalFailed++;
+                    $userFailedTransactions[] = array_merge($recurring, ['error' => 'No UUID returned']);
                 }
             } catch (PDOException $e) {
                 $errorMsg = "    ✗ Database error: " . $e->getMessage();
                 logMessage($errorMsg, 'ERROR', true);
                 $totalFailed++;
+                $userFailedTransactions[] = array_merge($recurring, ['error' => $e->getMessage()]);
 
                 // Continue processing other transactions even if one fails
                 continue;
@@ -170,7 +195,43 @@ try {
                 $errorMsg = "    ✗ Unexpected error: " . $e->getMessage();
                 logMessage($errorMsg, 'ERROR', true);
                 $totalFailed++;
+                $userFailedTransactions[] = array_merge($recurring, ['error' => $e->getMessage()]);
                 continue;
+            }
+        }
+
+        // Send email notifications for this user
+        if (!$dryRun && $userInfo && $emailService->isEnabled()) {
+            $userName = trim(($userInfo['first_name'] ?? '') . ' ' . ($userInfo['last_name'] ?? '')) ?: $userId;
+
+            // Send success notification if enabled and transactions were created
+            if (!empty($userCreatedTransactions) && ($userInfo['email_on_recurring_transaction'] ?? true)) {
+                try {
+                    logMessage("  Sending success notification to: " . $userInfo['email']);
+                    $emailService->sendRecurringTransactionNotification(
+                        $userInfo['email'],
+                        $userName,
+                        $userCreatedTransactions
+                    );
+                    logMessage("  ✓ Email sent successfully");
+                } catch (Exception $e) {
+                    logMessage("  ✗ Failed to send email: " . $e->getMessage(), 'WARNING');
+                }
+            }
+
+            // Send failure notification if enabled and there were failures
+            if (!empty($userFailedTransactions) && ($userInfo['email_on_recurring_transaction_failed'] ?? true)) {
+                try {
+                    logMessage("  Sending failure notification to: " . $userInfo['email']);
+                    $emailService->sendRecurringTransactionFailureNotification(
+                        $userInfo['email'],
+                        $userName,
+                        $userFailedTransactions
+                    );
+                    logMessage("  ✓ Failure email sent successfully");
+                } catch (Exception $e) {
+                    logMessage("  ✗ Failed to send failure email: " . $e->getMessage(), 'WARNING');
+                }
             }
         }
     }
