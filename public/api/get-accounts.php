@@ -27,17 +27,17 @@ try {
     // Build query based on type filter
     if (!empty($type)) {
         $stmt = $db->prepare("
-            SELECT uuid, name, current_balance as balance
+            SELECT account_uuid as uuid, account_name as name, current_balance as balance
             FROM api.get_ledger_balances(?)
             WHERE account_type = ?
-            ORDER BY name
+            ORDER BY account_name
         ");
         $stmt->execute([$ledger_uuid, $type]);
     } else {
         $stmt = $db->prepare("
-            SELECT uuid, name, current_balance as balance, account_type as type
+            SELECT account_uuid as uuid, account_name as name, current_balance as balance, account_type as type
             FROM api.get_ledger_balances(?)
-            ORDER BY account_type, name
+            ORDER BY account_type, account_name
         ");
         $stmt->execute([$ledger_uuid]);
     }
