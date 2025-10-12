@@ -1443,4 +1443,100 @@ require_once '../../includes/header.php';
 <!-- Include quick fund goals JavaScript (Phase 2.5) -->
 <script src="../js/quick-fund-goals.js"></script>
 
+<!-- Include transfer modal JavaScript (Phase 3.5) -->
+<script src="../js/transfer-modal.js"></script>
+
+<!-- Transfer Modal HTML -->
+<div id="transfer-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>💸 Transfer Money</h2>
+            <button type="button" class="modal-close" onclick="TransferModal.close()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-description">
+                Transfer money between your accounts. This moves funds from one account to another without affecting your budget categories.
+            </p>
+
+            <!-- Error Message -->
+            <div id="transfer-error" class="notification-error" style="display: none; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 4px;"></div>
+
+            <!-- Success Message -->
+            <div id="transfer-success" class="notification-success" style="display: none; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 4px;"></div>
+
+            <form id="transfer-form">
+                <!-- From Account -->
+                <div class="form-group">
+                    <label for="transfer-from-account" class="form-label">From Account *</label>
+                    <select id="transfer-from-account" class="form-select" required>
+                        <option value="">Select source account...</option>
+                    </select>
+                </div>
+
+                <!-- To Account -->
+                <div class="form-group">
+                    <label for="transfer-to-account" class="form-label">To Account *</label>
+                    <select id="transfer-to-account" class="form-select" required>
+                        <option value="">Select destination account...</option>
+                    </select>
+                </div>
+
+                <!-- Visual Transfer Display -->
+                <div id="transfer-visual" style="display: none; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem; background: #f7fafc; border-radius: 8px; margin: 1.5rem 0;">
+                    <div id="visual-from-account" style="font-weight: 600; color: #2d3748; flex: 1; text-align: right;"></div>
+                    <div style="font-size: 2rem; color: #3182ce;">→</div>
+                    <div id="visual-to-account" style="font-weight: 600; color: #2d3748; flex: 1; text-align: left;"></div>
+                </div>
+
+                <!-- Amount -->
+                <div class="form-group">
+                    <label for="transfer-amount" class="form-label">Amount *</label>
+                    <input type="text" id="transfer-amount" class="form-input" placeholder="0.00" required>
+                    <span class="form-help">Enter the amount to transfer</span>
+                </div>
+
+                <!-- Amount Display -->
+                <div id="amount-display" style="display: none; text-align: center; padding: 1rem; background: #ebf8ff; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="font-size: 0.875rem; color: #2c5282; margin-bottom: 0.25rem;">Transfer Amount</div>
+                    <div id="visual-amount" style="font-size: 2rem; font-weight: bold; color: #2b6cb0;"></div>
+                </div>
+
+                <!-- Date -->
+                <div class="form-group">
+                    <label for="transfer-date" class="form-label">Date *</label>
+                    <input type="date" id="transfer-date" class="form-input" required>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button type="button" class="btn btn-small btn-secondary" onclick="TransferModal.setDateToday()">Today</button>
+                        <button type="button" class="btn btn-small btn-secondary" onclick="TransferModal.setDateYesterday()">Yesterday</button>
+                    </div>
+                </div>
+
+                <!-- Memo -->
+                <div class="form-group">
+                    <label for="transfer-memo" class="form-label">Memo (Optional)</label>
+                    <input type="text" id="transfer-memo" class="form-input" placeholder="e.g., Monthly savings transfer">
+                    <span class="form-help">Optional description for this transfer</span>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="TransferModal.close()">Cancel</button>
+                    <button type="submit" id="transfer-submit-btn" class="btn btn-primary">Transfer Money</button>
+                </div>
+            </form>
+
+            <!-- Help Section -->
+            <div class="move-money-help" style="margin-top: 1.5rem;">
+                <h4>💡 Transfer Tips</h4>
+                <ul>
+                    <li><strong>Asset Accounts:</strong> Bank accounts, cash, savings</li>
+                    <li><strong>Liability Accounts:</strong> Credit cards, loans</li>
+                    <li><strong>No Budget Impact:</strong> Transfers don't affect your budget categories</li>
+                    <li><strong>Example:</strong> Moving money from checking to savings</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php require_once '../../includes/footer.php'; ?>
