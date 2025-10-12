@@ -144,6 +144,11 @@ try {
         <a href="../transactions/add.php?ledger=<?= urlencode($ledger_uuid) ?>&account=<?= urlencode($account_uuid) ?>" class="btn btn-primary">
             + Add Transaction
         </a>
+        <?php if (in_array($account['type'], ['asset', 'liability'])): ?>
+            <button type="button" class="btn btn-primary" onclick="TransferModal.open({ledger_uuid: '<?= htmlspecialchars($ledger_uuid) ?>', from_account_uuid: '<?= htmlspecialchars($account_uuid) ?>'})">
+                ⇄ Transfer Money
+            </button>
+        <?php endif; ?>
         <a href="../accounts/list.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">
             Back to Accounts
         </a>

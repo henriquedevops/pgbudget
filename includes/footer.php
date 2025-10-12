@@ -8,6 +8,7 @@
     // Include Quick-Add Modal for authenticated users
     if (isset($_SESSION['user_id'])) {
         require_once __DIR__ . '/quick-add-modal.php';
+        require_once __DIR__ . '/transfer-modal.php';
     }
     ?>
     <script src="/pgbudget/js/main.js"></script>
@@ -15,6 +16,7 @@
     // Include Quick-Add Modal JS for authenticated users
     if (isset($_SESSION['user_id'])) {
         echo '<script src="/pgbudget/js/quick-add-modal.js"></script>';
+        echo '<script src="/pgbudget/js/transfer-modal.js"></script>';
     }
     ?>
 </body>
