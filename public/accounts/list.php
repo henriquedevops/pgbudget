@@ -36,6 +36,20 @@ try {
     $stmt->execute([$ledger_uuid]);
     $accounts = $stmt->fetchAll();
 
+    // For each liability account, get the payment available amount
+    foreach ($accounts as &$account) {
+        if ($account['account_type'] === 'liability') {
+            try {
+                $stmt = $db->prepare("SELECT api.get_cc_payment_available(?)");
+                $stmt->execute([$account['account_uuid']]);
+                $account['payment_available'] = $stmt->fetchColumn();
+            } catch (Exception $e) {
+                $account['payment_available'] = 0;
+            }
+        }
+    }
+    unset($account); // break the reference
+
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
     header('Location: ../index.php');
@@ -94,6 +108,9 @@ require_once '../../includes/header.php';
                                     <th>Account Name</th>
                                     <th>Type</th>
                                     <th>Current Balance</th>
+                                    <?php if ($type === 'liability'): ?>
+                                        <th>Payment Available</th>
+                                    <?php endif; ?>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -115,6 +132,13 @@ require_once '../../includes/header.php';
                                                 <?= formatCurrency($account['current_balance']) ?>
                                             </span>
                                         </td>
+                                        <?php if ($type === 'liability'): ?>
+                                            <td>
+                                                <span class="payment-available amount <?= $account['payment_available'] > 0 ? 'positive' : 'zero' ?>" title="Budget available to pay this credit card">
+                                                    <?= formatCurrency($account['payment_available'] ?? 0) ?>
+                                                </span>
+                                            </td>
+                                        <?php endif; ?>
                                         <td class="account-actions">
                                             <a href="../transactions/account.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-secondary">View</a>
                                             <a href="balance-history.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-info" title="Balance History">📊</a>
@@ -251,6 +275,10 @@ require_once '../../includes/header.php';
 .account-actions {
     display: flex;
     gap: 0.5rem;
+}
+
+.payment-available {
+    font-weight: 600;
 }
 
 .balance-summary {
