@@ -287,7 +287,28 @@ begin
             raise exception 'Failed to delete all transactions. Some transactions are still active.';
         end if;
 
-        -- delete balance snapshots for these transactions first
+        -- delete transaction logs for these transactions first
+        delete from data.transaction_log
+         where original_transaction_id in (
+             select id from data.transactions
+             where (debit_account_id = v_category_id or credit_account_id = v_category_id)
+               and ledger_id = v_ledger_id
+               and user_data = p_user_data
+         )
+         or reversal_transaction_id in (
+             select id from data.transactions
+             where (debit_account_id = v_category_id or credit_account_id = v_category_id)
+               and ledger_id = v_ledger_id
+               and user_data = p_user_data
+         )
+         or correction_transaction_id in (
+             select id from data.transactions
+             where (debit_account_id = v_category_id or credit_account_id = v_category_id)
+               and ledger_id = v_ledger_id
+               and user_data = p_user_data
+         );
+
+        -- delete balance snapshots for these transactions
         delete from data.balance_snapshots
          where transaction_id in (
              select id from data.transactions
