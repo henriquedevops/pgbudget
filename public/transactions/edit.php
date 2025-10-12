@@ -36,6 +36,7 @@ try {
         SELECT t.uuid, t.description, t.amount, t.date,
                da.uuid as debit_account_uuid, da.name as debit_account_name,
                ca.uuid as credit_account_uuid, ca.name as credit_account_name,
+               p.name as payee_name,
                CASE
                    WHEN da.name = 'Income' THEN 'inflow'
                    ELSE 'outflow'
@@ -52,6 +53,7 @@ try {
         JOIN data.accounts da ON t.debit_account_id = da.id
         JOIN data.accounts ca ON t.credit_account_id = ca.id
         JOIN data.ledgers l ON t.ledger_id = l.id
+        LEFT JOIN data.payees p ON t.payee_id = p.id
         WHERE t.uuid = ? AND l.uuid = ? AND t.user_data = utils.get_user()
     ");
     $stmt->execute([$transaction_uuid, $ledger_uuid]);
