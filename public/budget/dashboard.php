@@ -113,6 +113,7 @@ require_once '../../includes/header.php';
         <div class="budget-actions">
             <a href="../transactions/add.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">+ Add Transaction</a>
             <a href="../categories/manage.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">Manage Categories</a>
+            <a href="../recurring/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">🔄 Recurring</a>
         </div>
     </div>
 
@@ -326,6 +327,7 @@ require_once '../../includes/header.php';
                 <div class="action-buttons">
                     <a href="../accounts/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">View Accounts</a>
                     <a href="../transactions/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">All Transactions</a>
+                    <a href="../recurring/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">🔄 Recurring Transactions</a>
                     <a href="../reports/budget.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">Budget Report</a>
                 </div>
             </div>
