@@ -51,7 +51,7 @@ try {
 
     // Get accounts for this ledger (assets and liabilities only for transactions)
     $stmt = $db->prepare("
-        SELECT uuid, name, type, balance
+        SELECT uuid, name, type
         FROM api.accounts
         WHERE ledger_uuid = ?
         AND type IN ('asset', 'liability')
