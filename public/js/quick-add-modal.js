@@ -409,7 +409,7 @@ const QuickAddModal = (function() {
      */
     function submitTransaction(data, callback) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/pgbudget/public/api/quick-add-transaction.php', true);
+        xhr.open('POST', '/pgbudget/api/quick-add-transaction.php', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
 
         xhr.onload = function() {
@@ -441,7 +441,7 @@ const QuickAddModal = (function() {
      */
     function loadAccountsAndCategories(callback) {
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', '/pgbudget/public/api/ledger-data.php?ledger=' + currentLedgerUuid, true);
+        xhr.open('GET', '/pgbudget/api/ledger-data.php?ledger=' + currentLedgerUuid, true);
 
         xhr.onload = function() {
             if (xhr.status === 200) {
@@ -543,7 +543,7 @@ const QuickAddModal = (function() {
      */
     function searchPayees(query) {
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', '/pgbudget/public/api/payees-search.php?q=' + encodeURIComponent(query), true);
+        xhr.open('GET', '/pgbudget/api/payees-search.php?q=' + encodeURIComponent(query), true);
 
         xhr.onload = function() {
             if (xhr.status === 200) {
