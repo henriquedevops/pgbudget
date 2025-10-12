@@ -1,4 +1,5 @@
 -- +goose Up
+-- +goose StatementBegin
 -- Update transaction functions to support payees
 
 -- Update utils.add_transaction to accept payee name
@@ -142,8 +143,10 @@ BEGIN
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+-- +goose StatementEnd
 
 -- +goose Down
+-- +goose StatementBegin
 -- Revert to original functions without payee support
 CREATE OR REPLACE FUNCTION utils.add_transaction(
     p_ledger_uuid text,
@@ -265,3 +268,4 @@ BEGIN
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+-- +goose StatementEnd

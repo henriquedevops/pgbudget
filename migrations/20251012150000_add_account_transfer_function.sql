@@ -2,6 +2,9 @@
 -- Phase 3.5 - Account Transfers Simplified
 -- Created: 2025-10-12
 
+-- +goose Up
+-- +goose StatementBegin
+
 -- ============================================================================
 -- UTILS LAYER: Core transfer logic
 -- ============================================================================
@@ -166,3 +169,13 @@ Validates that both accounts are in the same ledger and are asset/liability acco
 
 COMMENT ON FUNCTION api.add_account_transfer IS
 'RLS-aware wrapper for creating account transfers. Validates user ownership of the ledger.';
+
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+
+DROP FUNCTION IF EXISTS api.add_account_transfer(TEXT, TEXT, TEXT, NUMERIC, DATE, TEXT);
+DROP FUNCTION IF EXISTS utils.add_account_transfer(TEXT, TEXT, TEXT, NUMERIC, DATE, TEXT);
+
+-- +goose StatementEnd
