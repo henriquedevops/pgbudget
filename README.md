@@ -22,6 +22,13 @@ The system implements proper double-entry accounting where every transaction aff
 - **Transaction history**: Complete audit trail with running balances
 - **Budget status reporting**: Track budgeted vs spent amounts per category
 - **Error correction**: Functions to correct or delete transactions with audit trail
+- **Credit card workflow**: Automatic payment category creation for credit cards
+- **Move money between categories**: Easily reallocate budgeted funds
+- **Goals system**: Set monthly funding targets and track progress
+- **Recurring transactions**: Schedule and auto-create repeating transactions
+- **Split transactions**: Allocate a single transaction across multiple categories
+- **Account transfers**: Simplified transfer between asset and liability accounts
+- **Payee management**: Track and auto-categorize transactions by payee
 
 ## Requirements
 
@@ -334,6 +341,34 @@ Each ledger automatically creates three special accounts:
 - **Income**: Holds unallocated funds until assigned to categories
 - **Off-budget**: For tracking transactions outside your budget
 - **Unassigned**: Default category for uncategorized transactions
+
+## Credit Card Payment Categories
+
+When you create a credit card (liability) account, the system automatically creates a companion payment category called "CC Payment: [Card Name]". This category:
+
+- Tracks the budget allocated for paying your credit card balance
+- Is automatically linked to the credit card via metadata
+- Helps you budget for credit card payments separately from regular expenses
+
+**Example:**
+```sql
+-- Create a credit card account
+INSERT INTO api.accounts (ledger_uuid, name, type, description)
+VALUES ('d3pOOf6t', 'My Visa Card', 'liability', 'Main credit card');
+-- This automatically creates a category named "CC Payment: My Visa Card"
+
+-- View the linked payment category
+SELECT
+    a.name as card_name,
+    a.metadata->>'payment_category_uuid' as payment_category
+FROM api.accounts a
+WHERE a.type = 'liability' AND a.name = 'My Visa Card';
+```
+
+For existing credit cards created before this feature, you can manually create a payment category:
+```sql
+SELECT api.create_cc_payment_category('credit_card_uuid_here');
+```
 
 ## Example Workflow
 
