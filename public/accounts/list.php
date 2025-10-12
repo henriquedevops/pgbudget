@@ -142,6 +142,15 @@ require_once '../../includes/header.php';
                                         <td class="account-actions">
                                             <a href="../transactions/account.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-secondary">View</a>
                                             <a href="balance-history.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-info" title="Balance History">📊</a>
+                                            <?php if ($account['account_type'] === 'liability'): ?>
+                                                <button class="btn btn-small btn-success pay-cc-btn"
+                                                        data-cc-uuid="<?= $account['account_uuid'] ?>"
+                                                        data-cc-name="<?= htmlspecialchars($account['account_name']) ?>"
+                                                        data-cc-balance="<?= $account['current_balance'] ?>"
+                                                        data-payment-available="<?= $account['payment_available'] ?? 0 ?>"
+                                                        data-ledger-uuid="<?= $ledger_uuid ?>"
+                                                        title="Pay Credit Card">💳 Pay</button>
+                                            <?php endif; ?>
                                             <?php if ($account['account_type'] === 'equity' && !in_array($account['account_name'], ['Income', 'Off-budget', 'Unassigned'])): ?>
                                                 <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $account['account_uuid'] ?>" class="btn btn-small btn-primary">Assign</a>
                                                 <?php
@@ -477,7 +486,150 @@ require_once '../../includes/header.php';
     opacity: 0.6;
     pointer-events: none;
 }
+
+/* Payment modal styles */
+.payment-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.payment-modal.active {
+    display: flex;
+}
+
+.payment-info {
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.info-label {
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.info-value {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-hint {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #3182ce;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.btn-link:hover {
+    color: #2c5282;
+}
+
+.btn-success {
+    background-color: #48bb78;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #38a169;
+}
 </style>
+
+<!-- Pay Credit Card Modal -->
+<div id="payCreditCardModal" class="payment-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Pay Credit Card: <span id="pay-cc-name"></span></h2>
+        </div>
+        <div class="modal-body">
+            <div class="payment-info">
+                <div class="info-item">
+                    <span class="info-label">Current Balance Owed:</span>
+                    <span class="info-value amount negative" id="cc-balance"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Payment Available (Budgeted):</span>
+                    <span class="info-value amount positive" id="payment-available"></span>
+                </div>
+            </div>
+
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="bank-account">Pay From (Bank Account) *</label>
+                    <select id="bank-account" name="bank_account" required>
+                        <option value="">-- Select a bank account --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="payment-amount">Payment Amount *</label>
+                    <input type="number" id="payment-amount" name="amount" step="0.01" min="0.01" required>
+                    <div class="form-hint">
+                        <button type="button" class="btn-link" onclick="setPaymentAmount('available')">Use Payment Available</button>
+                        |
+                        <button type="button" class="btn-link" onclick="setPaymentAmount('full')">Pay Full Balance</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="payment-date">Payment Date *</label>
+                    <input type="date" id="payment-date" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="payment-memo">Memo (Optional)</label>
+                    <input type="text" id="payment-memo" name="memo" placeholder="Optional note">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
+            <button class="btn btn-success" id="confirm-payment-btn" onclick="submitPayment()">Make Payment</button>
+        </div>
+    </div>
+</div>
 
 <!-- Delete Category Modal -->
 <div id="deleteCategoryModal" class="delete-modal">
@@ -690,6 +842,163 @@ document.querySelectorAll('input[name="deletion-strategy"]').forEach(radio => {
     radio.addEventListener('change', function() {
         document.getElementById('reassign-category-select').disabled = (this.value !== 'reassign');
     });
+});
+
+// ============================================================================
+// CREDIT CARD PAYMENT MODAL HANDLERS
+// ============================================================================
+
+let currentCCUuid = null;
+let currentCCBalance = 0;
+let currentPaymentAvailable = 0;
+let currentCCLedgerUuid = null;
+
+// Open payment modal
+document.querySelectorAll('.pay-cc-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        currentCCUuid = this.dataset.ccUuid;
+        currentCCBalance = parseInt(this.dataset.ccBalance);
+        currentPaymentAvailable = parseInt(this.dataset.paymentAvailable);
+        currentCCLedgerUuid = this.dataset.ledgerUuid;
+        const ccName = this.dataset.ccName;
+
+        document.getElementById('pay-cc-name').textContent = ccName;
+        document.getElementById('cc-balance').textContent = formatMoney(currentCCBalance);
+        document.getElementById('payment-available').textContent = formatMoney(currentPaymentAvailable);
+
+        // Set today's date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('payment-date').value = today;
+
+        // Load bank accounts
+        loadBankAccounts();
+
+        document.getElementById('payCreditCardModal').classList.add('active');
+    });
+});
+
+// Close payment modal
+function closePaymentModal() {
+    document.getElementById('payCreditCardModal').classList.remove('active');
+    document.getElementById('paymentForm').reset();
+    currentCCUuid = null;
+    currentCCBalance = 0;
+    currentPaymentAvailable = 0;
+}
+
+// Load bank accounts for payment
+async function loadBankAccounts() {
+    const select = document.getElementById('bank-account');
+
+    try {
+        const response = await fetch(`../api/get-accounts.php?ledger=${currentCCLedgerUuid}&type=asset`);
+        const data = await response.json();
+
+        select.innerHTML = '<option value="">-- Select a bank account --</option>';
+
+        if (data.accounts) {
+            data.accounts.forEach(account => {
+                const option = document.createElement('option');
+                option.value = account.uuid;
+                option.textContent = `${account.name} (${formatMoney(account.balance)})`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load bank accounts:', error);
+        alert('Failed to load bank accounts. Please refresh and try again.');
+    }
+}
+
+// Set payment amount helper
+function setPaymentAmount(type) {
+    const input = document.getElementById('payment-amount');
+
+    if (type === 'available') {
+        // Use payment available amount (budgeted)
+        input.value = (currentPaymentAvailable / 100).toFixed(2);
+    } else if (type === 'full') {
+        // Use full CC balance owed (convert to positive for payment)
+        input.value = (Math.abs(currentCCBalance) / 100).toFixed(2);
+    }
+}
+
+// Submit payment
+async function submitPayment() {
+    const form = document.getElementById('paymentForm');
+
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const bankAccountUuid = document.getElementById('bank-account').value;
+    const amount = Math.round(parseFloat(document.getElementById('payment-amount').value) * 100);
+    const date = document.getElementById('payment-date').value;
+    const memo = document.getElementById('payment-memo').value;
+
+    if (!bankAccountUuid) {
+        alert('Please select a bank account to pay from.');
+        return;
+    }
+
+    if (amount <= 0) {
+        alert('Payment amount must be greater than zero.');
+        return;
+    }
+
+    // Warn if paying more than budgeted
+    if (amount > currentPaymentAvailable) {
+        const overage = amount - currentPaymentAvailable;
+        const confirmMsg = `You're paying $${(amount / 100).toFixed(2)}, but only have $${(currentPaymentAvailable / 100).toFixed(2)} budgeted.\n\n` +
+                          `This will create $${(overage / 100).toFixed(2)} overspending in your payment category.\n\n` +
+                          `Continue anyway?`;
+        if (!confirm(confirmMsg)) {
+            return;
+        }
+    }
+
+    // Disable button and show loading
+    const btn = document.getElementById('confirm-payment-btn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    try {
+        const response = await fetch('../api/pay-credit-card.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                credit_card_uuid: currentCCUuid,
+                bank_account_uuid: bankAccountUuid,
+                amount: amount,
+                date: date + ' 00:00:00',
+                memo: memo || null
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert('Error: ' + (data.error || 'Failed to process payment'));
+            btn.disabled = false;
+            btn.textContent = 'Make Payment';
+            return;
+        }
+
+        alert('Payment processed successfully!');
+        window.location.reload();
+    } catch (error) {
+        alert('Error: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = 'Make Payment';
+    }
+}
+
+// Close modal when clicking outside
+document.getElementById('payCreditCardModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePaymentModal();
+    }
 });
 </script>
 
