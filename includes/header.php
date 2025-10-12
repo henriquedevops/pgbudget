@@ -45,6 +45,9 @@
                         <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
                     </li>
                     <li class="nav-item">
+                        <a href="/pgbudget/settings/notifications.php" class="nav-link">⚙️ Settings</a>
+                    </li>
+                    <li class="nav-item">
                         <span class="nav-user">Hello, <?= htmlspecialchars($_SESSION['user_id']) ?>!</span>
                     </li>
                     <li class="nav-item">
@@ -59,6 +62,9 @@
                     </li>
                     <li class="nav-item">
                         <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pgbudget/settings/notifications.php" class="nav-link">⚙️ Settings</a>
                     </li>
                     <li class="nav-item">
                         <span class="nav-user">Demo Mode</span>
