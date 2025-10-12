@@ -144,6 +144,23 @@ require_once '../../includes/header.php';
                                             <a href="balance-history.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-info" title="Balance History">📊</a>
                                             <?php if ($account['account_type'] === 'equity' && !in_array($account['account_name'], ['Income', 'Off-budget', 'Unassigned'])): ?>
                                                 <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $account['account_uuid'] ?>" class="btn btn-small btn-primary">Assign</a>
+                                                <?php
+                                                // Check if it's not a CC payment category
+                                                $is_cc_payment = false;
+                                                try {
+                                                    $check_stmt = $db->prepare("SELECT metadata->>'is_cc_payment_category' as is_cc FROM data.accounts WHERE uuid = ?");
+                                                    $check_stmt->execute([$account['account_uuid']]);
+                                                    $meta = $check_stmt->fetchColumn();
+                                                    $is_cc_payment = ($meta === 'true');
+                                                } catch (Exception $e) {}
+
+                                                if (!$is_cc_payment): ?>
+                                                    <button class="btn btn-small btn-danger delete-category-btn"
+                                                            data-category-uuid="<?= $account['account_uuid'] ?>"
+                                                            data-category-name="<?= htmlspecialchars($account['account_name']) ?>"
+                                                            data-ledger-uuid="<?= $ledger_uuid ?>"
+                                                            title="Delete Category">Delete</button>
+                                                <?php endif; ?>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -353,6 +370,327 @@ require_once '../../includes/header.php';
         grid-template-columns: 1fr;
     }
 }
+
+/* Delete category button */
+.btn-danger {
+    background-color: #fc8181;
+    color: #742a2a;
+}
+
+.btn-danger:hover {
+    background-color: #f56565;
+    color: white;
+}
+
+/* Delete modal styles */
+.delete-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: #2d3748;
+}
+
+.modal-body {
+    margin-bottom: 1.5rem;
+}
+
+.impact-summary {
+    background: #f7fafc;
+    border-left: 4px solid #4299e1;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+}
+
+.impact-item {
+    padding: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.impact-item strong {
+    color: #2d3748;
+}
+
+.warning-box {
+    background: #fff5f5;
+    border-left: 4px solid #fc8181;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+    color: #742a2a;
+}
+
+.reassign-section {
+    margin: 1rem 0;
+}
+
+.reassign-section label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.reassign-section select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
 </style>
+
+<!-- Delete Category Modal -->
+<div id="deleteCategoryModal" class="delete-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Delete Category: <span id="modal-category-name"></span></h2>
+        </div>
+        <div class="modal-body">
+            <div id="loading-message" style="text-align: center; padding: 2rem;">
+                <p>Checking deletion impact...</p>
+            </div>
+            <div id="impact-content" style="display: none;">
+                <div class="impact-summary" id="impact-summary"></div>
+
+                <div class="reassign-section">
+                    <label>
+                        <input type="radio" name="deletion-strategy" value="reassign" checked>
+                        Reassign all transactions to another category (recommended)
+                    </label>
+                    <select id="reassign-category-select" style="margin-top: 0.5rem;">
+                        <option value="">-- Select a category --</option>
+                    </select>
+                </div>
+
+                <div class="reassign-section">
+                    <label>
+                        <input type="radio" name="deletion-strategy" value="delete">
+                        Delete all related transactions (cannot be undone)
+                    </label>
+                </div>
+
+                <div class="warning-box">
+                    <strong>Warning:</strong> This action cannot be undone. All goals, balance history, and related data will be permanently deleted.
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn btn-danger" id="confirm-delete-btn" onclick="confirmDelete()" disabled>Delete Category</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentCategoryUuid = null;
+let currentLedgerUuid = null;
+let impactData = null;
+
+// Open delete modal
+document.querySelectorAll('.delete-category-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        currentCategoryUuid = this.dataset.categoryUuid;
+        currentLedgerUuid = this.dataset.ledgerUuid;
+        const categoryName = this.dataset.categoryName;
+
+        document.getElementById('modal-category-name').textContent = categoryName;
+        document.getElementById('deleteCategoryModal').classList.add('active');
+        document.getElementById('loading-message').style.display = 'block';
+        document.getElementById('impact-content').style.display = 'none';
+
+        // Fetch deletion impact
+        fetchDeletionImpact();
+    });
+});
+
+// Close modal
+function closeDeleteModal() {
+    document.getElementById('deleteCategoryModal').classList.remove('active');
+    currentCategoryUuid = null;
+    currentLedgerUuid = null;
+    impactData = null;
+}
+
+// Fetch deletion impact
+async function fetchDeletionImpact() {
+    try {
+        const response = await fetch('../api/delete-category.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                category_uuid: currentCategoryUuid,
+                action: 'preview'
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert('Error: ' + (data.error || 'Failed to check deletion impact'));
+            closeDeleteModal();
+            return;
+        }
+
+        impactData = data.impact;
+        displayImpact(data.impact);
+    } catch (error) {
+        alert('Error: ' + error.message);
+        closeDeleteModal();
+    }
+}
+
+// Display impact
+function displayImpact(impact) {
+    const summary = document.getElementById('impact-summary');
+    summary.innerHTML = `
+        <div class="impact-item"><strong>Transactions:</strong> <span>${impact.transaction_count}</span></div>
+        <div class="impact-item"><strong>Transaction Splits:</strong> <span>${impact.split_count}</span></div>
+        <div class="impact-item"><strong>Has Goal:</strong> <span>${impact.goal_exists ? 'Yes' : 'No'}</span></div>
+        <div class="impact-item"><strong>Payees Using Default:</strong> <span>${impact.payee_count}</span></div>
+        <div class="impact-item"><strong>Recurring Transactions:</strong> <span>${impact.recurring_count}</span></div>
+        <div class="impact-item"><strong>Current Balance:</strong> <span>${formatMoney(impact.current_balance)}</span></div>
+    `;
+
+    // Populate reassign category dropdown
+    populateReassignSelect();
+
+    document.getElementById('loading-message').style.display = 'none';
+    document.getElementById('impact-content').style.display = 'block';
+    document.getElementById('confirm-delete-btn').disabled = false;
+}
+
+// Populate reassign category select
+async function populateReassignSelect() {
+    const select = document.getElementById('reassign-category-select');
+
+    // Fetch categories for this ledger
+    try {
+        const response = await fetch(`../api/get-categories.php?ledger=${currentLedgerUuid}`);
+        const data = await response.json();
+
+        select.innerHTML = '<option value="">-- Select a category --</option>';
+
+        if (data.categories) {
+            data.categories.forEach(cat => {
+                if (cat.uuid !== currentCategoryUuid) {
+                    const option = document.createElement('option');
+                    option.value = cat.uuid;
+                    option.textContent = cat.name;
+                    select.appendChild(option);
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load categories:', error);
+    }
+}
+
+// Confirm deletion
+async function confirmDelete() {
+    const strategy = document.querySelector('input[name="deletion-strategy"]:checked').value;
+    let reassignTo = null;
+
+    if (strategy === 'reassign') {
+        reassignTo = document.getElementById('reassign-category-select').value;
+        if (!reassignTo) {
+            alert('Please select a category to reassign transactions to.');
+            return;
+        }
+    }
+
+    const confirmMsg = strategy === 'delete'
+        ? `Are you sure you want to DELETE this category and all ${impactData.transaction_count} related transactions? This cannot be undone!`
+        : `Are you sure you want to delete this category and reassign all ${impactData.transaction_count} transactions?`;
+
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+
+    // Disable button and show loading
+    const btn = document.getElementById('confirm-delete-btn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+
+    try {
+        const response = await fetch('../api/delete-category.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                category_uuid: currentCategoryUuid,
+                action: 'delete',
+                reassign_to_category_uuid: reassignTo
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert('Error: ' + (data.error || 'Failed to delete category'));
+            btn.disabled = false;
+            btn.textContent = 'Delete Category';
+            return;
+        }
+
+        alert('Category deleted successfully!');
+        window.location.reload();
+    } catch (error) {
+        alert('Error: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = 'Delete Category';
+    }
+}
+
+// Format money helper
+function formatMoney(cents) {
+    return '$' + (cents / 100).toFixed(2);
+}
+
+// Enable/disable reassign select based on strategy
+document.querySelectorAll('input[name="deletion-strategy"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.getElementById('reassign-category-select').disabled = (this.value !== 'reassign');
+    });
+});
+</script>
 
 <?php require_once '../../includes/footer.php'; ?>
