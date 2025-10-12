@@ -261,6 +261,15 @@ begin
             v_ledger_id,
             p_user_data
         );
+
+        -- verify no transactions still reference this category
+        if exists (
+            select 1 from data.transactions
+            where (debit_account_id = v_category_id or credit_account_id = v_category_id)
+              and deleted_at is null
+        ) then
+            raise exception 'Failed to reassign all transactions. Some transactions still reference this category.';
+        end if;
     else
         -- soft delete all transactions
         v_transactions_deleted := utils.soft_delete_category_transactions(
@@ -268,6 +277,30 @@ begin
             v_ledger_id,
             p_user_data
         );
+
+        -- verify all transactions are soft deleted
+        if exists (
+            select 1 from data.transactions
+            where (debit_account_id = v_category_id or credit_account_id = v_category_id)
+              and deleted_at is null
+        ) then
+            raise exception 'Failed to delete all transactions. Some transactions are still active.';
+        end if;
+
+        -- delete balance snapshots for these transactions first
+        delete from data.balance_snapshots
+         where transaction_id in (
+             select id from data.transactions
+             where (debit_account_id = v_category_id or credit_account_id = v_category_id)
+               and ledger_id = v_ledger_id
+               and user_data = p_user_data
+         );
+
+        -- now hard delete the soft-deleted transactions to allow category deletion
+        delete from data.transactions
+         where (debit_account_id = v_category_id or credit_account_id = v_category_id)
+           and ledger_id = v_ledger_id
+           and user_data = p_user_data;
     end if;
 
     -- delete balance snapshots
