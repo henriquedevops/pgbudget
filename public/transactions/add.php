@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $type = $_POST['type']; // 'inflow' or 'outflow'
     $account_uuid = sanitizeInput($_POST['account']);
     $category_uuid = sanitizeInput($_POST['category']);
+    $payee_name = isset($_POST['payee']) ? sanitizeInput($_POST['payee']) : null;
     $is_split = isset($_POST['is_split']) && $_POST['is_split'] === '1';
 
     if (empty($description) || $amount <= 0 || empty($date) || empty($account_uuid)) {
@@ -83,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             } else {
                 // Handle regular transaction
-                $stmt = $db->prepare("SELECT api.add_transaction(?, ?, ?, ?, ?, ?, ?)");
+                $stmt = $db->prepare("SELECT api.add_transaction(?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([
                     $ledger_uuid,
                     $date,
@@ -91,7 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $type,
                     $amount,
                     $account_uuid,
-                    ($category_uuid && $category_uuid !== 'unassigned') ? $category_uuid : null
+                    ($category_uuid && $category_uuid !== 'unassigned') ? $category_uuid : null,
+                    $payee_name
                 ]);
 
                 $result = $stmt->fetch();
@@ -186,6 +188,17 @@ require_once '../../includes/header.php';
                 <input type="text" id="description" name="description" class="form-input" required
                        placeholder="e.g., Grocery shopping, Paycheck, Gas"
                        value="<?= isset($_POST['description']) ? htmlspecialchars($_POST['description']) : '' ?>">
+            </div>
+
+            <div class="form-group">
+                <label for="payee" class="form-label">Payee (Optional)</label>
+                <div class="payee-autocomplete-wrapper">
+                    <input type="text" id="payee" name="payee" class="form-input" autocomplete="off"
+                           placeholder="Start typing payee name..."
+                           value="<?= isset($_POST['payee']) ? htmlspecialchars($_POST['payee']) : '' ?>">
+                    <div id="payee-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
+                </div>
+                <small class="form-help">Auto-saves payees for faster future entry</small>
             </div>
 
             <div class="form-group">
@@ -501,6 +514,62 @@ require_once '../../includes/header.php';
         margin-top: 0.5rem;
     }
 }
+
+/* Payee Autocomplete Styles */
+.payee-autocomplete-wrapper {
+    position: relative;
+}
+
+.autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: -1px;
+}
+
+.autocomplete-suggestion {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s;
+}
+
+.autocomplete-suggestion:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-suggestion:hover,
+.autocomplete-suggestion.active {
+    background-color: #ebf8ff;
+}
+
+.autocomplete-payee-name {
+    font-weight: 500;
+    color: #2d3748;
+    display: block;
+}
+
+.autocomplete-payee-meta {
+    font-size: 0.75rem;
+    color: #718096;
+    margin-top: 0.25rem;
+}
+
+.autocomplete-empty {
+    padding: 0.75rem 1rem;
+    color: #a0aec0;
+    font-style: italic;
+    text-align: center;
+}
 </style>
 
 <script>
@@ -585,6 +654,7 @@ document.querySelector('.transaction-form').addEventListener('submit', function(
 document.addEventListener('DOMContentLoaded', function() {
     updateFormForType();
     initializeSplitTransaction();
+    initializePayeeAutocomplete();
 });
 
 // Split Transaction Management
@@ -808,6 +878,148 @@ document.querySelector('.transaction-form').addEventListener('submit', function(
         }
     }
 });
+
+// Payee Autocomplete
+function initializePayeeAutocomplete() {
+    const payeeInput = document.getElementById('payee');
+    const suggestionsContainer = document.getElementById('payee-suggestions');
+    let activeIndex = -1;
+    let searchTimeout = null;
+    let currentSuggestions = [];
+
+    // Search payees with debounce
+    payeeInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+
+        if (query.length < 2) {
+            hideSuggestions();
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            searchPayees(query);
+        }, 300);
+    });
+
+    // Keyboard navigation
+    payeeInput.addEventListener('keydown', function(e) {
+        if (!suggestionsContainer.style.display || suggestionsContainer.style.display === 'none') {
+            return;
+        }
+
+        const suggestions = suggestionsContainer.querySelectorAll('.autocomplete-suggestion');
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIndex = Math.min(activeIndex + 1, suggestions.length - 1);
+            updateActiveSuggestion(suggestions);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIndex = Math.max(activeIndex - 1, -1);
+            updateActiveSuggestion(suggestions);
+        } else if (e.key === 'Enter' && activeIndex >= 0) {
+            e.preventDefault();
+            suggestions[activeIndex].click();
+        } else if (e.key === 'Escape') {
+            hideSuggestions();
+        }
+    });
+
+    // Click outside to close
+    document.addEventListener('click', function(e) {
+        if (!payeeInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+
+    function searchPayees(query) {
+        fetch(`/pgbudget/public/api/payees-search.php?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                currentSuggestions = data;
+                displaySuggestions(data);
+            })
+            .catch(error => {
+                console.error('Error searching payees:', error);
+                hideSuggestions();
+            });
+    }
+
+    function displaySuggestions(payees) {
+        activeIndex = -1;
+
+        if (payees.length === 0) {
+            suggestionsContainer.innerHTML = '<div class="autocomplete-empty">No payees found. Type to create new.</div>';
+            suggestionsContainer.style.display = 'block';
+            return;
+        }
+
+        let html = '';
+        payees.forEach((payee, index) => {
+            let meta = [];
+            if (payee.transaction_count > 0) {
+                meta.push(`${payee.transaction_count} transactions`);
+            }
+            if (payee.default_category_name) {
+                meta.push(`Default: ${payee.default_category_name}`);
+            }
+
+            html += `
+                <div class="autocomplete-suggestion" data-index="${index}">
+                    <span class="autocomplete-payee-name">${escapeHtml(payee.name)}</span>
+                    ${meta.length > 0 ? `<div class="autocomplete-payee-meta">${meta.join(' • ')}</div>` : ''}
+                </div>
+            `;
+        });
+
+        suggestionsContainer.innerHTML = html;
+        suggestionsContainer.style.display = 'block';
+
+        // Add click handlers
+        suggestionsContainer.querySelectorAll('.autocomplete-suggestion').forEach((el, index) => {
+            el.addEventListener('click', function() {
+                selectPayee(currentSuggestions[index]);
+            });
+        });
+    }
+
+    function updateActiveSuggestion(suggestions) {
+        suggestions.forEach((el, index) => {
+            if (index === activeIndex) {
+                el.classList.add('active');
+                el.scrollIntoView({ block: 'nearest' });
+            } else {
+                el.classList.remove('active');
+            }
+        });
+    }
+
+    function selectPayee(payee) {
+        payeeInput.value = payee.name;
+        hideSuggestions();
+
+        // Auto-fill category if available and auto_categorize is enabled
+        if (payee.auto_categorize && payee.default_category_uuid) {
+            const categorySelect = document.getElementById('category');
+            if (categorySelect && !categorySelect.value) {
+                categorySelect.value = payee.default_category_uuid;
+            }
+        }
+    }
+
+    function hideSuggestions() {
+        suggestionsContainer.style.display = 'none';
+        suggestionsContainer.innerHTML = '';
+        activeIndex = -1;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+}
 </script>
 
 <?php require_once '../../includes/footer.php'; ?>
