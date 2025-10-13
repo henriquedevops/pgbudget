@@ -52,6 +52,12 @@ try {
     }
     $budget_totals = $stmt->fetch();
 
+    // Get overspent categories (Phase 4.4)
+    $stmt = $db->prepare("SELECT * FROM api.get_overspent_categories(?)");
+    $stmt->execute([$ledger_uuid]);
+    $overspent_categories = $stmt->fetchAll();
+    $total_overspending = array_sum(array_column($overspent_categories, 'overspent_amount'));
+
     // Get recent transactions
     $stmt = $db->prepare("
         SELECT t.uuid, t.date, t.description, t.amount,
@@ -150,6 +156,22 @@ require_once '../../includes/header.php';
         </form>
     </div>
 
+    <!-- Overspending Warning Banner (Phase 4.4) -->
+    <?php if (!empty($overspent_categories)): ?>
+        <div class="overspending-warning-banner">
+            <div class="warning-content">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-text">
+                    <strong>You have <?= count($overspent_categories) ?> overspent categor<?= count($overspent_categories) === 1 ? 'y' : 'ies' ?></strong>
+                    <span>Total overspending: <?= formatCurrency($total_overspending) ?></span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-warning-action" onclick="showCoverOverspendingModal()">
+                Cover Overspending
+            </button>
+        </div>
+    <?php endif; ?>
+
     <!-- Ready to Assign Banner -->
     <?php if ($budget_totals): ?>
         <div class="ready-to-assign-banner <?= $budget_totals['left_to_budget'] > 0 ? 'has-funds' : ($budget_totals['left_to_budget'] < 0 ? 'negative-funds' : 'zero-funds') ?>">
@@ -225,14 +247,26 @@ require_once '../../includes/header.php';
                                         <?= formatCurrency($category['balance']) ?>
                                     </td>
                                     <td class="category-actions-cell">
-                                        <button type="button"
-                                                class="btn btn-small btn-move move-money-btn"
-                                                data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>"
-                                                data-category-name="<?= htmlspecialchars($category['category_name']) ?>"
-                                                title="Move money from this category"
-                                                <?= $category['balance'] <= 0 ? 'disabled' : '' ?>>
-                                            💸 Move
-                                        </button>
+                                        <?php if ($category['balance'] < 0): ?>
+                                            <button type="button"
+                                                    class="btn btn-small cover-overspending-btn"
+                                                    data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>"
+                                                    data-category-name="<?= htmlspecialchars($category['category_name']) ?>"
+                                                    data-overspent-amount="<?= abs($category['balance']) ?>"
+                                                    onclick="showCoverOverspendingModal('<?= htmlspecialchars($category['category_uuid']) ?>', '<?= htmlspecialchars($category['category_name']) ?>', <?= abs($category['balance']) ?>)"
+                                                    title="Cover this overspending">
+                                                🩹 Cover
+                                            </button>
+                                        <?php else: ?>
+                                            <button type="button"
+                                                    class="btn btn-small btn-move move-money-btn"
+                                                    data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>"
+                                                    data-category-name="<?= htmlspecialchars($category['category_name']) ?>"
+                                                    title="Move money from this category"
+                                                    <?= $category['balance'] <= 0 ? 'disabled' : '' ?>>
+                                                💸 Move
+                                            </button>
+                                        <?php endif; ?>
                                         <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $category['category_uuid'] ?>" class="btn btn-small btn-secondary">Assign</a>
                                         <?= renderGoalButton($category['category_uuid'], $category['category_name']) ?>
                                     </td>
@@ -1445,6 +1479,98 @@ require_once '../../includes/header.php';
 
 <!-- Include transfer modal JavaScript (Phase 3.5) -->
 <script src="../js/transfer-modal.js"></script>
+
+<!-- Include cover overspending modal JavaScript (Phase 4.4) -->
+<script src="../js/cover-overspending-modal.js"></script>
+
+<!-- Cover Overspending Modal HTML (Phase 4.4) -->
+<div id="cover-overspending-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🩹 Cover Overspending</h2>
+            <button type="button" class="modal-close" onclick="CoverOverspendingModal.close()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Overspending Summary -->
+            <div class="overspending-summary">
+                <p><strong>Overspent Category:</strong> <span id="cover-overspent-category-name"></span></p>
+                <p><strong>Amount Overspent:</strong> <span id="cover-overspent-amount" class="negative"></span></p>
+            </div>
+
+            <!-- Explanation -->
+            <div class="overspending-explanation">
+                <h4>💡 What is overspending?</h4>
+                <p>When a category balance goes negative, it means you've spent more than you budgeted for that category. You need to cover this overspending by moving money from another category.</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="cover-error" class="notification-error" style="display: none; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 4px;"></div>
+
+            <!-- Success Message -->
+            <div id="cover-success" class="notification-success" style="display: none; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 4px;"></div>
+
+            <form id="cover-overspending-form">
+                <!-- Source Category -->
+                <div class="form-group">
+                    <label for="cover-source-category" class="form-label">
+                        Cover from Category *
+                        <span class="info-tooltip" title="Select a category with available budget to cover the overspending">ℹ️</span>
+                    </label>
+                    <select id="cover-source-category" class="form-select" required>
+                        <option value="">Select a category...</option>
+                    </select>
+                    <span class="form-help">Choose a category with available budget</span>
+                </div>
+
+                <!-- Amount (optional, defaults to full overspent amount) -->
+                <div class="form-group">
+                    <label for="cover-amount" class="form-label">
+                        Amount to Cover
+                        <span class="info-tooltip" title="Defaults to full overspent amount. You can cover partially if needed.">ℹ️</span>
+                    </label>
+                    <input type="text" id="cover-amount" class="form-input" placeholder="0.00">
+                    <span class="form-help">Leave blank to cover the full overspent amount</span>
+                </div>
+
+                <!-- Visual Summary -->
+                <div id="cover-visual-summary" style="display: none; background: #f7fafc; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 0.875rem; color: #718096; margin-bottom: 0.5rem;">Moving Budget</div>
+                        <div style="font-size: 2rem; font-weight: bold; color: #2b6cb0;" id="cover-visual-amount"></div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                        <div style="flex: 1; text-align: right;">
+                            <div style="font-size: 0.75rem; color: #718096; margin-bottom: 0.25rem;">From</div>
+                            <div style="font-weight: 600; color: #2d3748;" id="cover-visual-from"></div>
+                        </div>
+                        <div style="font-size: 2rem; color: #3182ce;">→</div>
+                        <div style="flex: 1; text-align: left;">
+                            <div style="font-size: 0.75rem; color: #718096; margin-bottom: 0.25rem;">To</div>
+                            <div style="font-weight: 600; color: #2d3748;" id="cover-visual-to"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="CoverOverspendingModal.close()">Cancel</button>
+                    <button type="submit" id="cover-submit-btn" class="btn btn-success">Cover Overspending</button>
+                </div>
+            </form>
+
+            <!-- Help Section -->
+            <div class="info-box info-warning" style="margin-top: 1.5rem;">
+                <p><strong>How it works:</strong></p>
+                <ul>
+                    <li>Select a category with available budget to pull money from</li>
+                    <li>Budget will be moved to cover the overspending</li>
+                    <li>This creates a budget adjustment transaction</li>
+                    <li>Your spending transactions remain unchanged</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Transfer Modal HTML -->
 <div id="transfer-modal" class="modal-backdrop" style="display: none;">
