@@ -142,6 +142,9 @@ require_once '../../includes/header.php';
                                         <td class="account-actions">
                                             <a href="../transactions/account.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-secondary">View</a>
                                             <a href="balance-history.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-info" title="Balance History">📊</a>
+                                            <?php if ($account['account_type'] === 'asset' || $account['account_type'] === 'liability'): ?>
+                                                <a href="reconcile.php?account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-warning" title="Reconcile Account">⚖️ Reconcile</a>
+                                            <?php endif; ?>
                                             <?php if ($account['account_type'] === 'liability'): ?>
                                                 <button class="btn btn-small btn-success pay-cc-btn"
                                                         data-cc-uuid="<?= $account['account_uuid'] ?>"
@@ -574,6 +577,16 @@ require_once '../../includes/header.php';
 
 .btn-success:hover {
     background-color: #38a169;
+}
+
+.btn-warning {
+    background-color: #f6ad55;
+    color: #744210;
+}
+
+.btn-warning:hover {
+    background-color: #ed8936;
+    color: white;
 }
 </style>
 
