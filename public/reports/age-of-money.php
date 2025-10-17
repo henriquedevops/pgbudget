@@ -191,8 +191,8 @@ if (!$ledger) {
                 try {
                     // Fetch current AOM and trend data in parallel
                     const [currentResponse, trendResponse] = await Promise.all([
-                        fetch(`/api/get-age-of-money.php?action=current&ledger=${this.ledgerUuid}`),
-                        fetch(`/api/get-age-of-money.php?action=trend&ledger=${this.ledgerUuid}&days=${this.days}`)
+                        fetch(`../api/get-age-of-money.php?action=current&ledger=${this.ledgerUuid}`),
+                        fetch(`../api/get-age-of-money.php?action=trend&ledger=${this.ledgerUuid}&days=${this.days}`)
                     ]);
 
                     if (!currentResponse.ok || !trendResponse.ok) {
@@ -378,7 +378,7 @@ if (!$ledger) {
             },
 
             exportCSV() {
-                window.location.href = `/api/get-age-of-money.php?action=csv&ledger=${this.ledgerUuid}&days=${this.days}`;
+                window.location.href = `../api/get-age-of-money.php?action=csv&ledger=${this.ledgerUuid}&days=${this.days}`;
             },
 
             getStatusText(status) {
