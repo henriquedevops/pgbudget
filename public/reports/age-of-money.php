@@ -9,7 +9,7 @@ requireAuth();
 $ledger_uuid = $_GET['ledger'] ?? '';
 
 if (empty($ledger_uuid)) {
-    header('Location: /budget/dashboard.php');
+    header('Location: ../budget/dashboard.php');
     exit;
 }
 
@@ -26,7 +26,7 @@ $stmt->execute([$ledger_uuid]);
 $ledger = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$ledger) {
-    header('Location: /budget/dashboard.php');
+    header('Location: ../budget/dashboard.php');
     exit;
 }
 ?>
@@ -36,8 +36,8 @@ if (!$ledger) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Age of Money - <?= htmlspecialchars($ledger['name']) ?></title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/reports.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/reports.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -46,7 +46,7 @@ if (!$ledger) {
             <div class="report-header-top">
                 <h1>Age of Money</h1>
                 <div class="report-actions">
-                    <a href="/budget/dashboard.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">← Back to Dashboard</a>
+                    <a href="../budget/dashboard.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">← Back to Dashboard</a>
                 </div>
             </div>
             <p class="report-subtitle"><?= htmlspecialchars($ledger['name']) ?></p>
