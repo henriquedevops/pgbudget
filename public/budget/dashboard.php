@@ -372,6 +372,7 @@ require_once '../../includes/header.php';
                     <a href="../reports/spending-by-category.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📊 Spending by Category</a>
                     <a href="../reports/income-vs-expense.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">💰 Income vs Expense</a>
                     <a href="../reports/net-worth.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📊 Net Worth</a>
+                    <a href="../reports/category-trends.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📈 Category Trends</a>
                 </div>
             </div>
         </div>
