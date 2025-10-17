@@ -369,6 +369,9 @@ require_once '../../includes/header.php';
                     <a href="../transactions/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">All Transactions</a>
                     <a href="../recurring/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">🔄 Recurring Transactions</a>
                     <a href="../reports/budget.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">Budget Report</a>
+                    <a href="../reports/spending-by-category.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📊 Spending by Category</a>
+                    <a href="../reports/income-vs-expense.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">💰 Income vs Expense</a>
+                    <a href="../reports/net-worth.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📊 Net Worth</a>
                 </div>
             </div>
         </div>
