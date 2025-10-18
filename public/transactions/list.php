@@ -13,6 +13,9 @@ $category_filter = $_GET['category'] ?? '';
 $type_filter = $_GET['type'] ?? '';
 $date_from = $_GET['date_from'] ?? '';
 $date_to = $_GET['date_to'] ?? '';
+$amount_min = $_GET['amount_min'] ?? '';
+$amount_max = $_GET['amount_max'] ?? '';
+$sort_by = $_GET['sort_by'] ?? 'date_desc';
 $page = max(1, intval($_GET['page'] ?? 1));
 $per_page = 50;
 $offset = ($page - 1) * $per_page;
@@ -87,7 +90,30 @@ try {
         $params[] = $date_to;
     }
 
+    // Amount range filter (convert to cents)
+    if (!empty($amount_min)) {
+        $min_cents = floatval($amount_min) * 100;
+        $where_conditions[] = "t.amount >= ?";
+        $params[] = $min_cents;
+    }
+
+    if (!empty($amount_max)) {
+        $max_cents = floatval($amount_max) * 100;
+        $where_conditions[] = "t.amount <= ?";
+        $params[] = $max_cents;
+    }
+
     $where_clause = implode(" AND ", $where_conditions);
+
+    // Determine sort order
+    $order_by = match($sort_by) {
+        'date_asc' => 'ORDER BY t.date ASC, t.created_at ASC',
+        'date_desc' => 'ORDER BY t.date DESC, t.created_at DESC',
+        'amount_asc' => 'ORDER BY t.amount ASC, t.date DESC',
+        'amount_desc' => 'ORDER BY t.amount DESC, t.date DESC',
+        'description' => 'ORDER BY t.description ASC, t.date DESC',
+        default => 'ORDER BY t.date DESC, t.created_at DESC'
+    };
 
     // Get total count for pagination
     $count_query = "
@@ -117,7 +143,7 @@ try {
         JOIN data.accounts ca ON t.credit_account_id = ca.id
         JOIN data.ledgers l ON t.ledger_id = l.id
         WHERE $where_clause AND t.deleted_at IS NULL
-        ORDER BY t.date DESC, t.created_at DESC
+        $order_by
         LIMIT ? OFFSET ?
     ";
     $stmt = $db->prepare($transactions_query);
@@ -203,6 +229,41 @@ try {
                 </div>
             </div>
 
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label for="amount_min">Min Amount ($)</label>
+                    <input type="number"
+                           id="amount_min"
+                           name="amount_min"
+                           step="0.01"
+                           min="0"
+                           value="<?= htmlspecialchars($amount_min) ?>"
+                           placeholder="0.00">
+                </div>
+
+                <div class="filter-group">
+                    <label for="amount_max">Max Amount ($)</label>
+                    <input type="number"
+                           id="amount_max"
+                           name="amount_max"
+                           step="0.01"
+                           min="0"
+                           value="<?= htmlspecialchars($amount_max) ?>"
+                           placeholder="0.00">
+                </div>
+
+                <div class="filter-group">
+                    <label for="sort_by">Sort By</label>
+                    <select id="sort_by" name="sort_by">
+                        <option value="date_desc" <?= $sort_by === 'date_desc' ? 'selected' : '' ?>>Date (Newest First)</option>
+                        <option value="date_asc" <?= $sort_by === 'date_asc' ? 'selected' : '' ?>>Date (Oldest First)</option>
+                        <option value="amount_desc" <?= $sort_by === 'amount_desc' ? 'selected' : '' ?>>Amount (High to Low)</option>
+                        <option value="amount_asc" <?= $sort_by === 'amount_asc' ? 'selected' : '' ?>>Amount (Low to High)</option>
+                        <option value="description" <?= $sort_by === 'description' ? 'selected' : '' ?>>Description (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="filters-actions">
                 <button type="submit" class="btn btn-primary">Apply Filters</button>
                 <a href="list.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">Clear All</a>
@@ -228,7 +289,7 @@ try {
     <?php if (empty($transactions)): ?>
         <div class="empty-state">
             <h3>No transactions found</h3>
-            <?php if (!empty($search) || !empty($account_filter) || !empty($category_filter) || !empty($type_filter) || !empty($date_from) || !empty($date_to)): ?>
+            <?php if (!empty($search) || !empty($account_filter) || !empty($category_filter) || !empty($type_filter) || !empty($date_from) || !empty($date_to) || !empty($amount_min) || !empty($amount_max)): ?>
                 <p>No transactions match your current filters. Try adjusting your search criteria.</p>
                 <a href="list.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">Clear Filters</a>
             <?php else: ?>
@@ -560,6 +621,32 @@ try {
     border-color: #2c5aa0;
 }
 
+/* Filter Summary Banner */
+.filter-summary-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.filter-summary-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-summary-label {
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.filter-summary-text {
+    opacity: 0.95;
+}
+
 @media (max-width: 768px) {
     .filters-row {
         grid-template-columns: 1fr;
@@ -592,7 +679,15 @@ try {
         flex-direction: column;
         gap: 0.5rem;
     }
+
+    .filter-summary-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 </style>
+
+<!-- Include search-filter JavaScript -->
+<script src="../js/search-filter.js"></script>
 
 <?php require_once '../../includes/footer.php'; ?>
