@@ -1,0 +1,474 @@
+/**
+ * Undo Functionality CSS
+ * Phase 6.6: Styles for undo/redo UI
+ */
+
+/* ============================================
+   UNDO/REDO BUTTONS IN NAVBAR
+   ============================================ */
+
+.undo-redo-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.undo-btn,
+.redo-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.undo-btn:hover:not(:disabled),
+.redo-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.undo-btn:disabled,
+.redo-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.undo-btn .icon,
+.redo-btn .icon {
+    font-size: 16px;
+}
+
+/* Undo count badge */
+.undo-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #e53e3e;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* ============================================
+   UNDO NOTIFICATIONS
+   ============================================ */
+
+.undo-notification {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    background: #2d3748;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10002;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.undo-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.undo-notification-info {
+    background: #3182ce;
+}
+
+.undo-notification-success {
+    background: #38a169;
+}
+
+.undo-notification-error {
+    background: #e53e3e;
+}
+
+.undo-notification::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.undo-notification-info::before {
+    content: 'ℹ️';
+}
+
+.undo-notification-success::before {
+    content: '✓';
+    font-weight: bold;
+}
+
+.undo-notification-error::before {
+    content: '✕';
+    font-weight: bold;
+}
+
+/* ============================================
+   ACTION HISTORY PAGE
+   ============================================ */
+
+.action-history-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.action-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.action-history-header h1 {
+    font-size: 2rem;
+    color: #2d3748;
+}
+
+.action-history-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.action-history-list {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.action-history-item {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.action-history-item:hover {
+    background-color: #f7fafc;
+}
+
+.action-history-item:last-child {
+    border-bottom: none;
+}
+
+.action-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.action-icon.create {
+    background: #38a169;
+}
+
+.action-icon.update {
+    background: #3182ce;
+}
+
+.action-icon.delete {
+    background: #e53e3e;
+}
+
+.action-icon.assign {
+    background: #805ad5;
+}
+
+.action-icon.move {
+    background: #ed8936;
+}
+
+.action-details {
+    flex: 1;
+}
+
+.action-description {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.25rem;
+}
+
+.action-meta {
+    font-size: 14px;
+    color: #718096;
+}
+
+.action-time {
+    font-size: 14px;
+    color: #a0aec0;
+    text-align: right;
+}
+
+.action-data-preview {
+    grid-column: 2 / -1;
+    background: #f7fafc;
+    padding: 1rem;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #4a5568;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.action-history-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #718096;
+}
+
+.action-history-empty .icon {
+    font-size: 64px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.action-history-empty h3 {
+    font-size: 1.5rem;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.action-history-empty p {
+    color: #718096;
+}
+
+/* ============================================
+   UNDO BAR (TOAST-STYLE)
+   ============================================ */
+
+.undo-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #2d3748;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    z-index: 10001;
+    transition: transform 0.3s;
+}
+
+.undo-bar.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.undo-bar-message {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.undo-bar-action {
+    background: #3182ce;
+    border: none;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.undo-bar-action:hover {
+    background: #2c5aa0;
+}
+
+.undo-bar-close {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.undo-bar-close:hover {
+    opacity: 1;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .undo-redo-controls {
+        gap: 0.25rem;
+    }
+
+    .undo-btn,
+    .redo-btn {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    .undo-btn .label,
+    .redo-btn .label {
+        display: none; /* Hide text on mobile, keep icon */
+    }
+
+    .undo-notification {
+        bottom: 90px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+
+    .action-history-item {
+        grid-template-columns: 40px 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .action-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    .action-time {
+        grid-column: 2;
+        text-align: left;
+        font-size: 12px;
+    }
+
+    .action-data-preview {
+        grid-column: 1 / -1;
+        font-size: 11px;
+    }
+
+    .undo-bar {
+        left: 10px;
+        right: 10px;
+        transform: translateX(0) translateY(100px);
+    }
+
+    .undo-bar.show {
+        transform: translateX(0) translateY(0);
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .undo-redo-controls,
+    .undo-notification,
+    .undo-bar {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    .action-history-list {
+        background: #2d3748;
+    }
+
+    .action-history-item {
+        border-bottom-color: #4a5568;
+    }
+
+    .action-history-item:hover {
+        background-color: #374151;
+    }
+
+    .action-description {
+        color: #f7fafc;
+    }
+
+    .action-meta,
+    .action-time {
+        color: #cbd5e0;
+    }
+
+    .action-data-preview {
+        background: #1a202c;
+        color: #cbd5e0;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.undo-btn:focus,
+.redo-btn:focus {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .undo-btn,
+    .redo-btn {
+        border-width: 2px;
+    }
+
+    .undo-notification {
+        border: 2px solid white;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .undo-notification,
+    .undo-bar {
+        transition: opacity 0.1s;
+    }
+
+    .action-history-item {
+        transition: none;
+    }
+}

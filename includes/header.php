@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="/pgbudget/css/style.css">
     <link rel="stylesheet" href="/pgbudget/css/mobile.css">
     <link rel="stylesheet" href="/pgbudget/css/keyboard-shortcuts.css">
+    <link rel="stylesheet" href="/pgbudget/css/undo.css">
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/pgbudget/images/icon-192x192.png">
@@ -55,6 +56,22 @@
         <div class="nav-container">
             <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
             <a href="/pgbudget/" class="nav-logo">💰 PgBudget</a>
+
+            <?php if (isset($_SESSION['user_id'])): ?>
+            <!-- Undo/Redo Controls -->
+            <div class="undo-redo-controls">
+                <button id="undo-btn" class="undo-btn" onclick="window.undoManager?.undo()" disabled title="Nothing to undo">
+                    <span class="icon">↩️</span>
+                    <span class="label">Undo</span>
+                    <span id="undo-count" class="undo-count" style="display: none;">0</span>
+                </button>
+                <button id="redo-btn" class="redo-btn" onclick="window.undoManager?.redo()" disabled title="Nothing to redo">
+                    <span class="icon">↪️</span>
+                    <span class="label">Redo</span>
+                </button>
+            </div>
+            <?php endif; ?>
+
             <?php if (isset($_SESSION['user_id']) && (isset($_GET['ledger']) || isset($ledger_uuid))): ?>
                 <div class="nav-search">
                     <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
