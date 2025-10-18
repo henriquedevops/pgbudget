@@ -40,8 +40,8 @@ BEGIN
     -- Delete recurring transactions
     DELETE FROM data.recurring_transactions WHERE ledger_id = v_ledger_id;
 
-    -- Delete account balances
-    DELETE FROM data.account_balances WHERE ledger_id = v_ledger_id;
+    -- Note: account_balances is a VIEW, not a table, so we don't delete from it
+    -- The underlying data will be cleaned up when we delete transactions and accounts
 
     -- Delete transactions (this should cascade to splits if properly configured)
     DELETE FROM data.transactions WHERE ledger_id = v_ledger_id;
