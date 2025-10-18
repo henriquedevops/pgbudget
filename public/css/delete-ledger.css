@@ -1,0 +1,301 @@
+/**
+ * Delete Ledger Modal Styles
+ * Styles for the budget deletion confirmation modal
+ */
+
+.delete-ledger-modal {
+    max-width: 600px;
+}
+
+.delete-ledger-modal .modal-body {
+    padding: 30px;
+}
+
+/* Warning Message */
+.warning-message {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.warning-icon {
+    font-size: 48px;
+    flex-shrink: 0;
+}
+
+.warning-content h3 {
+    color: #991b1b;
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.warning-content p {
+    color: #7f1d1d;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.warning-content ul {
+    margin: 10px 0 0 20px;
+    padding: 0;
+    color: #7f1d1d;
+}
+
+.warning-content li {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Confirmation Section */
+.confirmation-section {
+    margin-bottom: 20px;
+}
+
+.confirmation-section p {
+    margin: 10px 0;
+    color: #374151;
+    font-size: 14px;
+}
+
+.ledger-name-display {
+    font-weight: 700;
+    color: #dc2626;
+    background: #fee2e2;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.delete-confirmation-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.delete-confirmation-input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Error Message */
+.delete-ledger-modal .error-message {
+    padding: 12px 16px;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    color: #991b1b;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.modal-actions button {
+    flex: 1;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-actions button:active {
+    transform: scale(0.98);
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+.btn-danger:disabled {
+    background: #fca5a5;
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.6;
+}
+
+/* Delete Button on Ledger Cards */
+.ledger-card .btn-delete {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    padding: 8px 16px;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.ledger-card .btn-delete:hover {
+    background: #fecaca;
+    border-color: #fca5a5;
+}
+
+/* Success Notification */
+.delete-success-notification {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    background: #10b981;
+    color: white;
+    padding: 20px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10003;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    max-width: 400px;
+}
+
+.delete-success-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.delete-success-notification .success-icon {
+    font-size: 32px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.delete-success-notification .success-content strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.delete-success-notification .success-content p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.95;
+}
+
+.delete-success-notification .success-content small {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+/* Loading Spinner */
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .delete-ledger-modal {
+        max-width: 95%;
+        margin: 20px auto;
+    }
+
+    .delete-ledger-modal .modal-body {
+        padding: 20px;
+    }
+
+    .warning-message {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .warning-icon {
+        font-size: 36px;
+        text-align: center;
+    }
+
+    .modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .modal-actions button {
+        width: 100%;
+    }
+
+    .delete-success-notification {
+        bottom: 80px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .confirmation-section p {
+        color: #d1d5db;
+    }
+
+    .delete-confirmation-input {
+        background: #1f2937;
+        color: #f9fafb;
+        border-color: #374151;
+    }
+
+    .delete-confirmation-input:focus {
+        border-color: #dc2626;
+    }
+}
+
+/* Accessibility */
+.btn-danger:focus,
+.delete-confirmation-input:focus {
+    outline: 2px solid #dc2626;
+    outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .warning-message {
+        border-width: 3px;
+    }
+
+    .delete-confirmation-input {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .delete-success-notification {
+        transition: opacity 0.1s;
+    }
+
+    .modal-actions button:active {
+        transform: none;
+    }
+}
