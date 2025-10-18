@@ -33,6 +33,20 @@
     <nav class="navbar">
         <div class="nav-container">
             <a href="/pgbudget/" class="nav-logo">💰 PgBudget</a>
+            <?php if (isset($_SESSION['user_id']) && (isset($_GET['ledger']) || isset($ledger_uuid))): ?>
+                <div class="nav-search">
+                    <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
+                    <form action="/pgbudget/search/" method="GET" class="nav-search-form">
+                        <input type="hidden" name="ledger" value="<?= htmlspecialchars($current_ledger) ?>">
+                        <input type="text"
+                               name="q"
+                               class="nav-search-input"
+                               placeholder="Search..."
+                               title="Press / to focus (Ctrl+K)">
+                        <button type="submit" class="nav-search-btn" title="Search">🔍</button>
+                    </form>
+                </div>
+            <?php endif; ?>
             <ul class="nav-menu">
                 <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] !== 'demo_user'): ?>
                     <li class="nav-item">
