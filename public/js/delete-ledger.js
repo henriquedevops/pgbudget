@@ -56,12 +56,12 @@ class DeleteLedgerManager {
 
                         <div class="confirmation-section">
                             <p><strong>Budget to delete:</strong> <span id="delete-ledger-name" class="ledger-name-display"></span></p>
-                            <p>Type <strong>DELETE</strong> to confirm:</p>
+                            <p>Type <strong>DELETE</strong> to confirm (case-insensitive):</p>
                             <input
                                 type="text"
                                 id="delete-confirmation-input"
                                 class="delete-confirmation-input"
-                                placeholder="Type DELETE here"
+                                placeholder="Type delete here"
                                 autocomplete="off"
                             >
                         </div>
@@ -115,7 +115,8 @@ class DeleteLedgerManager {
             if (e.target.id === 'delete-confirmation-input') {
                 const confirmBtn = document.getElementById('confirm-delete-btn');
                 if (confirmBtn) {
-                    if (e.target.value === 'DELETE') {
+                    // Case-insensitive comparison
+                    if (e.target.value.toUpperCase() === 'DELETE') {
                         confirmBtn.disabled = false;
                     } else {
                         confirmBtn.disabled = true;
