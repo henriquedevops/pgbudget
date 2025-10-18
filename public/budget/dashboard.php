@@ -1482,8 +1482,7 @@ require_once '../../includes/header.php';
 <!-- Include quick fund goals JavaScript (Phase 2.5) -->
 <script src="../js/quick-fund-goals.js"></script>
 
-<!-- Include transfer modal JavaScript (Phase 3.5) -->
-<script src="../js/transfer-modal.js"></script>
+<!-- Transfer modal JavaScript is included in footer.php -->
 
 <!-- Include cover overspending modal JavaScript (Phase 4.4) -->
 <script src="../js/cover-overspending-modal.js"></script>
