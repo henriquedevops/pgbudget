@@ -1,0 +1,652 @@
+/**
+ * Mobile Optimization CSS
+ * Phase 6.5: Mobile-first responsive improvements
+ * Touch-friendly interface for mobile devices
+ */
+
+/* ============================================
+   MOBILE-FIRST BASE STYLES
+   ============================================ */
+
+/* Touch-friendly tap targets (min 44px) */
+@media (max-width: 768px) {
+    /* Buttons and links */
+    .btn,
+    button,
+    a.nav-link,
+    input[type="submit"],
+    input[type="button"] {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 16px;
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+
+    /* Form inputs */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="tel"],
+    select,
+    textarea {
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        border-radius: 8px;
+    }
+
+    /* Checkbox and radio buttons */
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-width: 24px;
+        min-height: 24px;
+        cursor: pointer;
+    }
+
+    /* Table action buttons */
+    .actions-cell a,
+    .actions-cell button {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* ============================================
+   MOBILE NAVIGATION
+   ============================================ */
+
+/* Hamburger menu button */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    /* Hide desktop menu by default on mobile */
+    .nav-menu {
+        display: none;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: #2d3748;
+        flex-direction: column;
+        padding: 1rem 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
+    }
+
+    .nav-menu.active {
+        display: flex;
+    }
+
+    .nav-item {
+        width: 100%;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-link,
+    .nav-user {
+        display: block;
+        padding: 16px 24px;
+        width: 100%;
+        text-align: left;
+    }
+
+    /* Navigation container adjustments */
+    .nav-container {
+        padding: 0 16px;
+    }
+
+    /* Search on mobile */
+    .nav-search {
+        display: none; /* Hide in nav, show in separate mobile search */
+    }
+}
+
+/* Bottom navigation bar for mobile */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    padding: 8px 0;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    /* Add padding to main content to account for bottom nav */
+    .main-content {
+        padding-bottom: 80px;
+    }
+
+    /* Add padding to bulk action bar to appear above bottom nav */
+    #bulk-action-bar {
+        bottom: 70px;
+    }
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #718096;
+    font-size: 12px;
+    padding: 8px 12px;
+    min-width: 60px;
+    transition: color 0.2s;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item.active {
+    color: #3182ce;
+}
+
+.mobile-nav-item .icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+/* ============================================
+   SWIPE GESTURES
+   ============================================ */
+
+.swipeable {
+    position: relative;
+    transition: transform 0.3s ease;
+    touch-action: pan-y; /* Allow vertical scrolling but enable horizontal swipe */
+}
+
+.swipeable.swiping {
+    transition: none;
+}
+
+/* Swipe action buttons (revealed on swipe) */
+.swipe-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    transform: translateX(100%);
+}
+
+.swipe-actions-left {
+    left: 0;
+    right: auto;
+    transform: translateX(-100%);
+}
+
+.swipe-action-btn {
+    height: 100%;
+    padding: 0 20px;
+    border: none;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    transition: background-color 0.2s;
+}
+
+.swipe-action-btn.edit {
+    background: #3182ce;
+}
+
+.swipe-action-btn.edit:hover {
+    background: #2c5aa0;
+}
+
+.swipe-action-btn.delete {
+    background: #e53e3e;
+}
+
+.swipe-action-btn.delete:hover {
+    background: #c53030;
+}
+
+.swipe-action-btn.clear {
+    background: #48bb78;
+}
+
+.swipe-action-btn.clear:hover {
+    background: #38a169;
+}
+
+/* ============================================
+   MOBILE TABLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Make tables scrollable horizontally */
+    .transactions-table {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Card layout for transactions on mobile */
+    .transactions-table.mobile-cards table {
+        display: block;
+    }
+
+    .transactions-table.mobile-cards thead {
+        display: none;
+    }
+
+    .transactions-table.mobile-cards tbody {
+        display: block;
+    }
+
+    .transactions-table.mobile-cards tr {
+        display: block;
+        margin-bottom: 16px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .transactions-table.mobile-cards td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border: none;
+        border-bottom: 1px solid #f7fafc;
+    }
+
+    .transactions-table.mobile-cards td:last-child {
+        border-bottom: none;
+    }
+
+    .transactions-table.mobile-cards td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #4a5568;
+        margin-right: 16px;
+    }
+}
+
+/* ============================================
+   MOBILE FORMS
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Full-width form groups */
+    .form-group,
+    .filter-group {
+        width: 100%;
+    }
+
+    /* Stack form rows vertically */
+    .form-row,
+    .filters-row {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    /* Larger touch targets for select dropdowns */
+    select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        padding-right: 44px;
+    }
+
+    /* Date pickers */
+    input[type="date"] {
+        min-height: 44px;
+    }
+
+    /* Number inputs with steppers */
+    input[type="number"] {
+        min-height: 44px;
+    }
+
+    /* Textareas */
+    textarea {
+        min-height: 120px;
+    }
+}
+
+/* ============================================
+   MOBILE MODALS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .modal-content,
+    .bulk-modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 16px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .modal-footer,
+    .bulk-modal-footer {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .modal-footer button,
+    .bulk-modal-footer button {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   PULL-TO-REFRESH
+   ============================================ */
+
+.pull-to-refresh {
+    position: relative;
+}
+
+.pull-to-refresh-indicator {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    color: #3182ce;
+    opacity: 0;
+    transition: opacity 0.3s, top 0.3s;
+}
+
+.pull-to-refresh.pulling .pull-to-refresh-indicator {
+    opacity: 1;
+    top: 0;
+}
+
+.pull-to-refresh-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #3182ce;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   MOBILE BUDGET DASHBOARD
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Budget header */
+    .budget-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .budget-summary {
+        width: 100%;
+    }
+
+    .budget-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Budget categories - make scrollable */
+    .budget-categories {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Category cards on mobile */
+    .category-item {
+        min-width: 280px;
+    }
+
+    /* Sticky budget totals */
+    .budget-totals {
+        position: sticky;
+        top: 60px;
+        z-index: 100;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* ============================================
+   MOBILE SEARCH
+   ============================================ */
+
+@media (max-width: 768px) {
+    .mobile-search-overlay {
+        display: none;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 999;
+    }
+
+    .mobile-search-overlay.active {
+        display: block;
+    }
+
+    .mobile-search-input {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+}
+
+/* ============================================
+   TOUCH FEEDBACK
+   ============================================ */
+
+/* Add visual feedback for touch interactions */
+@media (max-width: 768px) {
+    .btn:active,
+    button:active,
+    a:active {
+        transform: scale(0.97);
+        opacity: 0.8;
+    }
+
+    /* Ripple effect container */
+    .ripple {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ripple::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .ripple:active::after {
+        width: 300px;
+        height: 300px;
+    }
+}
+
+/* ============================================
+   LANDSCAPE ORIENTATION
+   ============================================ */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    /* Adjust bottom nav for landscape */
+    .mobile-bottom-nav {
+        padding: 4px 0;
+    }
+
+    .mobile-nav-item {
+        padding: 4px 8px;
+    }
+
+    .mobile-nav-item .icon {
+        font-size: 20px;
+    }
+
+    /* Reduce modal height in landscape */
+    .modal-content,
+    .bulk-modal-content {
+        max-height: 80vh;
+    }
+}
+
+/* ============================================
+   TABLET OPTIMIZATIONS (768px - 1024px)
+   ============================================ */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* Show desktop menu but optimize spacing */
+    .nav-menu {
+        gap: 12px;
+    }
+
+    .nav-link {
+        padding: 8px 12px;
+    }
+
+    /* Two-column forms */
+    .form-row,
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    /* Optimize table spacing */
+    .transactions-table th,
+    .transactions-table td {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* Focus indicators for keyboard navigation */
+@media (max-width: 768px) {
+    *:focus {
+        outline: 2px solid #3182ce;
+        outline-offset: 2px;
+    }
+
+    /* Skip to content link for screen readers */
+    .skip-to-content {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: #3182ce;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        z-index: 9999;
+    }
+
+    .skip-to-content:focus {
+        top: 0;
+    }
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Hardware acceleration for animations */
+.swipeable,
+.mobile-bottom-nav,
+.mobile-menu-toggle,
+.pull-to-refresh-indicator {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .swipeable {
+        transition: none !important;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .mobile-bottom-nav,
+    .mobile-menu-toggle,
+    .swipe-actions,
+    #bulk-action-bar {
+        display: none !important;
+    }
+}
