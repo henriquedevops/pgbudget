@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="/pgbudget/css/mobile.css">
     <link rel="stylesheet" href="/pgbudget/css/keyboard-shortcuts.css">
     <link rel="stylesheet" href="/pgbudget/css/undo.css">
+    <link rel="stylesheet" href="/pgbudget/css/delete-ledger.css">
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/pgbudget/images/icon-192x192.png">
