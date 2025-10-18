@@ -14,10 +14,17 @@ class DeleteLedgerManager {
     init() {
         // Create modal if it doesn't exist
         if (!document.getElementById('delete-ledger-modal')) {
+            console.log('Creating delete modal...');
             this.createModal();
         }
 
         this.modal = document.getElementById('delete-ledger-modal');
+        console.log('Modal element:', this.modal);
+
+        if (!this.modal) {
+            console.error('CRITICAL: Modal element not found after creation!');
+        }
+
         this.attachEventListeners();
         this.attachDeleteButtonListeners();
     }
@@ -172,6 +179,13 @@ class DeleteLedgerManager {
         if (this.modal) {
             this.modal.style.display = 'flex';
             console.log('Modal displayed');
+            console.log('Modal styles:', {
+                display: this.modal.style.display,
+                position: window.getComputedStyle(this.modal).position,
+                zIndex: window.getComputedStyle(this.modal).zIndex,
+                visibility: window.getComputedStyle(this.modal).visibility
+            });
+            console.log('Modal in DOM:', document.body.contains(this.modal));
         } else {
             console.error('Modal element not found!');
         }
