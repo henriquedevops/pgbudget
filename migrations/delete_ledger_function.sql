@@ -56,9 +56,9 @@ BEGIN
 
     -- Delete accounts (including special accounts since we're deleting the entire ledger)
     -- Temporarily disable the trigger that prevents deletion of special accounts
-    ALTER TABLE data.accounts DISABLE TRIGGER prevent_special_account_deletion_trigger;
+    ALTER TABLE data.accounts DISABLE TRIGGER trigger_prevent_special_account_deletion;
     DELETE FROM data.accounts WHERE ledger_id = v_ledger_id;
-    ALTER TABLE data.accounts ENABLE TRIGGER prevent_special_account_deletion_trigger;
+    ALTER TABLE data.accounts ENABLE TRIGGER trigger_prevent_special_account_deletion;
 
     -- Delete loans if they exist
     DELETE FROM data.loans WHERE ledger_id = v_ledger_id;
