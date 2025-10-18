@@ -1,0 +1,348 @@
+/**
+ * Keyboard Shortcuts CSS
+ * Phase 6.4: Visual styles for keyboard navigation
+ */
+
+/* ============================================
+   KEYBOARD SELECTION HIGHLIGHT
+   ============================================ */
+
+.keyboard-selected {
+    outline: 3px solid #3182ce !important;
+    outline-offset: 2px;
+    background-color: #ebf8ff !important;
+    position: relative;
+    z-index: 10;
+}
+
+.keyboard-selected::before {
+    content: '▶';
+    position: absolute;
+    left: -20px;
+    color: #3182ce;
+    font-size: 14px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ============================================
+   SHORTCUT FEEDBACK NOTIFICATION
+   ============================================ */
+
+.shortcut-feedback {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: #2d3748;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10001;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+}
+
+.shortcut-feedback.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ============================================
+   KEYBOARD SHORTCUTS HELP MODAL
+   ============================================ */
+
+.keyboard-shortcuts-modal {
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.keyboard-shortcuts-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+.keyboard-shortcuts-modal .modal-header h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: #2d3748;
+}
+
+.keyboard-shortcuts-modal .modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #718096;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.keyboard-shortcuts-modal .modal-close:hover {
+    background: #f7fafc;
+    color: #2d3748;
+}
+
+.shortcut-category {
+    margin-bottom: 2rem;
+}
+
+.shortcut-category h3 {
+    font-size: 1.25rem;
+    color: #2d3748;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.shortcut-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.shortcut-item:hover {
+    background-color: #f7fafc;
+}
+
+.shortcut-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(to bottom, #ffffff, #f7fafc);
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+    min-width: 100px;
+    justify-content: center;
+    text-align: center;
+}
+
+.shortcut-desc {
+    color: #4a5568;
+    font-size: 15px;
+    flex: 1;
+}
+
+/* ============================================
+   KBD ELEMENT STYLING (INLINE SHORTCUTS)
+   ============================================ */
+
+kbd {
+    display: inline-block;
+    background: linear-gradient(to bottom, #ffffff, #f7fafc);
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2d3748;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+}
+
+/* ============================================
+   SHORTCUT HINTS ON BUTTONS
+   ============================================ */
+
+.btn[data-shortcut]::after,
+.nav-link[data-shortcut]::after {
+    content: attr(data-shortcut);
+    margin-left: 8px;
+    opacity: 0.6;
+    font-size: 0.85em;
+    font-family: 'Courier New', monospace;
+}
+
+/* Shortcut badge */
+.shortcut-badge {
+    display: inline-block;
+    background: #e2e8f0;
+    color: #4a5568;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* ============================================
+   FOCUS VISIBLE STYLES
+   ============================================ */
+
+/* Enhanced focus for keyboard navigation */
+:focus-visible {
+    outline: 3px solid #3182ce !important;
+    outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse/touch users */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* ============================================
+   NAVIGATION BREADCRUMBS
+   ============================================ */
+
+.keyboard-nav-indicator {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2d3748;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.keyboard-nav-indicator.show {
+    opacity: 1;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .keyboard-shortcuts-modal {
+        max-width: 95%;
+        max-height: 85vh;
+    }
+
+    .shortcut-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .shortcut-key {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .shortcut-feedback {
+        bottom: 90px;
+        right: 10px;
+        left: 10px;
+        text-align: center;
+    }
+
+    .keyboard-selected::before {
+        left: 5px;
+        top: 5px;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .shortcut-feedback,
+    .keyboard-nav-indicator,
+    .keyboard-shortcuts-modal {
+        display: none !important;
+    }
+
+    .keyboard-selected {
+        outline: none !important;
+        background-color: transparent !important;
+    }
+
+    .keyboard-selected::before {
+        display: none;
+    }
+}
+
+/* ============================================
+   DARK MODE SUPPORT (FUTURE)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    .shortcut-feedback {
+        background: #4a5568;
+        color: #f7fafc;
+    }
+
+    .keyboard-selected {
+        background-color: #2d3748 !important;
+        outline-color: #63b3ed !important;
+    }
+
+    kbd,
+    .shortcut-key {
+        background: linear-gradient(to bottom, #4a5568, #2d3748);
+        border-color: #718096;
+        color: #f7fafc;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .keyboard-selected {
+        outline-width: 4px !important;
+    }
+
+    kbd,
+    .shortcut-key {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .keyboard-selected::before {
+        animation: none;
+    }
+
+    .shortcut-feedback {
+        transition: opacity 0.1s;
+    }
+}
