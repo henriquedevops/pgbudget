@@ -69,17 +69,19 @@ try {
 
 } catch (PDOException $e) {
     error_log("Database error in delete-ledger.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
 
     // Check for specific error messages
     if (strpos($e->getMessage(), 'not found or access denied') !== false) {
         http_response_code(404);
-        echo json_encode(['error' => 'Ledger not found or access denied']);
+        echo json_encode(['error' => 'Ledger not found or access denied', 'debug' => $e->getMessage()]);
     } else {
         http_response_code(500);
-        echo json_encode(['error' => 'Database error occurred']);
+        echo json_encode(['error' => 'Database error occurred', 'debug' => $e->getMessage()]);
     }
 } catch (Exception $e) {
     error_log("Error in delete-ledger.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['error' => $e->getMessage(), 'debug' => 'See error log for details']);
 }
