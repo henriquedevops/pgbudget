@@ -86,12 +86,17 @@ class DeleteLedgerManager {
         // Use event delegation for delete buttons
         document.addEventListener('click', (e) => {
             if (e.target.closest('.delete-ledger-btn')) {
+                e.preventDefault();
                 const btn = e.target.closest('.delete-ledger-btn');
                 const ledgerUuid = btn.dataset.ledgerUuid;
                 const ledgerName = btn.dataset.ledgerName;
 
+                console.log('Delete button clicked:', ledgerUuid, ledgerName);
+
                 if (ledgerUuid && ledgerName) {
                     this.open(ledgerUuid, ledgerName);
+                } else {
+                    console.error('Missing ledger UUID or name');
                 }
             }
         });
@@ -143,21 +148,37 @@ class DeleteLedgerManager {
     }
 
     open(ledgerUuid, ledgerName) {
+        console.log('Opening delete modal for:', ledgerUuid, ledgerName);
         this.currentLedgerUuid = ledgerUuid;
         this.currentLedgerName = ledgerName;
 
         // Update modal content
-        document.getElementById('delete-ledger-name').textContent = ledgerName;
-        document.getElementById('delete-confirmation-input').value = '';
-        document.getElementById('confirm-delete-btn').disabled = true;
-        document.getElementById('delete-ledger-error').style.display = 'none';
+        const nameEl = document.getElementById('delete-ledger-name');
+        const inputEl = document.getElementById('delete-confirmation-input');
+        const btnEl = document.getElementById('confirm-delete-btn');
+        const errorEl = document.getElementById('delete-ledger-error');
+
+        if (!nameEl || !inputEl || !btnEl || !errorEl) {
+            console.error('Modal elements not found!');
+            return;
+        }
+
+        nameEl.textContent = ledgerName;
+        inputEl.value = '';
+        btnEl.disabled = true;
+        errorEl.style.display = 'none';
 
         // Show modal
-        this.modal.style.display = 'flex';
+        if (this.modal) {
+            this.modal.style.display = 'flex';
+            console.log('Modal displayed');
+        } else {
+            console.error('Modal element not found!');
+        }
 
         // Focus on input
         setTimeout(() => {
-            document.getElementById('delete-confirmation-input')?.focus();
+            inputEl?.focus();
         }, 100);
     }
 
@@ -168,7 +189,10 @@ class DeleteLedgerManager {
     }
 
     async confirmDelete() {
+        console.log('confirmDelete called, ledger UUID:', this.currentLedgerUuid);
+
         if (!this.currentLedgerUuid) {
+            console.error('No ledger UUID set');
             return;
         }
 
@@ -181,6 +205,8 @@ class DeleteLedgerManager {
         errorDiv.style.display = 'none';
 
         try {
+            console.log('Sending delete request for ledger:', this.currentLedgerUuid);
+
             const response = await fetch('/pgbudget/api/delete-ledger.php', {
                 method: 'POST',
                 headers: {
@@ -191,7 +217,10 @@ class DeleteLedgerManager {
                 })
             });
 
+            console.log('Response status:', response.status);
+
             const data = await response.json();
+            console.log('Response data:', data);
 
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to delete budget');
