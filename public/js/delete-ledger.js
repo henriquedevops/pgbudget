@@ -19,6 +19,7 @@ class DeleteLedgerManager {
 
         this.modal = document.getElementById('delete-ledger-modal');
         this.attachEventListeners();
+        this.attachDeleteButtonListeners();
     }
 
     createModal() {
@@ -27,7 +28,7 @@ class DeleteLedgerManager {
                 <div class="modal-container delete-ledger-modal">
                     <div class="modal-header">
                         <h2>⚠️ Delete Budget</h2>
-                        <button type="button" class="modal-close" onclick="deleteLedgerManager.close()">×</button>
+                        <button type="button" class="modal-close delete-modal-close">×</button>
                     </div>
                     <div class="modal-body">
                         <div class="warning-message">
@@ -61,14 +62,13 @@ class DeleteLedgerManager {
                         <div class="error-message" id="delete-ledger-error" style="display: none;"></div>
 
                         <div class="modal-actions">
-                            <button type="button" class="btn btn-secondary" onclick="deleteLedgerManager.close()">
+                            <button type="button" class="btn btn-secondary delete-modal-cancel">
                                 Cancel
                             </button>
                             <button
                                 type="button"
                                 class="btn btn-danger"
                                 id="confirm-delete-btn"
-                                onclick="deleteLedgerManager.confirmDelete()"
                                 disabled
                             >
                                 Delete Budget Permanently
@@ -82,19 +82,50 @@ class DeleteLedgerManager {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 
+    attachDeleteButtonListeners() {
+        // Use event delegation for delete buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-ledger-btn')) {
+                const btn = e.target.closest('.delete-ledger-btn');
+                const ledgerUuid = btn.dataset.ledgerUuid;
+                const ledgerName = btn.dataset.ledgerName;
+
+                if (ledgerUuid && ledgerName) {
+                    this.open(ledgerUuid, ledgerName);
+                }
+            }
+        });
+    }
+
     attachEventListeners() {
         // Listen for confirmation input
-        const input = document.getElementById('delete-confirmation-input');
-        if (input) {
-            input.addEventListener('input', (e) => {
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'delete-confirmation-input') {
                 const confirmBtn = document.getElementById('confirm-delete-btn');
-                if (e.target.value === 'DELETE') {
-                    confirmBtn.disabled = false;
-                } else {
-                    confirmBtn.disabled = true;
+                if (confirmBtn) {
+                    if (e.target.value === 'DELETE') {
+                        confirmBtn.disabled = false;
+                    } else {
+                        confirmBtn.disabled = true;
+                    }
                 }
-            });
-        }
+            }
+        });
+
+        // Listen for confirm delete button
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'confirm-delete-btn' && !e.target.disabled) {
+                this.confirmDelete();
+            }
+        });
+
+        // Close modal buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-modal-close') ||
+                e.target.classList.contains('delete-modal-cancel')) {
+                this.close();
+            }
+        });
 
         // Close modal on overlay click
         this.modal?.addEventListener('click', (e) => {
