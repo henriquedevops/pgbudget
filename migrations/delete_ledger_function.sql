@@ -60,8 +60,8 @@ BEGIN
     DELETE FROM data.accounts WHERE ledger_id = v_ledger_id;
     ALTER TABLE data.accounts ENABLE TRIGGER trigger_prevent_special_account_deletion;
 
-    -- Delete loans if they exist
-    DELETE FROM data.loans WHERE ledger_id = v_ledger_id;
+    -- Delete loans if they exist (loans table uses ledger UUID, not ID)
+    DELETE FROM data.loans WHERE ledger_id = p_ledger_uuid;
 
     -- Finally, delete the ledger itself
     DELETE FROM data.ledgers WHERE id = v_ledger_id;
