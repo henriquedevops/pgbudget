@@ -55,6 +55,7 @@
     <script src="/pgbudget/js/main.js"></script>
     <script src="/pgbudget/js/mobile-gestures.js"></script>
     <script src="/pgbudget/js/keyboard-shortcuts.js"></script>
+    <script src="/pgbudget/js/undo-manager.js"></script>
 
     <?php
     // Include Quick-Add Modal JS for authenticated users
