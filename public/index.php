@@ -42,8 +42,9 @@ $ledgers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <a href="accounts/list.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-secondary">Accounts</a>
                             <button
                                 type="button"
-                                class="btn btn-delete"
-                                onclick="deleteLedgerManager.open('<?= htmlspecialchars($ledger['uuid']) ?>', '<?= htmlspecialchars(addslashes($ledger['name'])) ?>')"
+                                class="btn btn-delete delete-ledger-btn"
+                                data-ledger-uuid="<?= htmlspecialchars($ledger['uuid']) ?>"
+                                data-ledger-name="<?= htmlspecialchars($ledger['name']) ?>"
                                 title="Delete this budget"
                             >
                                 🗑️ Delete
