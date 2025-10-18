@@ -44,6 +44,10 @@ BEGIN
     DELETE FROM data.balance_snapshots
     WHERE transaction_id IN (SELECT id FROM data.transactions WHERE ledger_id = v_ledger_id);
 
+    -- Delete transaction log (must be before transactions due to FK constraint)
+    DELETE FROM data.transaction_log
+    WHERE original_transaction_id IN (SELECT id FROM data.transactions WHERE ledger_id = v_ledger_id);
+
     -- Note: account_balances is a VIEW, not a table, so we don't delete from it
     -- The underlying data will be cleaned up when we delete transactions and accounts
 
