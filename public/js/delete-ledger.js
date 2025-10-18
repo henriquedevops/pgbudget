@@ -177,15 +177,19 @@ class DeleteLedgerManager {
 
         // Show modal
         if (this.modal) {
-            this.modal.style.display = 'flex';
+            // Force display with important properties
+            this.modal.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 10000 !important; background: rgba(0, 0, 0, 0.5) !important; align-items: center !important; justify-content: center !important;';
+
             console.log('Modal displayed');
             console.log('Modal styles:', {
                 display: this.modal.style.display,
                 position: window.getComputedStyle(this.modal).position,
                 zIndex: window.getComputedStyle(this.modal).zIndex,
-                visibility: window.getComputedStyle(this.modal).visibility
+                visibility: window.getComputedStyle(this.modal).visibility,
+                opacity: window.getComputedStyle(this.modal).opacity
             });
             console.log('Modal in DOM:', document.body.contains(this.modal));
+            console.log('Modal bounding rect:', this.modal.getBoundingClientRect());
         } else {
             console.error('Modal element not found!');
         }
