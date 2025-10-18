@@ -2,9 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="PGBudget - Open-source zero-sum budgeting application with double-entry accounting">
+    <meta name="theme-color" content="#3182ce">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PGBudget">
     <title>PgBudget - Zero-Sum Budgeting</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/pgbudget/manifest.json">
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="/pgbudget/css/style.css">
+    <link rel="stylesheet" href="/pgbudget/css/mobile.css">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/pgbudget/images/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/pgbudget/images/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/pgbudget/images/icon-192x192.png">
+
     <script>
         // Auto-dismiss messages after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
@@ -30,8 +47,12 @@
     </script>
 </head>
 <body>
+    <!-- Skip to content for accessibility -->
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+
     <nav class="navbar">
         <div class="nav-container">
+            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
             <a href="/pgbudget/" class="nav-logo">💰 PgBudget</a>
             <?php if (isset($_SESSION['user_id']) && (isset($_GET['ledger']) || isset($ledger_uuid))): ?>
                 <div class="nav-search">

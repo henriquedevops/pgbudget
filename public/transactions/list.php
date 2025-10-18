@@ -341,7 +341,7 @@ try {
                 </thead>
                 <tbody>
                     <?php foreach ($transactions as $txn): ?>
-                        <tr class="transaction-row">
+                        <tr class="transaction-row swipeable">
                             <td class="transaction-checkbox-col">
                                 <input type="checkbox"
                                        class="transaction-checkbox"
@@ -376,6 +376,19 @@ try {
                                 <a href="edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
                                    class="btn btn-small btn-edit" title="Edit Transaction">✏️</a>
                             </td>
+                            <!-- Swipe actions (mobile only) -->
+                            <div class="swipe-actions">
+                                <button class="swipe-action-btn edit"
+                                        onclick="window.location.href='edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>'"
+                                        title="Edit">
+                                    ✏️
+                                </button>
+                                <button class="swipe-action-btn delete"
+                                        onclick="if(confirm('Delete this transaction?')) { /* Add delete logic */ }"
+                                        title="Delete">
+                                    🗑️
+                                </button>
+                            </div>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

@@ -1,0 +1,123 @@
+{
+  "name": "PGBudget - Zero-Sum Budgeting",
+  "short_name": "PGBudget",
+  "description": "Open-source zero-sum budgeting application with double-entry accounting",
+  "start_url": "/pgbudget/",
+  "scope": "/pgbudget/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#3182ce",
+  "categories": ["finance", "productivity"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/pgbudget/images/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pgbudget/images/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pgbudget/images/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pgbudget/images/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pgbudget/images/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pgbudget/images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pgbudget/images/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pgbudget/images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Transaction",
+      "short_name": "Add",
+      "description": "Add a new transaction",
+      "url": "/pgbudget/transactions/add.php",
+      "icons": [
+        {
+          "src": "/pgbudget/images/shortcut-add.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View Budget",
+      "short_name": "Budget",
+      "description": "View budget dashboard",
+      "url": "/pgbudget/budget/dashboard.php",
+      "icons": [
+        {
+          "src": "/pgbudget/images/shortcut-budget.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "short_name": "Transactions",
+      "description": "View all transactions",
+      "url": "/pgbudget/transactions/list.php",
+      "icons": [
+        {
+          "src": "/pgbudget/images/shortcut-transactions.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/pgbudget/images/screenshot-budget.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Budget Dashboard"
+    },
+    {
+      "src": "/pgbudget/images/screenshot-transactions.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Transaction List"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "features": [
+    "offline",
+    "background-sync",
+    "push-notifications"
+  ]
+}
