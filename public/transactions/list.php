@@ -286,6 +286,30 @@ try {
         </div>
     </div>
 
+    <!-- Bulk Action Bar (hidden by default) -->
+    <div id="bulk-action-bar" class="hidden">
+        <div class="bulk-action-info">
+            <span id="selected-count">0</span> transaction(s) selected
+        </div>
+        <div class="bulk-action-buttons">
+            <button id="bulk-categorize-btn" class="bulk-action-btn">
+                📂 Categorize
+            </button>
+            <button id="bulk-edit-date-btn" class="bulk-action-btn">
+                📅 Edit Date
+            </button>
+            <button id="bulk-edit-account-btn" class="bulk-action-btn">
+                💳 Change Account
+            </button>
+            <button id="bulk-delete-btn" class="bulk-action-btn danger">
+                🗑️ Delete
+            </button>
+            <button onclick="window.bulkOps.clearSelection()" class="bulk-action-btn bulk-action-clear">
+                ✕ Clear Selection
+            </button>
+        </div>
+    </div>
+
     <?php if (empty($transactions)): ?>
         <div class="empty-state">
             <h3>No transactions found</h3>
@@ -303,6 +327,9 @@ try {
             <table>
                 <thead>
                     <tr>
+                        <th class="transaction-checkbox-col">
+                            <input type="checkbox" id="select-all-transactions" title="Select All">
+                        </th>
                         <th>Date</th>
                         <th>Description</th>
                         <th>Type</th>
@@ -315,6 +342,11 @@ try {
                 <tbody>
                     <?php foreach ($transactions as $txn): ?>
                         <tr class="transaction-row">
+                            <td class="transaction-checkbox-col">
+                                <input type="checkbox"
+                                       class="transaction-checkbox"
+                                       data-transaction-uuid="<?= htmlspecialchars($txn['uuid']) ?>">
+                            </td>
                             <td class="date-cell">
                                 <?= date('M j, Y', strtotime($txn['date'])) ?>
                                 <small><?= date('g:i A', strtotime($txn['created_at'])) ?></small>
@@ -686,6 +718,79 @@ try {
     }
 }
 </style>
+
+<!-- Bulk Categorize Modal -->
+<div id="bulk-categorize-modal" class="bulk-modal hidden">
+    <div class="bulk-modal-content">
+        <div class="bulk-modal-header">
+            <h2>Categorize Transactions</h2>
+        </div>
+        <div class="bulk-modal-body">
+            <label for="bulk-category-select">Select Category:</label>
+            <select id="bulk-category-select">
+                <option value="">-- Select a category --</option>
+                <?php foreach ($accounts as $account): ?>
+                    <?php if ($account['type'] === 'equity'): ?>
+                        <option value="<?= $account['uuid'] ?>">
+                            <?= htmlspecialchars($account['name']) ?>
+                        </option>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="bulk-modal-footer">
+            <button onclick="closeBulkModal('bulk-categorize-modal')" class="bulk-modal-btn secondary">Cancel</button>
+            <button onclick="submitBulkCategorize()" class="bulk-modal-btn primary">Categorize</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Edit Date Modal -->
+<div id="bulk-edit-date-modal" class="bulk-modal hidden">
+    <div class="bulk-modal-content">
+        <div class="bulk-modal-header">
+            <h2>Edit Transaction Date</h2>
+        </div>
+        <div class="bulk-modal-body">
+            <label for="bulk-date-input">Select New Date:</label>
+            <input type="date" id="bulk-date-input" value="<?= date('Y-m-d') ?>">
+        </div>
+        <div class="bulk-modal-footer">
+            <button onclick="closeBulkModal('bulk-edit-date-modal')" class="bulk-modal-btn secondary">Cancel</button>
+            <button onclick="submitBulkEditDate()" class="bulk-modal-btn primary">Update Date</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Edit Account Modal -->
+<div id="bulk-edit-account-modal" class="bulk-modal hidden">
+    <div class="bulk-modal-content">
+        <div class="bulk-modal-header">
+            <h2>Change Account</h2>
+        </div>
+        <div class="bulk-modal-body">
+            <label for="bulk-account-select">Select Account:</label>
+            <select id="bulk-account-select">
+                <option value="">-- Select an account --</option>
+                <?php foreach ($accounts as $account): ?>
+                    <?php if ($account['type'] !== 'equity'): ?>
+                        <option value="<?= $account['uuid'] ?>">
+                            <?= htmlspecialchars($account['name']) ?> (<?= ucfirst($account['type']) ?>)
+                        </option>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="bulk-modal-footer">
+            <button onclick="closeBulkModal('bulk-edit-account-modal')" class="bulk-modal-btn secondary">Cancel</button>
+            <button onclick="submitBulkEditAccount()" class="bulk-modal-btn primary">Update Account</button>
+        </div>
+    </div>
+</div>
+
+<!-- Include bulk operations CSS and JavaScript -->
+<link rel="stylesheet" href="../css/bulk-operations.css">
+<script src="../js/bulk-operations.js"></script>
 
 <!-- Include search-filter JavaScript -->
 <script src="../js/search-filter.js"></script>
