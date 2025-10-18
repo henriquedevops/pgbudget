@@ -40,6 +40,10 @@ BEGIN
     -- Delete recurring transactions
     DELETE FROM data.recurring_transactions WHERE ledger_id = v_ledger_id;
 
+    -- Delete balance snapshots (must be before transactions due to FK constraint)
+    DELETE FROM data.balance_snapshots
+    WHERE transaction_id IN (SELECT id FROM data.transactions WHERE ledger_id = v_ledger_id);
+
     -- Note: account_balances is a VIEW, not a table, so we don't delete from it
     -- The underlying data will be cleaned up when we delete transactions and accounts
 
