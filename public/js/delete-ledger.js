@@ -177,8 +177,8 @@ class DeleteLedgerManager {
 
         // Show modal
         if (this.modal) {
-            // Force display with important properties
-            this.modal.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 10000 !important; background: rgba(0, 0, 0, 0.5) !important; align-items: center !important; justify-content: center !important;';
+            // Force display with important properties including opacity!
+            this.modal.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 10000 !important; background: rgba(0, 0, 0, 0.5) !important; align-items: center !important; justify-content: center !important; opacity: 1 !important;';
 
             console.log('Modal displayed');
             console.log('Modal styles:', {
