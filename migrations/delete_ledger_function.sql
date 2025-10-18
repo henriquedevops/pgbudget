@@ -54,8 +54,11 @@ BEGIN
     -- Delete transactions (this should cascade to splits if properly configured)
     DELETE FROM data.transactions WHERE ledger_id = v_ledger_id;
 
-    -- Delete accounts
+    -- Delete accounts (including special accounts since we're deleting the entire ledger)
+    -- Temporarily disable the trigger that prevents deletion of special accounts
+    ALTER TABLE data.accounts DISABLE TRIGGER prevent_special_account_deletion_trigger;
     DELETE FROM data.accounts WHERE ledger_id = v_ledger_id;
+    ALTER TABLE data.accounts ENABLE TRIGGER prevent_special_account_deletion_trigger;
 
     -- Delete loans if they exist
     DELETE FROM data.loans WHERE ledger_id = v_ledger_id;
