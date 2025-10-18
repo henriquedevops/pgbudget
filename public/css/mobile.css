@@ -5,6 +5,31 @@
  */
 
 /* ============================================
+   ACCESSIBILITY - SKIP TO CONTENT
+   ============================================ */
+
+/* Skip to content link - hidden until focused with keyboard */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #3182ce;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    z-index: 10000;
+    border-radius: 0 0 4px 0;
+    font-weight: 600;
+    transition: top 0.2s;
+}
+
+.skip-to-content:focus {
+    top: 0;
+    outline: 2px solid #2c5aa0;
+    outline-offset: 2px;
+}
+
+/* ============================================
    MOBILE-FIRST BASE STYLES
    ============================================ */
 
@@ -591,22 +616,6 @@
     *:focus {
         outline: 2px solid #3182ce;
         outline-offset: 2px;
-    }
-
-    /* Skip to content link for screen readers */
-    .skip-to-content {
-        position: absolute;
-        top: -40px;
-        left: 0;
-        background: #3182ce;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        z-index: 9999;
-    }
-
-    .skip-to-content:focus {
-        top: 0;
     }
 }
 

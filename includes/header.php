@@ -118,7 +118,7 @@
             </ul>
         </div>
     </nav>
-    <main class="main-content"><?php
+    <main class="main-content" id="main-content"><?php
 // Include enhanced error handler
 require_once __DIR__ . '/error-handler.php';
 
