@@ -190,6 +190,13 @@ class DeleteLedgerManager {
             });
             console.log('Modal in DOM:', document.body.contains(this.modal));
             console.log('Modal bounding rect:', this.modal.getBoundingClientRect());
+            console.log('Modal innerHTML length:', this.modal.innerHTML.length);
+            console.log('Modal children:', this.modal.children.length);
+
+            // Try to make it REALLY visible
+            this.modal.style.border = '10px solid red';
+            this.modal.style.width = '500px';
+            this.modal.style.height = '500px';
         } else {
             console.error('Modal element not found!');
         }
@@ -201,6 +208,7 @@ class DeleteLedgerManager {
     }
 
     close() {
+        console.log('CLOSE called!', new Error().stack);
         this.modal.style.display = 'none';
         this.currentLedgerUuid = null;
         this.currentLedgerName = null;
