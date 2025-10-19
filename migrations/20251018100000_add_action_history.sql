@@ -1,4 +1,5 @@
 -- +goose Up
+-- +goose StatementBegin
 -- Migration: Add action history table for undo functionality
 -- Description: Track user actions for undo/redo and audit trail (Phase 6.6)
 
@@ -150,7 +151,10 @@ GRANT EXECUTE ON FUNCTION api.cleanup_action_history TO pgbudget;
 COMMENT ON TABLE data.action_history IS
 'Tracks all user actions for undo/redo functionality and audit trail. Max retention: 30 days (configurable).';
 
+-- +goose StatementEnd
+
 -- +goose Down
+-- +goose StatementBegin
 -- Rollback: Remove action history functionality
 
 DROP FUNCTION IF EXISTS api.cleanup_action_history;
@@ -158,3 +162,5 @@ DROP FUNCTION IF EXISTS api.get_action_history;
 DROP FUNCTION IF EXISTS utils.record_action;
 
 DROP TABLE IF EXISTS data.action_history;
+
+-- +goose StatementEnd

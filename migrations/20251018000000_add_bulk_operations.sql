@@ -1,4 +1,5 @@
 -- +goose Up
+-- +goose StatementBegin
 -- Migration: Add bulk operation API functions for Phase 6.3
 -- Description: Implement bulk categorize, delete, and edit operations for transactions
 
@@ -154,10 +155,15 @@ GRANT EXECUTE ON FUNCTION api.bulk_delete_transactions TO pgbudget;
 GRANT EXECUTE ON FUNCTION api.bulk_edit_transaction_dates TO pgbudget;
 GRANT EXECUTE ON FUNCTION api.bulk_edit_transaction_accounts TO pgbudget;
 
+-- +goose StatementEnd
+
 -- +goose Down
+-- +goose StatementBegin
 -- Rollback: Remove bulk operation functions
 
 DROP FUNCTION IF EXISTS api.bulk_categorize_transactions;
 DROP FUNCTION IF EXISTS api.bulk_delete_transactions;
 DROP FUNCTION IF EXISTS api.bulk_edit_transaction_dates;
 DROP FUNCTION IF EXISTS api.bulk_edit_transaction_accounts;
+
+-- +goose StatementEnd
