@@ -39,7 +39,7 @@ try {
 
     // Get credit card accounts (liability accounts)
     $stmt = $db->prepare("
-        SELECT uuid, name, balance
+        SELECT uuid, name
         FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'liability'
         ORDER BY name
@@ -150,7 +150,6 @@ require_once '../../includes/header.php';
                             <?php foreach ($credit_cards as $card): ?>
                                 <option value="<?= $card['uuid'] ?>">
                                     <?= htmlspecialchars($card['name']) ?>
-                                    (Balance: $<?= number_format($card['balance'] / 100, 2) ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
