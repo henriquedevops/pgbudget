@@ -36,7 +36,7 @@ try {
     $stmt->execute([$ledger_uuid]);
     $accounts = $stmt->fetchAll();
 
-    // For each liability account, get the payment available amount
+    // For each liability account, get the payment available amount and check for associated loans
     foreach ($accounts as &$account) {
         if ($account['account_type'] === 'liability') {
             try {
@@ -45,6 +45,23 @@ try {
                 $account['payment_available'] = $stmt->fetchColumn();
             } catch (Exception $e) {
                 $account['payment_available'] = 0;
+            }
+
+            // Check if this account has an associated loan
+            try {
+                $stmt = $db->prepare("
+                    SELECT l.uuid as loan_uuid, l.lender_name, l.loan_type,
+                           l.principal_amount, l.current_balance, l.interest_rate,
+                           l.payment_amount, l.status, l.remaining_months
+                    FROM data.loans l
+                    JOIN data.accounts a ON l.account_id = a.id
+                    WHERE a.uuid = ? AND l.deleted_at IS NULL
+                    LIMIT 1
+                ");
+                $stmt->execute([$account['account_uuid']]);
+                $account['loan'] = $stmt->fetch(PDO::FETCH_ASSOC);
+            } catch (Exception $e) {
+                $account['loan'] = null;
             }
         }
     }
@@ -176,6 +193,74 @@ require_once '../../includes/header.php';
                                             <?php endif; ?>
                                         </td>
                                     </tr>
+                                    <?php if ($type === 'liability' && !empty($account['loan'])): ?>
+                                        <!-- Loan information row -->
+                                        <tr class="loan-details-row">
+                                            <td colspan="<?= $type === 'liability' ? '5' : '4' ?>">
+                                                <div class="loan-info-card">
+                                                    <div class="loan-info-header">
+                                                        <span class="loan-icon">💰</span>
+                                                        <span class="loan-label">Linked Loan:</span>
+                                                        <strong><?= htmlspecialchars($account['loan']['lender_name']) ?></strong>
+                                                        <span class="loan-type-badge"><?= ucfirst(str_replace('_', ' ', $account['loan']['loan_type'])) ?></span>
+                                                        <span class="loan-status-badge status-<?= strtolower($account['loan']['status']) ?>">
+                                                            <?= ucfirst($account['loan']['status']) ?>
+                                                        </span>
+                                                    </div>
+                                                    <div class="loan-info-details">
+                                                        <div class="loan-detail-item">
+                                                            <span class="loan-detail-label">Loan Balance:</span>
+                                                            <span class="loan-detail-value amount negative">
+                                                                <?= formatCurrency($account['loan']['current_balance']) ?>
+                                                            </span>
+                                                        </div>
+                                                        <div class="loan-detail-item">
+                                                            <span class="loan-detail-label">Account Balance:</span>
+                                                            <span class="loan-detail-value amount <?= $account['current_balance'] > 0 ? 'positive' : ($account['current_balance'] < 0 ? 'negative' : 'zero') ?>">
+                                                                <?= formatCurrency($account['current_balance']) ?>
+                                                            </span>
+                                                        </div>
+                                                        <?php
+                                                        $balance_diff = abs($account['loan']['current_balance'] - abs($account['current_balance']));
+                                                        $is_matched = $balance_diff < 0.01; // Within 1 cent
+                                                        ?>
+                                                        <div class="loan-detail-item">
+                                                            <span class="loan-detail-label">Balance Match:</span>
+                                                            <span class="loan-detail-value">
+                                                                <?php if ($is_matched): ?>
+                                                                    <span class="match-status matched">✓ Matched</span>
+                                                                <?php else: ?>
+                                                                    <span class="match-status unmatched">⚠ Difference: <?= formatCurrency($balance_diff) ?></span>
+                                                                <?php endif; ?>
+                                                            </span>
+                                                        </div>
+                                                        <div class="loan-detail-item">
+                                                            <span class="loan-detail-label">Interest Rate:</span>
+                                                            <span class="loan-detail-value"><?= number_format($account['loan']['interest_rate'], 2) ?>%</span>
+                                                        </div>
+                                                        <div class="loan-detail-item">
+                                                            <span class="loan-detail-label">Monthly Payment:</span>
+                                                            <span class="loan-detail-value"><?= formatCurrency($account['loan']['payment_amount']) ?></span>
+                                                        </div>
+                                                        <div class="loan-detail-item">
+                                                            <span class="loan-detail-label">Remaining Months:</span>
+                                                            <span class="loan-detail-value"><?= $account['loan']['remaining_months'] ?></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="loan-info-actions">
+                                                        <a href="../loans/view.php?ledger=<?= $ledger_uuid ?>&loan=<?= $account['loan']['loan_uuid'] ?>"
+                                                           class="btn btn-small btn-primary">
+                                                            View Loan Details
+                                                        </a>
+                                                        <a href="../loans/record-payment.php?ledger=<?= $ledger_uuid ?>&loan=<?= $account['loan']['loan_uuid'] ?>"
+                                                           class="btn btn-small btn-success">
+                                                            💵 Record Payment
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
@@ -587,6 +672,139 @@ require_once '../../includes/header.php';
 .btn-warning:hover {
     background-color: #ed8936;
     color: white;
+}
+
+/* Loan Information Styles */
+.loan-details-row {
+    background-color: #f7fafc;
+}
+
+.loan-info-card {
+    padding: 1rem;
+    background: linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%);
+    border-left: 4px solid #3182ce;
+    border-radius: 8px;
+    margin: 0.5rem 0;
+}
+
+.loan-info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #bee3f8;
+}
+
+.loan-icon {
+    font-size: 1.5rem;
+}
+
+.loan-label {
+    color: #2d3748;
+    font-weight: 500;
+}
+
+.loan-type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background-color: #bee3f8;
+    color: #2c5282;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.loan-status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.loan-status-badge.status-active {
+    background-color: #c6f6d5;
+    color: #22543d;
+}
+
+.loan-status-badge.status-paid_off {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.loan-status-badge.status-closed {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+.loan-info-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.loan-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.loan-detail-label {
+    font-size: 0.75rem;
+    color: #718096;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.loan-detail-value {
+    font-size: 1rem;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.match-status {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.match-status.matched {
+    background-color: #c6f6d5;
+    color: #22543d;
+}
+
+.match-status.unmatched {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.loan-info-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #bee3f8;
+}
+
+@media (max-width: 768px) {
+    .loan-info-details {
+        grid-template-columns: 1fr;
+    }
+
+    .loan-info-header {
+        flex-wrap: wrap;
+    }
+
+    .loan-info-actions {
+        flex-direction: column;
+    }
 }
 </style>
 
