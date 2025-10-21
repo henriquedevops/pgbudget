@@ -123,6 +123,53 @@ try {
     $stmt->execute([$ledger_uuid]);
     $upcoming_loan_payments = $stmt->fetchAll();
 
+    // Get installment plan summary for dashboard
+    $stmt = $db->prepare("
+        SELECT ip.uuid, ip.description, ip.purchase_amount, ip.installment_amount,
+               ip.number_of_installments, ip.completed_installments, ip.frequency,
+               ip.status, cc.name as credit_card_name
+        FROM data.installment_plans ip
+        JOIN data.accounts cc ON ip.credit_card_account_id = cc.id
+        WHERE ip.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
+        AND ip.status = 'active'
+        ORDER BY ip.created_at DESC
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $active_installment_plans = $stmt->fetchAll();
+
+    // Calculate installment totals
+    $total_installment_debt = 0;
+    $total_monthly_obligation = 0;
+    foreach ($active_installment_plans as $plan) {
+        $remaining = floatval($plan['number_of_installments']) - floatval($plan['completed_installments']);
+        $total_installment_debt += ($remaining * floatval($plan['installment_amount']));
+
+        // Convert to monthly obligation based on frequency
+        $installment_amount = floatval($plan['installment_amount']);
+        if ($plan['frequency'] === 'monthly') {
+            $total_monthly_obligation += $installment_amount;
+        } elseif ($plan['frequency'] === 'bi-weekly') {
+            $total_monthly_obligation += ($installment_amount * 26 / 12); // ~2.17 payments/month
+        } elseif ($plan['frequency'] === 'weekly') {
+            $total_monthly_obligation += ($installment_amount * 52 / 12); // ~4.33 payments/month
+        }
+    }
+
+    // Get upcoming installments (next 30 days)
+    $stmt = $db->prepare("
+        SELECT isch.uuid, isch.installment_number, isch.due_date, isch.scheduled_amount,
+               ip.description, ip.uuid as plan_uuid, ip.number_of_installments
+        FROM data.installment_schedules isch
+        JOIN data.installment_plans ip ON isch.installment_plan_id = ip.id
+        WHERE ip.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
+        AND isch.status = 'scheduled'
+        AND isch.due_date <= CURRENT_DATE + INTERVAL '30 days'
+        ORDER BY isch.due_date ASC
+        LIMIT 5
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $upcoming_installments = $stmt->fetchAll();
+
     // Load goals for this ledger
     require_once __DIR__ . '/../goals/dashboard-integration.php';
 
@@ -426,6 +473,73 @@ require_once '../../includes/header.php';
                 </div>
             <?php endif; ?>
 
+            <!-- Installment Obligations Summary -->
+            <?php if (!empty($active_installment_plans)): ?>
+                <div class="installment-summary-section">
+                    <h3>💳 Installment Obligations</h3>
+                    <div class="installment-summary-stats">
+                        <div class="installment-stat">
+                            <span class="installment-stat-label">Total Remaining</span>
+                            <span class="installment-stat-value amount negative"><?= formatCurrency($total_installment_debt) ?></span>
+                        </div>
+                        <div class="installment-stat">
+                            <span class="installment-stat-label">Monthly Obligations</span>
+                            <span class="installment-stat-value amount"><?= formatCurrency($total_monthly_obligation) ?></span>
+                        </div>
+                        <div class="installment-stat">
+                            <span class="installment-stat-label">Active Plans</span>
+                            <span class="installment-stat-value"><?= count($active_installment_plans) ?></span>
+                        </div>
+                    </div>
+
+                    <?php if (!empty($upcoming_installments)): ?>
+                        <div class="upcoming-installments">
+                            <h4>Upcoming This Month</h4>
+                            <?php foreach ($upcoming_installments as $installment): ?>
+                                <?php
+                                $due_date = new DateTime($installment['due_date']);
+                                $today = new DateTime();
+                                $days_until = $today->diff($due_date)->days;
+                                $is_overdue = $due_date < $today;
+                                $is_soon = $days_until <= 7 && !$is_overdue;
+                                ?>
+                                <div class="upcoming-installment-item <?= $is_overdue ? 'overdue' : ($is_soon ? 'due-soon' : '') ?>">
+                                    <div class="installment-info">
+                                        <div class="installment-description">
+                                            <?= htmlspecialchars($installment['description']) ?>
+                                            <span class="installment-number">#<?= $installment['installment_number'] ?>/<?= $installment['number_of_installments'] ?></span>
+                                        </div>
+                                        <div class="installment-date">
+                                            <?php if ($is_overdue): ?>
+                                                <span class="overdue-badge">⚠️ Overdue</span>
+                                            <?php elseif ($days_until == 0): ?>
+                                                <span class="due-today">Due Today!</span>
+                                            <?php elseif ($days_until == 1): ?>
+                                                <span class="due-tomorrow">Due Tomorrow</span>
+                                            <?php else: ?>
+                                                Due in <?= $days_until ?> day<?= $days_until > 1 ? 's' : '' ?>
+                                            <?php endif ?>
+                                            (<?= $due_date->format('M j') ?>)
+                                        </div>
+                                    </div>
+                                    <div class="installment-amount amount">
+                                        <?= formatCurrency($installment['scheduled_amount']) ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="installment-summary-actions">
+                        <a href="../installments/?ledger=<?= $ledger_uuid ?>" class="btn btn-primary btn-small">View All Plans</a>
+                        <?php if (!empty($upcoming_installments)): ?>
+                            <a href="../installments/process.php?ledger=<?= $ledger_uuid ?>&schedule=<?= $upcoming_installments[0]['uuid'] ?>"
+                               class="btn btn-success btn-small">💳 Process Installment</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- Recent Transactions -->
             <div class="recent-transactions">
                 <h3>Recent Transactions</h3>
@@ -638,6 +752,142 @@ require_once '../../includes/header.php';
 }
 
 .loan-summary-actions .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* Installment Summary Section */
+.installment-summary-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.installment-summary-section h3 {
+    margin: 0 0 1rem 0;
+    color: #2d3748;
+}
+
+.installment-summary-section h4 {
+    margin: 0 0 0.75rem 0;
+    color: #4a5568;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.installment-summary-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.installment-stat {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 8px;
+    border-left: 4px solid #f59e0b;
+}
+
+.installment-stat-label {
+    font-size: 0.75rem;
+    color: #92400e;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.installment-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #78350f;
+}
+
+.installment-stat-value.amount.negative {
+    color: #b91c1c;
+}
+
+.upcoming-installments {
+    margin-bottom: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid #e2e8f0;
+}
+
+.upcoming-installment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #f7fafc;
+    border-radius: 8px;
+    border-left: 3px solid #cbd5e0;
+    transition: all 0.2s;
+}
+
+.upcoming-installment-item:hover {
+    background: #edf2f7;
+    transform: translateX(4px);
+}
+
+.upcoming-installment-item.due-soon {
+    background: #fef3c7;
+    border-left-color: #f59e0b;
+}
+
+.upcoming-installment-item.overdue {
+    background: #fee2e2;
+    border-left-color: #ef4444;
+}
+
+.installment-info {
+    flex: 1;
+}
+
+.installment-description {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.25rem;
+}
+
+.installment-number {
+    font-size: 0.75rem;
+    color: #718096;
+    font-weight: 500;
+    margin-left: 0.5rem;
+}
+
+.installment-date {
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.overdue-badge {
+    font-weight: 600;
+    color: #dc2626;
+}
+
+.installment-amount {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-left: 1rem;
+}
+
+.installment-summary-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.installment-summary-actions .btn {
     flex: 1;
     min-width: 120px;
 }
