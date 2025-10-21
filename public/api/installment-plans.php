@@ -303,8 +303,11 @@ try {
 
             // Get existing plan
             $stmt = $db->prepare("
-                SELECT id, status, completed_installments
-                FROM data.installment_plans
+                SELECT
+                    ip.id, ip.status, ip.completed_installments,
+                    ip.number_of_installments, ip.purchase_amount,
+                    ip.frequency, ip.start_date
+                FROM data.installment_plans ip
                 WHERE uuid = ?
             ");
             $stmt->execute([$_GET['plan_uuid']]);
@@ -316,54 +319,192 @@ try {
                 exit;
             }
 
-            // Only allow updating certain fields
-            $allowed_fields = ['notes', 'metadata', 'category_account_id'];
-            $updates = [];
-            $params = [];
+            // Check if plan is editable
+            if ($plan['status'] !== 'active') {
+                http_response_code(400);
+                echo json_encode(['error' => 'Cannot edit a ' . $plan['status'] . ' plan']);
+                exit;
+            }
 
-            foreach ($allowed_fields as $field) {
-                if (isset($input[$field])) {
-                    if ($field === 'category_account_id' && !empty($input['category_account_uuid'])) {
+            $db->beginTransaction();
+
+            try {
+                // Track if we need to reschedule
+                $needs_reschedule = false;
+                $remaining_installments = $plan['number_of_installments'] - $plan['completed_installments'];
+
+                // Prepare update fields
+                $updates = [];
+                $params = [];
+
+                // Description
+                if (isset($input['description'])) {
+                    $updates[] = "description = ?";
+                    $params[] = $input['description'];
+                }
+
+                // Notes
+                if (isset($input['notes'])) {
+                    $updates[] = "notes = ?";
+                    $params[] = $input['notes'];
+                }
+
+                // Metadata
+                if (isset($input['metadata'])) {
+                    $updates[] = "metadata = ?";
+                    $params[] = json_encode($input['metadata']);
+                }
+
+                // Category
+                if (isset($input['category_uuid'])) {
+                    if (!empty($input['category_uuid'])) {
                         // Resolve category UUID to ID
                         $stmt = $db->prepare("SELECT id FROM data.accounts WHERE uuid = ?");
-                        $stmt->execute([$input['category_account_uuid']]);
+                        $stmt->execute([$input['category_uuid']]);
                         $category = $stmt->fetch(PDO::FETCH_ASSOC);
                         if ($category) {
                             $updates[] = "category_account_id = ?";
                             $params[] = $category['id'];
                         }
-                    } elseif ($field === 'metadata') {
-                        $updates[] = "metadata = ?";
-                        $params[] = json_encode($input[$field]);
                     } else {
-                        $updates[] = "$field = ?";
-                        $params[] = $input[$field];
+                        $updates[] = "category_account_id = NULL";
                     }
                 }
+
+                // Remaining installments (reschedule if changed)
+                if (isset($input['remaining_installments'])) {
+                    $new_remaining = intval($input['remaining_installments']);
+
+                    if ($new_remaining < 1 || $new_remaining > $remaining_installments) {
+                        throw new Exception("Invalid remaining_installments. Must be between 1 and $remaining_installments");
+                    }
+
+                    if ($new_remaining !== $remaining_installments) {
+                        $needs_reschedule = true;
+
+                        // Calculate total remaining amount
+                        $stmt = $db->prepare("
+                            SELECT SUM(scheduled_amount) as total
+                            FROM data.installment_schedules
+                            WHERE installment_plan_id = ? AND status = 'scheduled'
+                        ");
+                        $stmt->execute([$plan['id']]);
+                        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $total_remaining = floatval($result['total']);
+
+                        // Calculate new installment amount
+                        $new_installment_amount = floor($total_remaining / $new_remaining);
+                        $last_installment = $total_remaining - ($new_installment_amount * ($new_remaining - 1));
+
+                        // Update plan with new number of installments
+                        $new_total_installments = $plan['completed_installments'] + $new_remaining;
+                        $updates[] = "number_of_installments = ?";
+                        $params[] = $new_total_installments;
+                        $updates[] = "installment_amount = ?";
+                        $params[] = $new_installment_amount;
+
+                        // Delete existing scheduled installments
+                        $stmt = $db->prepare("
+                            DELETE FROM data.installment_schedules
+                            WHERE installment_plan_id = ? AND status = 'scheduled'
+                        ");
+                        $stmt->execute([$plan['id']]);
+
+                        // Get the last processed installment's due date (or start date)
+                        $stmt = $db->prepare("
+                            SELECT MAX(due_date) as last_due_date
+                            FROM data.installment_schedules
+                            WHERE installment_plan_id = ? AND status = 'processed'
+                        ");
+                        $stmt->execute([$plan['id']]);
+                        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                        if ($result['last_due_date']) {
+                            $start_date = new DateTime($result['last_due_date']);
+                        } else {
+                            $start_date = new DateTime($plan['start_date']);
+                        }
+
+                        // Calculate next date based on frequency
+                        switch ($plan['frequency']) {
+                            case 'weekly':
+                                $start_date->modify('+1 week');
+                                break;
+                            case 'bi-weekly':
+                                $start_date->modify('+2 weeks');
+                                break;
+                            case 'monthly':
+                            default:
+                                $start_date->modify('+1 month');
+                                break;
+                        }
+
+                        // Create new schedule
+                        for ($i = 0; $i < $new_remaining; $i++) {
+                            $installment_number = $plan['completed_installments'] + $i + 1;
+                            $amount = ($i == $new_remaining - 1) ? $last_installment : $new_installment_amount;
+
+                            $stmt = $db->prepare("
+                                INSERT INTO data.installment_schedules (
+                                    installment_plan_id, installment_number,
+                                    due_date, scheduled_amount
+                                ) VALUES (?, ?, ?, ?)
+                            ");
+                            $stmt->execute([
+                                $plan['id'],
+                                $installment_number,
+                                $start_date->format('Y-m-d'),
+                                $amount
+                            ]);
+
+                            // Calculate next date
+                            switch ($plan['frequency']) {
+                                case 'weekly':
+                                    $start_date->modify('+1 week');
+                                    break;
+                                case 'bi-weekly':
+                                    $start_date->modify('+2 weeks');
+                                    break;
+                                case 'monthly':
+                                default:
+                                    $start_date->modify('+1 month');
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                if (empty($updates)) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'No valid fields to update']);
+                    exit;
+                }
+
+                // Update the plan
+                $params[] = $_GET['plan_uuid'];
+
+                $stmt = $db->prepare("
+                    UPDATE data.installment_plans
+                    SET " . implode(', ', $updates) . "
+                    WHERE uuid = ?
+                    RETURNING uuid
+                ");
+                $stmt->execute($params);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                $db->commit();
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Installment plan updated successfully',
+                    'plan_uuid' => $result['uuid'],
+                    'rescheduled' => $needs_reschedule
+                ]);
+
+            } catch (Exception $e) {
+                $db->rollBack();
+                throw $e;
             }
-
-            if (empty($updates)) {
-                http_response_code(400);
-                echo json_encode(['error' => 'No valid fields to update']);
-                exit;
-            }
-
-            $params[] = $_GET['plan_uuid'];
-
-            $stmt = $db->prepare("
-                UPDATE data.installment_plans
-                SET " . implode(', ', $updates) . "
-                WHERE uuid = ?
-                RETURNING uuid
-            ");
-            $stmt->execute($params);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            echo json_encode([
-                'success' => true,
-                'message' => 'Installment plan updated successfully',
-                'plan_uuid' => $result['uuid']
-            ]);
             break;
 
         case 'DELETE': // Cancel/delete installment plan
