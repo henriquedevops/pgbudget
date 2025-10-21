@@ -58,20 +58,21 @@ try {
     $categories = $stmt->fetchAll();
 
     // Get recent credit card transactions for quick selection
+    // Get transactions where credit card is the credit account (purchases)
     $stmt = $db->prepare("
         SELECT
             t.uuid,
             t.date,
             t.description,
             t.amount,
-            a.name as account_name,
-            a.uuid as account_uuid
-        FROM api.transactions t
-        JOIN api.accounts a ON (
-            (t.debit_account_uuid = a.uuid OR t.credit_account_uuid = a.uuid)
-            AND a.type = 'liability'
-        )
-        WHERE t.ledger_uuid = ?
+            ca.name as account_name,
+            ca.uuid as account_uuid
+        FROM data.transactions t
+        JOIN data.ledgers l ON t.ledger_id = l.id
+        JOIN data.accounts ca ON t.credit_account_id = ca.id
+        WHERE l.uuid = ?
+        AND ca.type = 'liability'
+        AND t.deleted_at IS NULL
         ORDER BY t.date DESC
         LIMIT 50
     ");
