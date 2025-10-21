@@ -167,7 +167,7 @@ require_once '../../includes/header.php';
                                    min="0.01"
                                    step="0.01"
                                    placeholder="1200.00">
-                            <small class="form-hint">Total purchase amount</small>
+                            <small class="form-hint">Total purchase amount in dollars (e.g., 10.00 for $10)</small>
                         </div>
 
                         <div class="form-group">
@@ -681,6 +681,11 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
+
+            // Convert purchase_amount from dollars to cents
+            if (data.purchase_amount) {
+                data.purchase_amount = Math.round(parseFloat(data.purchase_amount) * 100);
+            }
 
             // Remove empty optional fields
             if (!data.original_transaction_uuid) delete data.original_transaction_uuid;
