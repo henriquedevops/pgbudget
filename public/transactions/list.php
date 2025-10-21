@@ -137,11 +137,17 @@ try {
                CASE
                    WHEN da.name = 'Income' THEN 'inflow'
                    ELSE 'outflow'
-               END as type
+               END as type,
+               ip.uuid as installment_plan_uuid,
+               ip.description as installment_plan_description,
+               ip.number_of_installments,
+               ip.completed_installments,
+               ip.status as installment_plan_status
         FROM data.transactions t
         JOIN data.accounts da ON t.debit_account_id = da.id
         JOIN data.accounts ca ON t.credit_account_id = ca.id
         JOIN data.ledgers l ON t.ledger_id = l.id
+        LEFT JOIN data.installment_plans ip ON t.id = ip.purchase_transaction_id
         WHERE $where_clause AND t.deleted_at IS NULL
         $order_by
         LIMIT ? OFFSET ?
@@ -353,6 +359,13 @@ try {
                             </td>
                             <td class="description-cell">
                                 <?= htmlspecialchars($txn['description']) ?>
+                                <?php if (!empty($txn['installment_plan_uuid'])): ?>
+                                    <a href="../installments/view.php?ledger=<?= urlencode($ledger_uuid) ?>&plan=<?= urlencode($txn['installment_plan_uuid']) ?>"
+                                       class="installment-indicator"
+                                       title="Installment Plan: <?= htmlspecialchars($txn['installment_plan_description']) ?> (<?= $txn['completed_installments'] ?>/<?= $txn['number_of_installments'] ?> completed)">
+                                        💳 Installment Plan
+                                    </a>
+                                <?php endif; ?>
                             </td>
                             <td class="type-cell">
                                 <span class="transaction-type <?= $txn['type'] ?>">
@@ -375,6 +388,16 @@ try {
                             <td class="actions-cell">
                                 <a href="edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
                                    class="btn btn-small btn-edit" title="Edit Transaction">✏️</a>
+                                <?php
+                                // Show "Create Installment Plan" button for credit card transactions without existing plans
+                                $is_cc_transaction = ($txn['credit_type'] === 'liability' || $txn['debit_type'] === 'liability');
+                                $has_no_plan = empty($txn['installment_plan_uuid']);
+                                if ($is_cc_transaction && $has_no_plan):
+                                ?>
+                                    <a href="../installments/create.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
+                                       class="btn btn-small btn-create-installment"
+                                       title="Create Installment Plan">💳</a>
+                                <?php endif; ?>
                             </td>
                             <!-- Swipe actions (mobile only) -->
                             <div class="swipe-actions">
@@ -729,6 +752,46 @@ try {
         flex-direction: column;
         align-items: flex-start;
     }
+}
+
+/* Installment Plan Indicator */
+.installment-indicator {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #92400e;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.installment-indicator:hover {
+    background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+/* Create Installment Plan Button */
+.btn-create-installment {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    color: #92400e;
+    margin-left: 0.25rem;
+}
+
+.btn-create-installment:hover {
+    background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+    border-color: #d97706;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.actions-cell {
+    white-space: nowrap;
 }
 </style>
 
