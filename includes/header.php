@@ -103,6 +103,9 @@
                         <li class="nav-item">
                             <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💰 Loans</a>
                         </li>
+                        <li class="nav-item">
+                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Installments</a>
+                        </li>
                     <?php endif; ?>
                     <li class="nav-item">
                         <a href="/pgbudget/settings/notifications.php" class="nav-link">⚙️ Settings</a>
@@ -127,6 +130,9 @@
                         <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
                         <li class="nav-item">
                             <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💰 Loans</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Installments</a>
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
