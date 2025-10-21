@@ -112,6 +112,7 @@ require_once '../../includes/header.php';
             <p>Manage installment payment plans for <?= htmlspecialchars($ledger['name']) ?></p>
         </div>
         <div class="page-actions">
+            <a href="../reports/installments.php?ledger=<?= $ledger_uuid ?>" class="btn btn-success">📊 View Report</a>
             <a href="create.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">+ New Plan</a>
             <a href="../budget/dashboard.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">Back to Budget</a>
         </div>
