@@ -88,6 +88,43 @@ try {
     $stmt->execute([$ledger_uuid]);
     $ledger_accounts = $stmt->fetchAll();
 
+    // Get loan summary for dashboard
+    $stmt = $db->prepare("
+        SELECT l.uuid, l.lender_name, l.current_balance, l.payment_amount,
+               l.status, l.loan_type
+        FROM data.loans l
+        WHERE l.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
+        AND l.deleted_at IS NULL
+        AND l.status = 'active'
+        ORDER BY l.current_balance DESC
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $active_loans = $stmt->fetchAll();
+
+    // Calculate loan totals
+    $total_loan_debt = 0;
+    $total_monthly_payment = 0;
+    foreach ($active_loans as $loan) {
+        $total_loan_debt += floatval($loan['current_balance']);
+        $total_monthly_payment += floatval($loan['payment_amount']);
+    }
+
+    // Get upcoming loan payments (next 30 days)
+    $stmt = $db->prepare("
+        SELECT lp.due_date, lp.scheduled_amount, l.lender_name, l.uuid as loan_uuid
+        FROM data.loan_payments lp
+        JOIN data.loans l ON lp.loan_id = l.id
+        WHERE l.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
+        AND lp.status = 'scheduled'
+        AND lp.due_date <= CURRENT_DATE + INTERVAL '30 days'
+        AND lp.due_date >= CURRENT_DATE
+        AND l.deleted_at IS NULL
+        ORDER BY lp.due_date ASC
+        LIMIT 5
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $upcoming_loan_payments = $stmt->fetchAll();
+
     // Load goals for this ledger
     require_once __DIR__ . '/../goals/dashboard-integration.php';
 
@@ -332,6 +369,65 @@ require_once '../../includes/header.php';
                 </div>
             <?php endif; ?>
 
+            <!-- Loan Summary -->
+            <?php if (!empty($active_loans)): ?>
+                <div class="loan-summary-section">
+                    <h3>💰 Active Loans</h3>
+                    <div class="loan-summary-stats">
+                        <div class="loan-stat">
+                            <span class="loan-stat-label">Total Debt</span>
+                            <span class="loan-stat-value amount negative"><?= formatCurrency($total_loan_debt) ?></span>
+                        </div>
+                        <div class="loan-stat">
+                            <span class="loan-stat-label">Monthly Payments</span>
+                            <span class="loan-stat-value amount"><?= formatCurrency($total_monthly_payment) ?></span>
+                        </div>
+                        <div class="loan-stat">
+                            <span class="loan-stat-label">Active Loans</span>
+                            <span class="loan-stat-value"><?= count($active_loans) ?></span>
+                        </div>
+                    </div>
+
+                    <?php if (!empty($upcoming_loan_payments)): ?>
+                        <div class="upcoming-payments">
+                            <h4>Upcoming Payments</h4>
+                            <?php foreach ($upcoming_loan_payments as $payment): ?>
+                                <?php
+                                $days_until = (new DateTime($payment['due_date']))->diff(new DateTime())->days;
+                                $is_soon = $days_until <= 7;
+                                ?>
+                                <div class="upcoming-payment-item <?= $is_soon ? 'due-soon' : '' ?>">
+                                    <div class="payment-info">
+                                        <div class="payment-lender"><?= htmlspecialchars($payment['lender_name']) ?></div>
+                                        <div class="payment-date">
+                                            <?php if ($days_until == 0): ?>
+                                                <span class="due-today">Due Today!</span>
+                                            <?php elseif ($days_until == 1): ?>
+                                                <span class="due-tomorrow">Due Tomorrow</span>
+                                            <?php else: ?>
+                                                Due in <?= $days_until ?> day<?= $days_until > 1 ? 's' : '' ?>
+                                            <?php endif ?>
+                                            (<?= date('M j', strtotime($payment['due_date'])) ?>)
+                                        </div>
+                                    </div>
+                                    <div class="payment-amount amount">
+                                        <?= formatCurrency($payment['scheduled_amount']) ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="loan-summary-actions">
+                        <a href="../loans/?ledger=<?= $ledger_uuid ?>" class="btn btn-primary btn-small">View All Loans</a>
+                        <?php if (!empty($upcoming_loan_payments)): ?>
+                            <a href="../loans/record-payment.php?ledger=<?= $ledger_uuid ?>&loan=<?= $upcoming_loan_payments[0]['loan_uuid'] ?>"
+                               class="btn btn-success btn-small">💵 Record Payment</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- Recent Transactions -->
             <div class="recent-transactions">
                 <h3>Recent Transactions</h3>
@@ -421,6 +517,131 @@ require_once '../../includes/header.php';
     text-align: center;
     padding: 2rem;
     color: #718096;
+}
+
+/* Loan Summary Section */
+.loan-summary-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.loan-summary-section h3 {
+    margin: 0 0 1rem 0;
+    color: #2d3748;
+}
+
+.loan-summary-section h4 {
+    margin: 0 0 0.75rem 0;
+    color: #4a5568;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.loan-summary-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.loan-stat {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 8px;
+    border-left: 4px solid #3182ce;
+}
+
+.loan-stat-label {
+    font-size: 0.75rem;
+    color: #718096;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.loan-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.loan-stat-value.amount.negative {
+    color: #e53e3e;
+}
+
+.upcoming-payments {
+    margin-bottom: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid #e2e8f0;
+}
+
+.upcoming-payment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #f7fafc;
+    border-radius: 8px;
+    border-left: 3px solid #cbd5e0;
+    transition: all 0.2s;
+}
+
+.upcoming-payment-item:hover {
+    background: #edf2f7;
+    transform: translateX(4px);
+}
+
+.upcoming-payment-item.due-soon {
+    background: #fef3c7;
+    border-left-color: #f59e0b;
+}
+
+.payment-info {
+    flex: 1;
+}
+
+.payment-lender {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.25rem;
+}
+
+.payment-date {
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.due-today,
+.due-tomorrow {
+    font-weight: 600;
+    color: #d97706;
+}
+
+.payment-amount {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-left: 1rem;
+}
+
+.loan-summary-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.loan-summary-actions .btn {
+    flex: 1;
+    min-width: 120px;
 }
 
 .recent-transactions {
