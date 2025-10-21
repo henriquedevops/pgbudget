@@ -170,6 +170,36 @@ try {
     $stmt->execute([$ledger_uuid]);
     $upcoming_installments = $stmt->fetchAll();
 
+    // Get scheduled installment impacts per category (for current month)
+    $stmt = $db->prepare("
+        SELECT
+            cat.uuid as category_uuid,
+            cat.name as category_name,
+            COUNT(DISTINCT ip.id) as plan_count,
+            SUM(isch.scheduled_amount) as total_scheduled_amount,
+            COUNT(isch.id) as installment_count
+        FROM data.installment_schedules isch
+        JOIN data.installment_plans ip ON isch.installment_plan_id = ip.id
+        JOIN data.accounts cat ON ip.category_account_id = cat.id
+        WHERE ip.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
+        AND isch.status = 'scheduled'
+        AND isch.due_date >= DATE_TRUNC('month', CURRENT_DATE)
+        AND isch.due_date < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+        GROUP BY cat.uuid, cat.name
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $category_installments = $stmt->fetchAll();
+
+    // Create a lookup array for easy access by category UUID
+    $installments_by_category = [];
+    foreach ($category_installments as $ci) {
+        $installments_by_category[$ci['category_uuid']] = [
+            'plan_count' => intval($ci['plan_count']),
+            'installment_count' => intval($ci['installment_count']),
+            'total_scheduled_amount' => floatval($ci['total_scheduled_amount'])
+        ];
+    }
+
     // Load goals for this ledger
     require_once __DIR__ . '/../goals/dashboard-integration.php';
 
@@ -305,7 +335,11 @@ require_once '../../includes/header.php';
                         </thead>
                         <tbody>
                             <?php foreach ($budget_status as $category): ?>
-                                <tr class="category-row <?= $category['balance'] < 0 ? 'overspent' : '' ?> <?= hasGoal($category['category_uuid']) ? 'has-goal' : '' ?>"
+                                <?php
+                                $has_installments = isset($installments_by_category[$category['category_uuid']]);
+                                $installment_info = $has_installments ? $installments_by_category[$category['category_uuid']] : null;
+                                ?>
+                                <tr class="category-row <?= $category['balance'] < 0 ? 'overspent' : '' ?> <?= hasGoal($category['category_uuid']) ? 'has-goal' : '' ?> <?= $has_installments ? 'has-installments' : '' ?>"
                                     data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>">
                                     <td class="category-name-cell">
                                         <div class="category-name-with-goal">
@@ -313,7 +347,19 @@ require_once '../../includes/header.php';
                                             <?php if (hasGoal($category['category_uuid'])): ?>
                                                 <?= renderGoalIndicator($category['category_uuid']) ?>
                                             <?php endif; ?>
+                                            <?php if ($has_installments): ?>
+                                                <span class="installment-indicator-badge"
+                                                      title="<?= $installment_info['installment_count'] ?> installment<?= $installment_info['installment_count'] != 1 ? 's' : '' ?> scheduled this month from <?= $installment_info['plan_count'] ?> plan<?= $installment_info['plan_count'] != 1 ? 's' : '' ?>">
+                                                    💳 <?= $installment_info['installment_count'] ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </div>
+                                        <?php if ($has_installments): ?>
+                                            <div class="installment-commitment-info">
+                                                <span class="commitment-label">Committed to Installments:</span>
+                                                <span class="commitment-amount"><?= formatCurrency($installment_info['total_scheduled_amount']) ?></span>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="amount budget-amount-editable"
                                         data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>"
@@ -1927,6 +1973,56 @@ require_once '../../includes/header.php';
         right: 1rem;
         left: 1rem;
     }
+}
+
+/* Installment Indicators */
+.category-row.has-installments {
+    border-left: 3px solid #f59e0b;
+}
+
+.category-row.has-installments:hover {
+    background-color: rgba(251, 191, 36, 0.05);
+}
+
+.installment-indicator-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.125rem 0.5rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #92400e;
+    cursor: help;
+    vertical-align: middle;
+}
+
+.installment-indicator-badge:hover {
+    background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+}
+
+.installment-commitment-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.375rem;
+    padding: 0.375rem 0.5rem;
+    background-color: #fffbeb;
+    border: 1px solid #fbbf24;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.commitment-label {
+    font-weight: 500;
+    color: #92400e;
+}
+
+.commitment-amount {
+    font-weight: 700;
+    color: #78350f;
+    margin-left: auto;
 }
 </style>
 
