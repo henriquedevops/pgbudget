@@ -55,7 +55,7 @@ try {
                            l.payment_amount, l.status, l.remaining_months
                     FROM data.loans l
                     JOIN data.accounts a ON l.account_id = a.id
-                    WHERE a.uuid = ? AND l.deleted_at IS NULL
+                    WHERE a.uuid = ?
                     LIMIT 1
                 ");
                 $stmt->execute([$account['account_uuid']]);

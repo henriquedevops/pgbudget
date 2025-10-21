@@ -94,7 +94,6 @@ try {
                l.status, l.loan_type
         FROM data.loans l
         WHERE l.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
-        AND l.deleted_at IS NULL
         AND l.status = 'active'
         ORDER BY l.current_balance DESC
     ");
@@ -118,7 +117,6 @@ try {
         AND lp.status = 'scheduled'
         AND lp.due_date <= CURRENT_DATE + INTERVAL '30 days'
         AND lp.due_date >= CURRENT_DATE
-        AND l.deleted_at IS NULL
         ORDER BY lp.due_date ASC
         LIMIT 5
     ");
