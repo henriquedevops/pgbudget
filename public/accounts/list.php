@@ -63,6 +63,37 @@ try {
             } catch (Exception $e) {
                 $account['loan'] = null;
             }
+
+            // Check for installment plans on this credit card
+            try {
+                $stmt = $db->prepare("
+                    SELECT
+                        COUNT(*) as plan_count,
+                        SUM(CASE WHEN ip.status = 'active' THEN 1 ELSE 0 END) as active_plans,
+                        SUM(CASE
+                            WHEN ip.status = 'active'
+                            THEN (ip.number_of_installments - ip.completed_installments) * ip.installment_amount
+                            ELSE 0
+                        END) as total_remaining_debt
+                    FROM data.installment_plans ip
+                    JOIN data.accounts a ON ip.credit_card_account_id = a.id
+                    WHERE a.uuid = ?
+                ");
+                $stmt->execute([$account['account_uuid']]);
+                $installment_data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                $account['installment_plans'] = [
+                    'count' => intval($installment_data['plan_count']),
+                    'active_plans' => intval($installment_data['active_plans']),
+                    'total_remaining_debt' => floatval($installment_data['total_remaining_debt'] ?? 0)
+                ];
+            } catch (Exception $e) {
+                $account['installment_plans'] = [
+                    'count' => 0,
+                    'active_plans' => 0,
+                    'total_remaining_debt' => 0
+                ];
+            }
         }
     }
     unset($account); // break the reference
@@ -255,6 +286,55 @@ require_once '../../includes/header.php';
                                                         <a href="../loans/record-payment.php?ledger=<?= $ledger_uuid ?>&loan=<?= $account['loan']['loan_uuid'] ?>"
                                                            class="btn btn-small btn-success">
                                                             💵 Record Payment
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                    <?php if ($type === 'liability' && !empty($account['installment_plans']) && $account['installment_plans']['count'] > 0): ?>
+                                        <!-- Installment plans information row -->
+                                        <tr class="installment-details-row">
+                                            <td colspan="<?= $type === 'liability' ? '5' : '4' ?>">
+                                                <div class="installment-info-card">
+                                                    <div class="installment-info-header">
+                                                        <span class="installment-icon">💳</span>
+                                                        <span class="installment-label">Installment Plans:</span>
+                                                        <strong><?= $account['installment_plans']['active_plans'] ?> Active</strong>
+                                                        <?php if ($account['installment_plans']['count'] > $account['installment_plans']['active_plans']): ?>
+                                                            <span class="installment-inactive-badge">
+                                                                +<?= $account['installment_plans']['count'] - $account['installment_plans']['active_plans'] ?> Completed/Cancelled
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="installment-info-details">
+                                                        <div class="installment-detail-item">
+                                                            <span class="installment-detail-label">Total Remaining Debt:</span>
+                                                            <span class="installment-detail-value amount negative">
+                                                                <?= formatCurrency($account['installment_plans']['total_remaining_debt']) ?>
+                                                            </span>
+                                                        </div>
+                                                        <div class="installment-detail-item">
+                                                            <span class="installment-detail-label">Total Plans:</span>
+                                                            <span class="installment-detail-value">
+                                                                <?= $account['installment_plans']['count'] ?>
+                                                            </span>
+                                                        </div>
+                                                        <div class="installment-detail-item">
+                                                            <span class="installment-detail-label">Active Plans:</span>
+                                                            <span class="installment-detail-value">
+                                                                <?= $account['installment_plans']['active_plans'] ?>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="installment-info-actions">
+                                                        <a href="../installments/?ledger=<?= $ledger_uuid ?>&card=<?= $account['account_uuid'] ?>"
+                                                           class="btn btn-small btn-primary">
+                                                            View All Plans
+                                                        </a>
+                                                        <a href="../installments/create.php?ledger=<?= $ledger_uuid ?>&credit_card=<?= $account['account_uuid'] ?>"
+                                                           class="btn btn-small btn-success">
+                                                            💳 Create Plan
                                                         </a>
                                                     </div>
                                                 </div>
@@ -803,6 +883,95 @@ require_once '../../includes/header.php';
     }
 
     .loan-info-actions {
+        flex-direction: column;
+    }
+}
+
+/* Installment Plans Info Card */
+.installment-details-row {
+    background-color: #fffbeb;
+}
+
+.installment-info-card {
+    padding: 1rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 8px;
+    border: 2px solid #f59e0b;
+}
+
+.installment-info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.installment-icon {
+    font-size: 1.5rem;
+}
+
+.installment-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #78350f;
+}
+
+.installment-inactive-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid #d97706;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #92400e;
+}
+
+.installment-info-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.installment-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.installment-detail-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #92400e;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.installment-detail-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #78350f;
+}
+
+.installment-info-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #fbbf24;
+}
+
+@media (max-width: 768px) {
+    .installment-info-details {
+        grid-template-columns: 1fr;
+    }
+
+    .installment-info-header {
+        flex-wrap: wrap;
+    }
+
+    .installment-info-actions {
         flex-direction: column;
     }
 }
