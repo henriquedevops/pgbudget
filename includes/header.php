@@ -106,10 +106,6 @@
                         <li class="nav-item">
                             <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Installments</a>
                         </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
-                        </li>
                     <?php endif; ?>
                     <li class="nav-item">
                         <a href="/pgbudget/settings/notifications.php" class="nav-link">⚙️ Settings</a>
@@ -137,10 +133,6 @@
                         </li>
                         <li class="nav-item">
                             <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Installments</a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
