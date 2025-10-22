@@ -92,9 +92,6 @@
                     <li class="nav-item">
                         <a href="/pgbudget/" class="nav-link">Dashboard</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/pgbudget/ledgers/create.php" class="nav-link">New Budget</a>
-                    </li>
                     <?php if (isset($_GET['ledger']) || isset($ledger_uuid)): ?>
                         <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
                         <li class="nav-item">
@@ -108,7 +105,7 @@
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="/pgbudget/settings/notifications.php" class="nav-link">⚙️ Settings</a>
+                        <a href="/pgbudget/settings/" class="nav-link">⚙️ Settings</a>
                     </li>
                     <li class="nav-item">
                         <span class="nav-user">Hello, <?= htmlspecialchars($_SESSION['user_id']) ?>!</span>
@@ -120,9 +117,6 @@
                     <li class="nav-item">
                         <a href="/pgbudget/" class="nav-link">Dashboard</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/pgbudget/ledgers/create.php" class="nav-link">New Budget</a>
-                    </li>
                     <?php if (isset($_GET['ledger']) || isset($ledger_uuid)): ?>
                         <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
                         <li class="nav-item">
@@ -136,7 +130,7 @@
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="/pgbudget/settings/notifications.php" class="nav-link">⚙️ Settings</a>
+                        <a href="/pgbudget/settings/" class="nav-link">⚙️ Settings</a>
                     </li>
                     <li class="nav-item">
                         <span class="nav-user">Demo Mode</span>
