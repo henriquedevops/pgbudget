@@ -14,6 +14,12 @@ setUserContext($db);
 $stmt = $db->prepare("SELECT uuid, name, description FROM api.ledgers ORDER BY name");
 $stmt->execute();
 $ledgers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// If there's exactly one budget, redirect directly to it
+if (count($ledgers) === 1) {
+    header('Location: budget/dashboard.php?ledger=' . urlencode($ledgers[0]['uuid']));
+    exit;
+}
 ?>
 
 <div class="container">
@@ -52,10 +58,6 @@ $ledgers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                     </div>
                 <?php endforeach; ?>
-            </div>
-
-            <div class="actions">
-                <a href="ledgers/create.php" class="btn btn-success">+ Create New Budget</a>
             </div>
         <?php endif; ?>
     </div>
