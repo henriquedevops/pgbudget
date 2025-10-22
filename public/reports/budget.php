@@ -39,18 +39,14 @@ try {
     $stmt->execute([$ledger_uuid, $selected_period]);
     $budget_totals = $stmt->fetch();
 
-    // Get available periods
-    $stmt = $db->prepare("
-        SELECT DISTINCT period
-        FROM data.budget_amounts
-        WHERE account_id IN (
-            SELECT id FROM data.accounts WHERE ledger_uuid = ?
-        )
-        ORDER BY period DESC
-        LIMIT 24
-    ");
-    $stmt->execute([$ledger_uuid]);
-    $available_periods = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    // Get available periods - generate last 24 months
+    $available_periods = [];
+    $current_date = new DateTime();
+    for ($i = 0; $i < 24; $i++) {
+        $period_date = clone $current_date;
+        $period_date->modify("-$i months");
+        $available_periods[] = $period_date->format('Ym');
+    }
 
     // Format period for display
     function formatPeriod($period) {
@@ -103,28 +99,28 @@ require_once '../../includes/header.php';
     <!-- Summary Cards -->
     <div class="summary-cards">
         <div class="summary-card">
+            <div class="summary-label">Total Income</div>
+            <div class="summary-value"><?= formatCurrency($budget_totals['income'] ?? 0) ?></div>
+        </div>
+        <div class="summary-card">
             <div class="summary-label">Total Budgeted</div>
-            <div class="summary-value"><?= formatCurrency($budget_totals['total_budgeted'] ?? 0) ?></div>
+            <div class="summary-value"><?= formatCurrency($budget_totals['budgeted'] ?? 0) ?></div>
         </div>
         <div class="summary-card">
-            <div class="summary-label">Total Spent</div>
-            <div class="summary-value"><?= formatCurrency($budget_totals['total_actual'] ?? 0) ?></div>
-        </div>
-        <div class="summary-card">
-            <div class="summary-label">Remaining</div>
-            <div class="summary-value <?= ($budget_totals['total_available'] ?? 0) >= 0 ? 'positive' : 'negative' ?>">
-                <?= formatCurrency($budget_totals['total_available'] ?? 0) ?>
+            <div class="summary-label">Left to Budget</div>
+            <div class="summary-value <?= ($budget_totals['left_to_budget'] ?? 0) >= 0 ? 'positive' : 'negative' ?>">
+                <?= formatCurrency($budget_totals['left_to_budget'] ?? 0) ?>
             </div>
         </div>
         <div class="summary-card">
-            <div class="summary-label">Budget Usage</div>
+            <div class="summary-label">Total Activity</div>
             <div class="summary-value">
                 <?php
-                $usage = 0;
-                if (($budget_totals['total_budgeted'] ?? 0) > 0) {
-                    $usage = (($budget_totals['total_actual'] ?? 0) / $budget_totals['total_budgeted']) * 100;
+                $total_activity = 0;
+                foreach ($budget_status as $cat) {
+                    $total_activity += $cat['activity'];
                 }
-                echo number_format($usage, 1) . '%';
+                echo formatCurrency($total_activity);
                 ?>
             </div>
         </div>
@@ -153,8 +149,8 @@ require_once '../../includes/header.php';
                     <tr>
                         <th>Category</th>
                         <th class="text-right">Budgeted</th>
-                        <th class="text-right">Actual</th>
-                        <th class="text-right">Remaining</th>
+                        <th class="text-right">Activity</th>
+                        <th class="text-right">Available</th>
                         <th class="text-right">Usage %</th>
                         <th>Progress</th>
                     </tr>
@@ -168,19 +164,21 @@ require_once '../../includes/header.php';
                         <?php foreach ($budget_status as $category): ?>
                             <?php
                             $usage_percent = 0;
-                            if ($category['budgeted_amount'] > 0) {
-                                $usage_percent = ($category['actual_amount'] / $category['budgeted_amount']) * 100;
+                            if ($category['budgeted'] > 0) {
+                                $usage_percent = (abs($category['activity']) / $category['budgeted']) * 100;
                             }
-                            $is_overspent = $category['available_amount'] < 0;
+                            $is_overspent = $category['balance'] < 0;
                             ?>
                             <tr class="<?= $is_overspent ? 'overspent' : '' ?>">
                                 <td>
                                     <strong><?= htmlspecialchars($category['category_name']) ?></strong>
                                 </td>
-                                <td class="text-right"><?= formatCurrency($category['budgeted_amount']) ?></td>
-                                <td class="text-right"><?= formatCurrency($category['actual_amount']) ?></td>
-                                <td class="text-right <?= $category['available_amount'] >= 0 ? 'positive' : 'negative' ?>">
-                                    <?= formatCurrency($category['available_amount']) ?>
+                                <td class="text-right"><?= formatCurrency($category['budgeted']) ?></td>
+                                <td class="text-right <?= $category['activity'] < 0 ? 'negative' : 'positive' ?>">
+                                    <?= formatCurrency($category['activity']) ?>
+                                </td>
+                                <td class="text-right <?= $category['balance'] >= 0 ? 'positive' : 'negative' ?>">
+                                    <?= formatCurrency($category['balance']) ?>
                                 </td>
                                 <td class="text-right">
                                     <span class="<?= $usage_percent > 100 ? 'text-danger' : ($usage_percent > 80 ? 'text-warning' : '') ?>">
@@ -460,8 +458,8 @@ const budgetData = <?= json_encode($budget_status) ?>;
 const ctx = document.getElementById('budgetVsActualChart').getContext('2d');
 
 const categories = budgetData.map(item => item.category_name);
-const budgetedAmounts = budgetData.map(item => item.budgeted_amount / 100);
-const actualAmounts = budgetData.map(item => item.actual_amount / 100);
+const budgetedAmounts = budgetData.map(item => item.budgeted / 100);
+const activityAmounts = budgetData.map(item => Math.abs(item.activity) / 100);
 
 new Chart(ctx, {
     type: 'bar',
@@ -476,8 +474,8 @@ new Chart(ctx, {
                 borderWidth: 2
             },
             {
-                label: 'Actual',
-                data: actualAmounts,
+                label: 'Activity',
+                data: activityAmounts,
                 backgroundColor: 'rgba(245, 158, 11, 0.6)',
                 borderColor: '#f59e0b',
                 borderWidth: 2
