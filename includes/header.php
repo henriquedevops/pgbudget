@@ -95,16 +95,20 @@
                     <li class="nav-item">
                         <a href="/pgbudget/ledgers/create.php" class="nav-link">New Budget</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
-                    </li>
                     <?php if (isset($_GET['ledger']) || isset($ledger_uuid)): ?>
                         <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
+                        <li class="nav-item">
+                            <a href="/pgbudget/transactions/add.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Add Transaction</a>
+                        </li>
                         <li class="nav-item">
                             <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💰 Loans</a>
                         </li>
                         <li class="nav-item">
                             <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Installments</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
@@ -123,16 +127,20 @@
                     <li class="nav-item">
                         <a href="/pgbudget/ledgers/create.php" class="nav-link">New Budget</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
-                    </li>
                     <?php if (isset($_GET['ledger']) || isset($ledger_uuid)): ?>
                         <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
+                        <li class="nav-item">
+                            <a href="/pgbudget/transactions/add.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Add Transaction</a>
+                        </li>
                         <li class="nav-item">
                             <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💰 Loans</a>
                         </li>
                         <li class="nav-item">
                             <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Installments</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a href="/pgbudget/transactions/add.php" class="nav-link">Add Transaction</a>
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
