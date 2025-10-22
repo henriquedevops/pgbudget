@@ -1,7 +1,6 @@
 <?php
 require_once '../config/database.php';
 require_once '../includes/auth.php';
-require_once '../includes/header.php';
 
 // Require authentication - redirect to login if not logged in
 requireAuth(true); // Allow demo mode for backward compatibility
@@ -20,6 +19,8 @@ if (count($ledgers) === 1) {
     header('Location: budget/dashboard.php?ledger=' . urlencode($ledgers[0]['uuid']));
     exit;
 }
+
+require_once '../includes/header.php';
 ?>
 
 <div class="container">
