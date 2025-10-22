@@ -1,7 +1,6 @@
 <?php
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
-require_once '../../includes/header.php';
 
 // Require authentication
 requireAuth();
@@ -74,6 +73,8 @@ try {
     header('Location: ../index.php');
     exit;
 }
+
+require_once '../../includes/header.php';
 ?>
 
 <div class="container">
