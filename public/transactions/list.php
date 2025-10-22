@@ -147,7 +147,7 @@ try {
         JOIN data.accounts da ON t.debit_account_id = da.id
         JOIN data.accounts ca ON t.credit_account_id = ca.id
         JOIN data.ledgers l ON t.ledger_id = l.id
-        LEFT JOIN data.installment_plans ip ON t.id = ip.purchase_transaction_id
+        LEFT JOIN data.installment_plans ip ON t.id = ip.original_transaction_id
         WHERE $where_clause AND t.deleted_at IS NULL
         $order_by
         LIMIT ? OFFSET ?

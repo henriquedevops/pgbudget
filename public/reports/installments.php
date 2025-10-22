@@ -47,6 +47,7 @@ require_once '../../includes/header.php';
             <p class="report-subtitle"><?= htmlspecialchars($ledger['name']) ?></p>
         </div>
         <div class="report-actions">
+            <a href="installment-impact.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">Budget Impact Report</a>
             <a href="../budget/dashboard.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">← Back to Budget</a>
         </div>
     </div>
