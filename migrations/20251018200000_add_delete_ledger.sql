@@ -27,12 +27,50 @@ BEGIN
         'transactions', (SELECT COUNT(*) FROM data.transactions WHERE ledger_id = v_ledger_id),
         'accounts', (SELECT COUNT(*) FROM data.accounts WHERE ledger_id = v_ledger_id),
         'recurring_transactions', (SELECT COUNT(*) FROM data.recurring_transactions WHERE ledger_id = v_ledger_id),
-        'account_balances', (SELECT COUNT(*) FROM data.account_balances WHERE ledger_id = v_ledger_id)
+        'installment_plans', (SELECT COUNT(*) FROM data.installment_plans WHERE ledger_id = v_ledger_id)
     ) INTO v_counts;
 
     -- Delete related data in proper order
-    -- Note: Most should cascade automatically if foreign keys are set up,
-    -- but we'll be explicit for clarity and to handle any missing cascades
+    -- Must delete in dependency order due to NO ACTION foreign key constraints
+
+    -- Delete transaction_log first (references transactions with NO ACTION)
+    DELETE FROM data.transaction_log
+    WHERE original_transaction_id IN (SELECT id FROM data.transactions WHERE ledger_id = v_ledger_id);
+
+    -- Delete balance_snapshots (references accounts and transactions with NO ACTION)
+    DELETE FROM data.balance_snapshots
+    WHERE account_id IN (SELECT id FROM data.accounts WHERE ledger_id = v_ledger_id);
+
+    -- Delete transaction_splits (references transactions with CASCADE and accounts with NO ACTION)
+    DELETE FROM data.transaction_splits
+    WHERE parent_transaction_id IN (SELECT id FROM data.transactions WHERE ledger_id = v_ledger_id);
+
+    -- Delete installment schedules (references transactions)
+    DELETE FROM data.installment_schedules
+    WHERE installment_plan_id IN (SELECT id FROM data.installment_plans WHERE ledger_id = v_ledger_id);
+
+    -- Delete installment plans (has CASCADE from ledgers, but explicit for clarity)
+    DELETE FROM data.installment_plans WHERE ledger_id = v_ledger_id;
+
+    -- Delete reconciliations (references accounts and transactions)
+    DELETE FROM data.reconciliations
+    WHERE account_id IN (SELECT id FROM data.accounts WHERE ledger_id = v_ledger_id);
+
+    -- Delete loan payments (references accounts and transactions)
+    DELETE FROM data.loan_payments
+    WHERE loan_id IN (SELECT id FROM data.loans WHERE ledger_id = v_ledger_id);
+
+    -- Delete credit card statements
+    DELETE FROM data.credit_card_statements
+    WHERE credit_card_account_id IN (SELECT id FROM data.accounts WHERE ledger_id = v_ledger_id);
+
+    -- Delete credit card limits
+    DELETE FROM data.credit_card_limits
+    WHERE credit_card_account_id IN (SELECT id FROM data.accounts WHERE ledger_id = v_ledger_id);
+
+    -- Delete category goals
+    DELETE FROM data.category_goals
+    WHERE category_id IN (SELECT id FROM data.accounts WHERE ledger_id = v_ledger_id);
 
     -- Delete action history for this ledger
     DELETE FROM data.action_history WHERE ledger_id = v_ledger_id;
@@ -43,17 +81,20 @@ BEGIN
     -- Delete recurring transactions
     DELETE FROM data.recurring_transactions WHERE ledger_id = v_ledger_id;
 
-    -- Delete account balances
-    DELETE FROM data.account_balances WHERE ledger_id = v_ledger_id;
-
     -- Delete transactions (this should cascade to splits if properly configured)
     DELETE FROM data.transactions WHERE ledger_id = v_ledger_id;
 
-    -- Delete accounts
+    -- Delete loans
+    DELETE FROM data.loans WHERE ledger_id = v_ledger_id;
+
+    -- Temporarily disable the trigger that prevents deletion of special accounts
+    ALTER TABLE data.accounts DISABLE TRIGGER trigger_prevent_special_account_deletion;
+
+    -- Delete accounts (including special accounts like Income, Off-budget, Unassigned)
     DELETE FROM data.accounts WHERE ledger_id = v_ledger_id;
 
-    -- Delete loans if they exist
-    DELETE FROM data.loans WHERE ledger_id = v_ledger_id;
+    -- Re-enable the trigger
+    ALTER TABLE data.accounts ENABLE TRIGGER trigger_prevent_special_account_deletion;
 
     -- Finally, delete the ledger itself
     DELETE FROM data.ledgers WHERE id = v_ledger_id;

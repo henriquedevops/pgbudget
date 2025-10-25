@@ -71,6 +71,8 @@ try {
         JOIN data.accounts da ON t.debit_account_id = da.id
         WHERE t.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
         AND t.deleted_at IS NULL
+        AND t.description NOT LIKE 'DELETED:%'
+        AND t.description NOT LIKE 'REVERSAL:%'
         ORDER BY t.date DESC, t.created_at DESC
         LIMIT 10
     ");
@@ -266,6 +268,22 @@ require_once '../../includes/header.php';
                 </span>
             <?php endif; ?>
         </form>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <a href="../accounts/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">View Accounts</a>
+            <a href="../transactions/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">All Transactions</a>
+            <a href="../recurring/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">🔄 Recurring Transactions</a>
+            <a href="../reports/budget.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">Budget Report</a>
+            <a href="../reports/spending-by-category.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📊 Spending by Category</a>
+            <a href="../reports/income-vs-expense.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">💰 Income vs Expense</a>
+            <a href="../reports/net-worth.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📊 Net Worth</a>
+            <a href="../reports/category-trends.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📈 Category Trends</a>
+            <a href="../reports/age-of-money.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">⏰ Age of Money</a>
+        </div>
     </div>
 
     <!-- Overspending Warning Banner (Phase 4.4) -->
@@ -613,22 +631,6 @@ require_once '../../includes/header.php';
                     </div>
                     <a href="../transactions/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">View All</a>
                 <?php endif; ?>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <h3>Quick Actions</h3>
-                <div class="action-buttons">
-                    <a href="../accounts/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">View Accounts</a>
-                    <a href="../transactions/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">All Transactions</a>
-                    <a href="../recurring/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">🔄 Recurring Transactions</a>
-                    <a href="../reports/budget.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">Budget Report</a>
-                    <a href="../reports/spending-by-category.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📊 Spending by Category</a>
-                    <a href="../reports/income-vs-expense.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">💰 Income vs Expense</a>
-                    <a href="../reports/net-worth.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📊 Net Worth</a>
-                    <a href="../reports/category-trends.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📈 Category Trends</a>
-                    <a href="../reports/age-of-money.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">⏰ Age of Money</a>
-                </div>
             </div>
         </div>
     </div>
@@ -985,20 +987,34 @@ require_once '../../includes/header.php';
 
 .quick-actions {
     background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    margin-bottom: 1.5rem;
+}
+
+.quick-actions h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .action-buttons {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 0.5rem;
+    align-items: flex-start;
+    justify-content: flex-start;
 }
 
 .btn-small {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 .btn-edit {
