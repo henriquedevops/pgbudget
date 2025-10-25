@@ -76,6 +76,8 @@ try {
         WHERE l.uuid = ?
           AND (da.uuid = ? OR ca.uuid = ?)
           AND t.deleted_at IS NULL
+          AND t.description NOT LIKE 'DELETED:%'
+          AND t.description NOT LIKE 'REVERSAL:%'
         ORDER BY t.date DESC, t.created_at DESC
         LIMIT 20
     ");

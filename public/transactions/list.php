@@ -123,6 +123,8 @@ try {
         JOIN data.accounts ca ON t.credit_account_id = ca.id
         JOIN data.ledgers l ON t.ledger_id = l.id
         WHERE $where_clause AND t.deleted_at IS NULL
+        AND t.description NOT LIKE 'DELETED:%'
+        AND t.description NOT LIKE 'REVERSAL:%'
     ";
     $stmt = $db->prepare($count_query);
     $stmt->execute($params);
@@ -149,6 +151,8 @@ try {
         JOIN data.ledgers l ON t.ledger_id = l.id
         LEFT JOIN data.installment_plans ip ON t.id = ip.original_transaction_id
         WHERE $where_clause AND t.deleted_at IS NULL
+        AND t.description NOT LIKE 'DELETED:%'
+        AND t.description NOT LIKE 'REVERSAL:%'
         $order_by
         LIMIT ? OFFSET ?
     ";

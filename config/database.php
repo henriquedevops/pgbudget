@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Set timezone to GMT-3 (America/Sao_Paulo - Brazil)
+date_default_timezone_set('America/Sao_Paulo');
+
 // Load environment variables from .env file if it exists
 if (file_exists(__DIR__ . '/../.env')) {
     $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);

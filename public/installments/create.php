@@ -73,6 +73,8 @@ try {
         WHERE l.uuid = ?
         AND ca.type = 'liability'
         AND t.deleted_at IS NULL
+        AND t.description NOT LIKE 'DELETED:%'
+        AND t.description NOT LIKE 'REVERSAL:%'
         ORDER BY t.date DESC
         LIMIT 50
     ");
