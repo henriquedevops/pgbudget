@@ -337,6 +337,28 @@ const QuickAddModal = (function() {
 
         const saveAndAdd = document.getElementById('qa-save-and-add').checked;
 
+        // Check credit limit if this is a credit card outflow (Phase 5)
+        if (data.type === 'outflow') {
+            checkCreditLimit(data.account, data.amount, function(limitWarning) {
+                if (limitWarning) {
+                    showLimitWarning(limitWarning, function(proceed) {
+                        if (proceed) {
+                            proceedWithSubmit(data, saveAndAdd);
+                        }
+                    });
+                } else {
+                    proceedWithSubmit(data, saveAndAdd);
+                }
+            });
+        } else {
+            proceedWithSubmit(data, saveAndAdd);
+        }
+    }
+
+    /**
+     * Proceed with submitting transaction (Phase 5 - extracted for limit check)
+     */
+    function proceedWithSubmit(data, saveAndAdd) {
         // Show loading state
         const submitBtn = document.getElementById('qa-submit-btn');
         submitBtn.classList.add('loading');
@@ -369,6 +391,135 @@ const QuickAddModal = (function() {
                 showError(message);
             }
         });
+    }
+
+    /**
+     * Check credit card limit (Phase 5)
+     */
+    function checkCreditLimit(accountUuid, amountStr, callback) {
+        // Find the account in our accounts list
+        const account = accounts.find(acc => acc.uuid === accountUuid);
+
+        // Only check if it's a liability account (credit card)
+        if (!account || account.type !== 'liability') {
+            callback(null);
+            return;
+        }
+
+        // Parse amount
+        const normalizedAmount = amountStr.replace(',', '.');
+        const amount = parseFloat(normalizedAmount);
+
+        // Check credit limit via API
+        fetch(`/pgbudget/api/credit-card-limits.php?account_uuid=${accountUuid}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.limit) {
+                    const currentBalance = parseFloat(data.current_balance || 0);
+                    const creditLimit = parseFloat(data.limit.credit_limit);
+                    const newBalance = currentBalance + amount;
+                    const utilizationPercent = (newBalance / creditLimit) * 100;
+                    const warningThreshold = parseFloat(data.limit.warning_threshold_percent || 80);
+
+                    if (newBalance > creditLimit) {
+                        callback({
+                            type: 'over_limit',
+                            currentBalance: currentBalance,
+                            creditLimit: creditLimit,
+                            newBalance: newBalance,
+                            utilizationPercent: utilizationPercent,
+                            amount: amount
+                        });
+                    } else if (utilizationPercent >= 95) {
+                        callback({
+                            type: 'critical',
+                            currentBalance: currentBalance,
+                            creditLimit: creditLimit,
+                            newBalance: newBalance,
+                            utilizationPercent: utilizationPercent,
+                            amount: amount
+                        });
+                    } else if (utilizationPercent >= warningThreshold) {
+                        callback({
+                            type: 'warning',
+                            currentBalance: currentBalance,
+                            creditLimit: creditLimit,
+                            newBalance: newBalance,
+                            utilizationPercent: utilizationPercent,
+                            amount: amount
+                        });
+                    } else {
+                        callback(null);
+                    }
+                } else {
+                    // No limit set, proceed normally
+                    callback(null);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking credit limit:', error);
+                // On error, proceed anyway (don't block transaction)
+                callback(null);
+            });
+    }
+
+    /**
+     * Show credit limit warning modal (Phase 5)
+     */
+    function showLimitWarning(warning, callback) {
+        const warningHTML = `
+            <div class="limit-warning-overlay">
+                <div class="limit-warning-content">
+                    <div class="warning-icon-large">⚠️</div>
+                    <div class="warning-title">
+                        ${warning.type === 'over_limit' ? 'Credit Limit Exceeded!' :
+                          warning.type === 'critical' ? 'Critical: Near Credit Limit' :
+                          'Warning: Approaching Credit Limit'}
+                    </div>
+                    <div class="warning-message">
+                        ${warning.type === 'over_limit' ?
+                            `This transaction would exceed your credit limit by <strong>${formatCurrency(warning.newBalance - warning.creditLimit)}</strong>.` :
+                            `This transaction will bring your credit utilization to <strong>${warning.utilizationPercent.toFixed(1)}%</strong>.`}
+                        <br><br>
+                        <strong>Current Balance:</strong> ${formatCurrency(warning.currentBalance)}<br>
+                        <strong>Transaction Amount:</strong> ${formatCurrency(warning.amount)}<br>
+                        <strong>New Balance:</strong> ${formatCurrency(warning.newBalance)}<br>
+                        <strong>Credit Limit:</strong> ${formatCurrency(warning.creditLimit)}
+                    </div>
+                    <div class="warning-actions">
+                        ${warning.type === 'over_limit' ?
+                            '<button type="button" class="btn btn-secondary" onclick="this.closest(\'.limit-warning-overlay\').remove()">Cancel</button>' :
+                            '<button type="button" class="btn btn-secondary" onclick="this.closest(\'.limit-warning-overlay\').remove()">Cancel</button>'}
+                        <button type="button" class="btn btn-${warning.type === 'over_limit' ? 'danger' : 'warning'}"
+                                onclick="QuickAddModal.confirmLimitWarning()">
+                            ${warning.type === 'over_limit' ? 'Proceed Anyway' : 'Continue'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', warningHTML);
+
+        // Store callback for confirmation
+        window._limitWarningCallback = callback;
+    }
+
+    /**
+     * Confirm limit warning and proceed (Phase 5)
+     */
+    function confirmLimitWarning() {
+        // Remove warning overlay
+        const overlay = document.querySelector('.limit-warning-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+
+        // Call callback to proceed
+        if (window._limitWarningCallback) {
+            window._limitWarningCallback(true);
+            delete window._limitWarningCallback;
+        }
     }
 
     /**
@@ -733,6 +884,7 @@ const QuickAddModal = (function() {
     // Public API
     return {
         open: open,
-        close: close
+        close: close,
+        confirmLimitWarning: confirmLimitWarning  // Phase 5: Expose for limit warning modal
     };
 })();

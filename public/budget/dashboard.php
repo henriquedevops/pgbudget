@@ -202,6 +202,124 @@ try {
         ];
     }
 
+    // Get credit card accounts with limits (Phase 5)
+    $stmt = $db->prepare("
+        SELECT
+            cc.uuid as account_uuid,
+            cc.name as account_name,
+            ccl.uuid as limit_uuid,
+            ccl.credit_limit,
+            ccl.annual_percentage_rate,
+            ccl.warning_threshold_percent,
+            ccl.statement_day_of_month,
+            ccl.due_date_offset_days,
+            ccl.auto_payment_enabled,
+            ccl.auto_payment_type,
+            ABS(COALESCE(utils.get_account_balance(
+                (SELECT id FROM data.ledgers WHERE uuid = ?),
+                cc.id
+            ), 0)) as current_balance
+        FROM data.accounts cc
+        LEFT JOIN data.credit_card_limits ccl ON ccl.credit_card_account_id = cc.id
+        WHERE cc.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
+        AND cc.type = 'liability'
+        AND ccl.is_active = true
+        AND ccl.id IS NOT NULL
+        ORDER BY cc.name
+    ");
+    $stmt->execute([$ledger_uuid, $ledger_uuid]);
+    $credit_cards_with_limits = $stmt->fetchAll();
+
+    // Calculate utilization and warnings for each card
+    $credit_card_summaries = [];
+    $total_credit_limit = 0;
+    $total_credit_used = 0;
+    $cards_near_limit = 0;
+
+    foreach ($credit_cards_with_limits as $card) {
+        $balance = floatval($card['current_balance']);
+        $limit = floatval($card['credit_limit']);
+        $utilization_percent = $limit > 0 ? ($balance / $limit * 100) : 0;
+        $warning_threshold = floatval($card['warning_threshold_percent']);
+
+        $status = 'good';
+        if ($utilization_percent >= 100) {
+            $status = 'over_limit';
+            $cards_near_limit++;
+        } elseif ($utilization_percent >= 95) {
+            $status = 'critical';
+            $cards_near_limit++;
+        } elseif ($utilization_percent >= $warning_threshold) {
+            $status = 'warning';
+            $cards_near_limit++;
+        }
+
+        $credit_card_summaries[] = [
+            'account_uuid' => $card['account_uuid'],
+            'account_name' => $card['account_name'],
+            'limit_uuid' => $card['limit_uuid'],
+            'current_balance' => $balance,
+            'credit_limit' => $limit,
+            'available_credit' => max(0, $limit - $balance),
+            'utilization_percent' => $utilization_percent,
+            'status' => $status,
+            'apr' => floatval($card['annual_percentage_rate']),
+            'auto_payment_enabled' => $card['auto_payment_enabled'] === 't',
+            'auto_payment_type' => $card['auto_payment_type']
+        ];
+
+        $total_credit_limit += $limit;
+        $total_credit_used += $balance;
+    }
+
+    $overall_utilization = $total_credit_limit > 0 ? ($total_credit_used / $total_credit_limit * 100) : 0;
+
+    // Get upcoming credit card payments (scheduled payments due in next 30 days)
+    $stmt = $db->prepare("
+        SELECT
+            sp.uuid as payment_uuid,
+            sp.scheduled_date,
+            sp.payment_type,
+            sp.payment_amount,
+            sp.status,
+            cc.uuid as card_uuid,
+            cc.name as card_name,
+            ba.name as bank_account_name
+        FROM data.scheduled_payments sp
+        JOIN data.accounts cc ON sp.credit_card_account_id = cc.id
+        LEFT JOIN data.accounts ba ON sp.bank_account_id = ba.id
+        WHERE cc.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
+        AND sp.status IN ('pending', 'processing')
+        AND sp.scheduled_date <= CURRENT_DATE + INTERVAL '30 days'
+        ORDER BY sp.scheduled_date ASC
+        LIMIT 5
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $upcoming_cc_payments = $stmt->fetchAll();
+
+    // Get current/recent statements
+    $stmt = $db->prepare("
+        SELECT
+            st.uuid as statement_uuid,
+            st.statement_period_start,
+            st.statement_period_end,
+            st.ending_balance,
+            st.minimum_payment_due,
+            st.due_date,
+            st.interest_charged,
+            st.is_current,
+            cc.uuid as card_uuid,
+            cc.name as card_name
+        FROM data.credit_card_statements st
+        JOIN data.accounts cc ON st.credit_card_account_id = cc.id
+        WHERE cc.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
+        AND st.is_current = true
+        ORDER BY st.statement_period_end DESC
+        LIMIT 10
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $current_statements = $stmt->fetchAll();
+
     // Load goals for this ledger
     require_once __DIR__ . '/../goals/dashboard-integration.php';
 
@@ -425,6 +543,135 @@ require_once '../../includes/header.php';
         </div>
 
         <div class="budget-sidebar">
+            <!-- Credit Card Limits (Phase 5) -->
+            <?php if (!empty($credit_card_summaries)): ?>
+                <div class="credit-card-limits-section">
+                    <h3>💳 Credit Card Limits</h3>
+
+                    <?php if ($cards_near_limit > 0): ?>
+                        <div class="credit-warning-banner">
+                            ⚠️ <?= $cards_near_limit ?> card<?= $cards_near_limit > 1 ? 's' : '' ?> near limit
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="credit-summary-stats">
+                        <div class="credit-stat">
+                            <span class="credit-stat-label">Total Credit Used</span>
+                            <span class="credit-stat-value amount negative"><?= formatCurrency($total_credit_used) ?></span>
+                        </div>
+                        <div class="credit-stat">
+                            <span class="credit-stat-label">Total Credit Limit</span>
+                            <span class="credit-stat-value amount"><?= formatCurrency($total_credit_limit) ?></span>
+                        </div>
+                        <div class="credit-stat">
+                            <span class="credit-stat-label">Overall Utilization</span>
+                            <span class="credit-stat-value <?= $overall_utilization >= 80 ? 'warning' : '' ?>">
+                                <?= number_format($overall_utilization, 1) ?>%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="credit-cards-list">
+                        <?php foreach ($credit_card_summaries as $card): ?>
+                            <div class="credit-card-item status-<?= $card['status'] ?>"
+                                 data-card-uuid="<?= htmlspecialchars($card['account_uuid']) ?>">
+                                <div class="card-header">
+                                    <div class="card-name"><?= htmlspecialchars($card['account_name']) ?></div>
+                                    <div class="card-balance amount negative"><?= formatCurrency($card['current_balance']) ?></div>
+                                </div>
+
+                                <div class="card-limit-bar">
+                                    <div class="limit-bar-bg">
+                                        <div class="limit-bar-fill status-<?= $card['status'] ?>"
+                                             style="width: <?= min(100, $card['utilization_percent']) ?>%">
+                                        </div>
+                                    </div>
+                                    <div class="limit-bar-labels">
+                                        <span class="utilization-label">
+                                            <?= number_format($card['utilization_percent'], 1) ?>% used
+                                        </span>
+                                        <span class="limit-label">
+                                            of <?= formatCurrency($card['credit_limit']) ?>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="card-details">
+                                    <div class="card-detail-item">
+                                        <span class="detail-label">Available:</span>
+                                        <span class="detail-value amount positive"><?= formatCurrency($card['available_credit']) ?></span>
+                                    </div>
+                                    <?php if ($card['apr'] > 0): ?>
+                                        <div class="card-detail-item">
+                                            <span class="detail-label">APR:</span>
+                                            <span class="detail-value"><?= number_format($card['apr'], 2) ?>%</span>
+                                        </div>
+                                    <?php endif; ?>
+                                    <?php if ($card['auto_payment_enabled']): ?>
+                                        <div class="card-detail-item">
+                                            <span class="auto-payment-badge" title="Auto-payment enabled">
+                                                🤖 Auto-pay: <?= ucfirst(str_replace('_', ' ', $card['auto_payment_type'] ?? 'enabled')) ?>
+                                            </span>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="card-actions">
+                                    <a href="../credit-cards/settings.php?ledger=<?= $ledger_uuid ?>&card=<?= $card['account_uuid'] ?>"
+                                       class="btn btn-small btn-secondary">⚙️ Settings</a>
+                                    <a href="../credit-cards/statements.php?ledger=<?= $ledger_uuid ?>&card=<?= $card['account_uuid'] ?>"
+                                       class="btn btn-small btn-secondary">📄 Statements</a>
+                                    <button type="button"
+                                            class="btn btn-small btn-primary schedule-payment-btn"
+                                            data-card-uuid="<?= htmlspecialchars($card['account_uuid']) ?>"
+                                            data-card-name="<?= htmlspecialchars($card['account_name']) ?>"
+                                            onclick="openSchedulePaymentModal('<?= htmlspecialchars($card['account_uuid']) ?>', '<?= htmlspecialchars($card['account_name']) ?>')">
+                                        💵 Schedule Payment
+                                    </button>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <?php if (!empty($upcoming_cc_payments)): ?>
+                        <div class="upcoming-cc-payments">
+                            <h4>Upcoming Payments</h4>
+                            <?php foreach ($upcoming_cc_payments as $payment): ?>
+                                <?php
+                                $days_until = (new DateTime($payment['scheduled_date']))->diff(new DateTime())->days;
+                                $is_soon = $days_until <= 7;
+                                ?>
+                                <div class="upcoming-cc-payment-item <?= $is_soon ? 'due-soon' : '' ?>">
+                                    <div class="payment-info">
+                                        <div class="payment-card"><?= htmlspecialchars($payment['card_name']) ?></div>
+                                        <div class="payment-type"><?= ucfirst(str_replace('_', ' ', $payment['payment_type'])) ?></div>
+                                        <div class="payment-date">
+                                            <?php if ($days_until == 0): ?>
+                                                <span class="due-today">Due Today!</span>
+                                            <?php elseif ($days_until == 1): ?>
+                                                <span class="due-tomorrow">Due Tomorrow</span>
+                                            <?php else: ?>
+                                                Due in <?= $days_until ?> day<?= $days_until > 1 ? 's' : '' ?>
+                                            <?php endif ?>
+                                            (<?= date('M j', strtotime($payment['scheduled_date'])) ?>)
+                                        </div>
+                                    </div>
+                                    <div class="payment-status">
+                                        <span class="status-badge status-<?= $payment['status'] ?>">
+                                            <?= ucfirst($payment['status']) ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="credit-cards-summary-actions">
+                        <a href="../credit-cards/" class="btn btn-primary btn-small">Manage Credit Cards</a>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- Underfunded Goals -->
             <?php if (!empty($underfunded_goals)): ?>
                 <div class="underfunded-goals-section">
@@ -802,6 +1049,288 @@ require_once '../../includes/header.php';
 .loan-summary-actions .btn {
     flex: 1;
     min-width: 120px;
+}
+
+/* Credit Card Limits Section (Phase 5) */
+.credit-card-limits-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.credit-card-limits-section h3 {
+    margin: 0 0 1rem 0;
+    color: #2d3748;
+}
+
+.credit-card-limits-section h4 {
+    margin: 1.5rem 0 0.75rem 0;
+    color: #4a5568;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.credit-warning-banner {
+    background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%);
+    color: #742a2a;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    text-align: center;
+    border: 2px solid #fc8181;
+}
+
+.credit-summary-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.credit-stat {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 6px;
+    border-left: 4px solid #805ad5;
+}
+
+.credit-stat-label {
+    font-size: 0.7rem;
+    color: #718096;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.credit-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.credit-stat-value.warning {
+    color: #dd6b20;
+}
+
+.credit-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.credit-card-item {
+    background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.credit-card-item.status-warning {
+    border-color: #ed8936;
+    background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+}
+
+.credit-card-item.status-critical {
+    border-color: #f56565;
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+}
+
+.credit-card-item.status-over_limit {
+    border-color: #e53e3e;
+    background: linear-gradient(135deg, #fff5f5 0%, #fc8181 100%);
+    box-shadow: 0 0 0 4px rgba(229, 62, 62, 0.2);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.card-name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.95rem;
+}
+
+.card-balance {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.card-limit-bar {
+    margin-bottom: 0.75rem;
+}
+
+.limit-bar-bg {
+    background: #e2e8f0;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.limit-bar-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+    border-radius: 4px;
+}
+
+.limit-bar-fill.status-good {
+    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+}
+
+.limit-bar-fill.status-warning {
+    background: linear-gradient(90deg, #ed8936 0%, #dd6b20 100%);
+}
+
+.limit-bar-fill.status-critical {
+    background: linear-gradient(90deg, #f56565 0%, #e53e3e 100%);
+}
+
+.limit-bar-fill.status-over_limit {
+    background: linear-gradient(90deg, #e53e3e 0%, #c53030 100%);
+}
+
+.limit-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #718096;
+}
+
+.utilization-label {
+    font-weight: 600;
+}
+
+.card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+}
+
+.card-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.detail-label {
+    color: #718096;
+    font-weight: 500;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.auto-payment-badge {
+    display: inline-block;
+    background: #d6bcfa;
+    color: #553c9a;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.card-actions .btn {
+    flex: 1;
+    min-width: 100px;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+}
+
+.upcoming-cc-payments {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.upcoming-cc-payment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f7fafc;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    border-left: 4px solid #4299e1;
+}
+
+.upcoming-cc-payment-item.due-soon {
+    background: #fffaf0;
+    border-left-color: #ed8936;
+}
+
+.payment-card {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.9rem;
+}
+
+.payment-type {
+    font-size: 0.75rem;
+    color: #718096;
+    text-transform: capitalize;
+}
+
+.payment-date {
+    font-size: 0.75rem;
+    color: #718096;
+    margin-top: 0.25rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.status-pending {
+    background: #bee3f8;
+    color: #2c5282;
+}
+
+.status-badge.status-processing {
+    background: #feebc8;
+    color: #7c2d12;
+}
+
+.credit-cards-summary-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.credit-cards-summary-actions .btn {
+    flex: 1;
 }
 
 /* Installment Summary Section */
@@ -2249,5 +2778,9 @@ require_once '../../includes/header.php';
         </div>
     </div>
 </div>
+
+<!-- Credit Card Features (Phase 5) -->
+<link rel="stylesheet" href="../css/credit-cards.css">
+<script src="../js/schedule-payment-modal.js"></script>
 
 <?php require_once '../../includes/footer.php'; ?>
