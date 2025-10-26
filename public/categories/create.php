@@ -28,9 +28,25 @@ try {
         exit;
     }
 
+    // Get existing groups for the dropdown
+    $stmt = $db->prepare("
+        SELECT uuid, name
+        FROM api.accounts
+        WHERE ledger_uuid = ? AND type = 'equity' AND is_group = true
+        ORDER BY sort_order, name
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $groups = $stmt->fetchAll();
+
     // Handle form submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $category_name = sanitizeInput($_POST['name'] ?? '');
+        $parent_group_uuid = $_POST['parent_group'] ?? null;
+
+        // Convert empty string to null
+        if (empty($parent_group_uuid)) {
+            $parent_group_uuid = null;
+        }
 
         // Validation
         if (empty($category_name)) {
@@ -43,6 +59,12 @@ try {
                 $stmt = $db->prepare("SELECT uuid FROM api.add_category(?, ?)");
                 $stmt->execute([$ledger_uuid, $category_name]);
                 $result = $stmt->fetch();
+
+                // If a group was selected, assign the category to it
+                if ($result && $result['uuid'] && $parent_group_uuid) {
+                    $stmt = $db->prepare("SELECT api.assign_category_to_group(?, ?)");
+                    $stmt->execute([$result['uuid'], $parent_group_uuid]);
+                }
 
                 if ($result && $result['uuid']) {
                     $_SESSION['success'] = 'Category "' . htmlspecialchars($category_name) . '" created successfully!';
@@ -89,6 +111,20 @@ require_once '../../includes/header.php';
                        maxlength="255"
                        placeholder="e.g., Groceries, Rent, Entertainment, Emergency Fund">
                 <small class="form-hint">Choose a descriptive name for this budget category</small>
+            </div>
+
+            <div class="form-group">
+                <label for="parent_group">Parent Group (optional)</label>
+                <select id="parent_group" name="parent_group" class="form-select">
+                    <option value="">(None - Ungrouped)</option>
+                    <?php foreach ($groups as $group): ?>
+                        <option value="<?= htmlspecialchars($group['uuid']) ?>"
+                                <?= (($_POST['parent_group'] ?? '') === $group['uuid']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($group['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <small class="form-hint">Optionally assign this category to a group for better organization</small>
             </div>
 
             <div class="form-actions">
@@ -158,19 +194,26 @@ require_once '../../includes/header.php';
     color: #2d3748;
 }
 
-.category-form input {
+.category-form input,
+.category-form select {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #e2e8f0;
     border-radius: 4px;
     font-size: 1rem;
     transition: border-color 0.2s;
+    background-color: white;
 }
 
-.category-form input:focus {
+.category-form input:focus,
+.category-form select:focus {
     outline: none;
     border-color: #3182ce;
     box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.form-select {
+    cursor: pointer;
 }
 
 .form-hint {
