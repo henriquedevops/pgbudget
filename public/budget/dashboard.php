@@ -394,6 +394,7 @@ require_once '../../includes/header.php';
         <div class="action-buttons">
             <a href="../accounts/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">View Accounts</a>
             <a href="../transactions/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">All Transactions</a>
+            <a href="../credit-cards/?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">💳 Credit Cards</a>
             <a href="../recurring/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">🔄 Recurring Transactions</a>
             <a href="../reports/budget.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">Budget Report</a>
             <a href="../reports/spending-by-category.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary btn-small">📊 Spending by Category</a>
