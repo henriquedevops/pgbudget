@@ -98,10 +98,13 @@
                             <a href="/pgbudget/transactions/add.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Add Transaction</a>
                         </li>
                         <li class="nav-item">
+                            <a href="/pgbudget/credit-cards/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Credit Cards</a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💰 Loans</a>
                         </li>
                         <li class="nav-item">
-                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Installments</a>
+                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">📅 Installments</a>
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
@@ -123,10 +126,13 @@
                             <a href="/pgbudget/transactions/add.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Add Transaction</a>
                         </li>
                         <li class="nav-item">
+                            <a href="/pgbudget/credit-cards/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Credit Cards</a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💰 Loans</a>
                         </li>
                         <li class="nav-item">
-                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Installments</a>
+                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">📅 Installments</a>
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
