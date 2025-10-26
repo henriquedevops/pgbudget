@@ -1,0 +1,559 @@
+/**
+ * Credit Card Features CSS (Phase 5)
+ * Styling for credit card limits, statements, and payment scheduling
+ */
+
+/* Payment Scheduling Modal */
+.schedule-payment-modal-content {
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.card-info-display {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.info-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.statement-info-box {
+    background: #f7fafc;
+    border-left: 4px solid #4299e1;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.statement-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.statement-info-row:last-child {
+    border-bottom: none;
+}
+
+.statement-info-row span:first-child {
+    color: #718096;
+    font-weight: 500;
+}
+
+.statement-info-row span:last-child {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.payment-preview-box {
+    background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+    border: 2px solid #48bb78;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.payment-preview-box h4 {
+    margin: 0 0 1rem 0;
+    color: #22543d;
+    font-size: 1rem;
+}
+
+.preview-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(72, 187, 120, 0.2);
+}
+
+.preview-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.preview-row span:first-child {
+    color: #2f855a;
+    font-weight: 500;
+}
+
+.preview-row span:last-child {
+    color: #22543d;
+    font-weight: 600;
+}
+
+.preview-amount {
+    font-size: 1.25rem;
+    color: #22543d !important;
+    font-weight: 700 !important;
+}
+
+.error-message {
+    background: #fed7d7;
+    color: #742a2a;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border-left: 4px solid #fc8181;
+    margin-top: 1rem;
+}
+
+.form-hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #718096;
+}
+
+/* Credit Card Settings Page */
+.credit-card-settings-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.settings-section h3 {
+    margin-top: 0;
+    color: #2d3748;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.current-limit-display {
+    background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.limit-display-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+}
+
+.limit-display-label {
+    color: #718096;
+    font-weight: 500;
+}
+
+.limit-display-value {
+    color: #2d3748;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.utilization-bar-container {
+    margin-top: 1rem;
+}
+
+.utilization-bar {
+    background: #e2e8f0;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.utilization-bar-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+.utilization-bar-fill.low {
+    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+}
+
+.utilization-bar-fill.medium {
+    background: linear-gradient(90deg, #ecc94b 0%, #d69e2e 100%);
+}
+
+.utilization-bar-fill.high {
+    background: linear-gradient(90deg, #ed8936 0%, #dd6b20 100%);
+}
+
+.utilization-bar-fill.critical {
+    background: linear-gradient(90deg, #f56565 0%, #e53e3e 100%);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-grid-full {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #f7fafc;
+    border-radius: 6px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.checkbox-group label {
+    margin: 0;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.auto-payment-settings {
+    background: #ebf8ff;
+    border: 2px solid #90cdf4;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.auto-payment-settings h4 {
+    margin-top: 0;
+    color: #2c5282;
+    font-size: 1rem;
+}
+
+/* Credit Card Statements Page */
+.statements-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.statements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.statement-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 4px solid #4299e1;
+    transition: all 0.3s ease;
+}
+
+.statement-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.statement-card.current-statement {
+    border-left-color: #48bb78;
+    background: linear-gradient(135deg, #f0fff4 0%, white 100%);
+}
+
+.statement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.statement-period {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1.1rem;
+}
+
+.statement-status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.statement-status-badge.current {
+    background: #c6f6d5;
+    color: #22543d;
+}
+
+.statement-status-badge.past {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.statement-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.statement-summary-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-label {
+    font-size: 0.75rem;
+    color: #718096;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.summary-value.negative {
+    color: #e53e3e;
+}
+
+.summary-value.positive {
+    color: #48bb78;
+}
+
+.statement-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.statement-detail-section {
+    background: #f7fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.statement-detail-section h4 {
+    margin: 0 0 1rem 0;
+    color: #4a5568;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.transaction-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.transaction-summary-row:last-child {
+    border-bottom: none;
+}
+
+/* Credit Card Management Page */
+.credit-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.credit-card-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    color: white;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    position: relative;
+    overflow: hidden;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.credit-card-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.credit-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.credit-card-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.credit-card-chip {
+    width: 50px;
+    height: 40px;
+    background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+    border-radius: 8px;
+    opacity: 0.8;
+}
+
+.credit-card-balance-section {
+    margin: 1.5rem 0;
+}
+
+.balance-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+}
+
+.balance-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.credit-limit-info {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-top: 0.5rem;
+}
+
+.credit-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.card-utilization {
+    font-size: 0.875rem;
+}
+
+.card-quick-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.icon-btn {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .credit-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .statement-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Warning overlays */
+.limit-warning-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.limit-warning-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.warning-icon-large {
+    font-size: 4rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.warning-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e53e3e;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.warning-message {
+    text-align: center;
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.warning-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
