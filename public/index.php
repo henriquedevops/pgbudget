@@ -9,19 +9,25 @@ requireAuth(true); // Allow demo mode for backward compatibility
 $db = getDbConnection();
 setUserContext($db);
 
-// Check if user needs onboarding
-$stmt = $db->prepare("
-    SELECT onboarding_completed, onboarding_step 
-    FROM data.users 
-    WHERE user_data = current_setting('app.current_user_id', true)
-");
-$stmt->execute();
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+// Check if user needs onboarding (only if columns exist)
+try {
+    $stmt = $db->prepare("
+        SELECT onboarding_completed, onboarding_step 
+        FROM data.users 
+        WHERE user_data = current_setting('app.current_user_id', true)
+    ");
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Redirect to onboarding if not completed (unless they just completed it)
-if ($user && !$user['onboarding_completed'] && !isset($_GET['onboarding_complete'])) {
-    header('Location: /onboarding/wizard.php?step=' . max(1, $user['onboarding_step']));
-    exit;
+    // Redirect to onboarding if not completed (unless they just completed it)
+    if ($user && !$user['onboarding_completed'] && !isset($_GET['onboarding_complete'])) {
+        header('Location: /onboarding/wizard.php?step=' . max(1, $user['onboarding_step']));
+        exit;
+    }
+} catch (PDOException $e) {
+    // Columns don't exist yet - migrations not run
+    // Continue without onboarding check
+    error_log("Onboarding columns not found - migrations may not be run yet: " . $e->getMessage());
 }
 
 // Get user's ledgers
