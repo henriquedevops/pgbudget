@@ -1,0 +1,479 @@
+/* Onboarding Wizard Styles */
+
+.onboarding-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    min-height: calc(100vh - 200px);
+}
+
+/* Progress Bar */
+.onboarding-progress {
+    margin-bottom: 3rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    text-align: center;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Step Content */
+.onboarding-content {
+    background: white;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.onboarding-step {
+    text-align: center;
+}
+
+.step-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    animation: bounceIn 0.6s ease;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.onboarding-step h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.onboarding-step .lead {
+    font-size: 1.25rem;
+    color: #475569;
+    margin-bottom: 1.5rem;
+}
+
+.onboarding-step .subtitle {
+    font-size: 1rem;
+    color: #64748b;
+    margin-bottom: 2rem;
+}
+
+/* Step Actions */
+.step-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.step-actions .btn {
+    min-width: 150px;
+}
+
+/* Step 1: Welcome */
+.step-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+    text-align: left;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.feature-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.feature-text {
+    font-size: 1rem;
+    color: #334155;
+    font-weight: 500;
+}
+
+/* Step 2: Philosophy */
+.principles-list {
+    text-align: left;
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.principle {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.principle-icon {
+    font-size: 1.5rem;
+    color: #667eea;
+    flex-shrink: 0;
+    font-weight: bold;
+}
+
+.principle-content h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.principle-content p {
+    font-size: 0.9375rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Step 3: Create Budget */
+.step-create-budget form {
+    text-align: left;
+    max-width: 500px;
+    margin: 2rem auto 0;
+}
+
+/* Step 4: Add Account */
+.step-add-account form {
+    text-align: left;
+    max-width: 500px;
+    margin: 2rem auto 0;
+}
+
+.account-type-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.account-type-option {
+    cursor: pointer;
+    margin: 0;
+}
+
+.account-type-option input[type="radio"] {
+    display: none;
+}
+
+.account-type-option .option-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 1rem;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.account-type-option input[type="radio"]:checked + .option-content {
+    background: #ede9fe;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.account-type-option:hover .option-content {
+    border-color: #cbd5e1;
+}
+
+.option-icon {
+    font-size: 2rem;
+}
+
+.option-text {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #334155;
+    text-align: center;
+}
+
+/* Step 5: Categories */
+.template-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.template-option {
+    cursor: pointer;
+    margin: 0;
+}
+
+.template-option input[type="radio"] {
+    display: none;
+}
+
+.template-card {
+    height: 100%;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.template-option input[type="radio"]:checked + .template-card {
+    background: #ede9fe;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.template-option:hover .template-card {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+}
+
+.template-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.template-card h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.template-card p {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+.template-preview {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    text-align: left;
+}
+
+.template-preview li {
+    font-size: 0.875rem;
+    color: #475569;
+    padding: 0.25rem 0;
+}
+
+.template-note {
+    font-size: 0.8125rem;
+    color: #94a3b8;
+    font-style: italic;
+    margin-top: 1rem;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-control-lg {
+    padding: 1rem 1.25rem;
+    font-size: 1.125rem;
+}
+
+.form-text {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.input-group {
+    display: flex;
+}
+
+.input-group-text {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #475569;
+    background: #f1f5f9;
+    border: 2px solid #e2e8f0;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+}
+
+.input-group .form-control {
+    border-radius: 0 8px 8px 0;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.btn-link {
+    background: transparent;
+    color: #667eea;
+    padding: 0.5rem 1rem;
+}
+
+.btn-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+
+/* Alerts */
+.alert {
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .onboarding-container {
+        padding: 1rem 0.5rem;
+    }
+    
+    .onboarding-content {
+        padding: 2rem 1.5rem;
+    }
+    
+    .onboarding-step h1 {
+        font-size: 1.5rem;
+    }
+    
+    .onboarding-step .lead {
+        font-size: 1.125rem;
+    }
+    
+    .step-features {
+        grid-template-columns: 1fr;
+    }
+    
+    .account-type-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .template-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .step-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .step-actions .btn {
+        width: 100%;
+    }
+}

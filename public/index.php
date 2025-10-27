@@ -9,6 +9,21 @@ requireAuth(true); // Allow demo mode for backward compatibility
 $db = getDbConnection();
 setUserContext($db);
 
+// Check if user needs onboarding
+$stmt = $db->prepare("
+    SELECT onboarding_completed, onboarding_step 
+    FROM data.users 
+    WHERE user_data = current_setting('app.current_user_id', true)
+");
+$stmt->execute();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Redirect to onboarding if not completed (unless they just completed it)
+if ($user && !$user['onboarding_completed'] && !isset($_GET['onboarding_complete'])) {
+    header('Location: /onboarding/wizard.php?step=' . max(1, $user['onboarding_step']));
+    exit;
+}
+
 // Get user's ledgers
 $stmt = $db->prepare("SELECT uuid, name, description FROM api.ledgers ORDER BY name");
 $stmt->execute();
@@ -21,7 +36,17 @@ if (count($ledgers) === 1) {
 }
 
 require_once '../includes/header.php';
+
+// Show success message if just completed onboarding
+$showOnboardingSuccess = isset($_GET['onboarding_complete']);
 ?>
+
+<?php if ($showOnboardingSuccess): ?>
+<div class="alert alert-success" style="margin: 2rem auto; max-width: 800px;">
+    <h3>🎉 Welcome to PGBudget!</h3>
+    <p>Your budget is all set up and ready to go. Start by adding some income or recording your first transaction!</p>
+</div>
+<?php endif; ?>
 
 <div class="container">
     <div class="header">
@@ -34,7 +59,7 @@ require_once '../includes/header.php';
             <div class="welcome-card">
                 <h2>Welcome to PgBudget!</h2>
                 <p>Get started by creating your first budget ledger.</p>
-                <a href="ledgers/create.php" class="btn btn-primary">Create Your First Budget</a>
+                <a href="/onboarding/wizard.php?step=1" class="btn btn-primary">Create Your First Budget</a>
             </div>
         <?php else: ?>
             <div class="ledgers-grid">
