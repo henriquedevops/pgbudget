@@ -66,9 +66,6 @@ select
     categories
 from data.budget_templates;
 
--- grant select on templates view
-grant select on api.budget_templates to pgb_web_user;
-
 -- function to apply a budget template
 create or replace function api.apply_budget_template(
     p_ledger_uuid text,
@@ -160,9 +157,6 @@ begin
 end;
 $$ language plpgsql volatile security definer;
 
--- grant execute on template function
-grant execute on function api.apply_budget_template(text, text) to pgb_web_user;
-
 -- function to complete onboarding step
 create or replace function api.complete_onboarding_step(
     p_step integer
@@ -198,9 +192,6 @@ begin
 end;
 $$ language plpgsql volatile security definer;
 
--- grant execute on onboarding function
-grant execute on function api.complete_onboarding_step(integer) to pgb_web_user;
-
 -- function to skip onboarding
 create or replace function api.skip_onboarding() returns jsonb as $$
 declare
@@ -214,9 +205,6 @@ begin
     return jsonb_build_object('success', true, 'skipped', true);
 end;
 $$ language plpgsql volatile security definer;
-
--- grant execute on skip function
-grant execute on function api.skip_onboarding() to pgb_web_user;
 
 -- +goose StatementEnd
 
