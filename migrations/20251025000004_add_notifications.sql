@@ -830,8 +830,10 @@ COMMENT ON FUNCTION api.get_notification_preferences IS 'Get notification prefer
 -- Parameters: All notification preference fields
 -- Returns: Success status
 -- ----------------------------------------------------------------------------
+DROP FUNCTION IF EXISTS api.update_notification_preferences;
+
 -- +goose StatementBegin
-CREATE OR REPLACE FUNCTION api.update_notification_preferences(
+CREATE FUNCTION api.update_notification_preferences(
     p_cc_statement_ready BOOLEAN DEFAULT NULL,
     p_cc_due_reminder_7day BOOLEAN DEFAULT NULL,
     p_cc_due_reminder_3day BOOLEAN DEFAULT NULL,
