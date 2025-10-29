@@ -1,0 +1,32 @@
+.help-sidebar {
+    position: fixed;
+    top: 0;
+    right: -350px; /* Start off-screen */
+    width: 300px;
+    height: 100%;
+    background-color: #f7fafc;
+    border-left: 1px solid #e2e8f0;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    transition: right 0.3s ease-in-out;
+    z-index: 1001;
+}
+
+.help-sidebar.active {
+    right: 0;
+}
+
+.help-sidebar .close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.help-sidebar h3 {
+    margin-top: 0;
+    color: #2d3748;
+}

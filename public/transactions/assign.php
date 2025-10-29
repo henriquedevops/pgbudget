@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
+require_once '../../includes/help-icon.php';
 
 // Require authentication
 requireAuth();
@@ -217,7 +218,7 @@ require_once '../../includes/header.php';
             </div>
             <div class="help-item">
                 <h4>📊 Real-Time Updates</h4>
-                <p>Your budget status updates immediately, showing how much you've allocated vs. spent in each category.</p>
+                <p>Your budget status updates immediately, showing how much you've allocated vs. spent in each category. <?php renderHelpIcon("The Budget Status shows the real-time health of your budget categories, comparing your budgeted amounts to your actual spending."); ?></p>
             </div>
         </div>
     </div>

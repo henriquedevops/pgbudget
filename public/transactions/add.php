@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
+require_once '../../includes/help-icon.php';
 
 // Require authentication
 requireAuth();
@@ -163,7 +164,7 @@ require_once '../../includes/header.php';
         <form method="POST" class="transaction-form">
             <div class="form-row">
                 <div class="form-group">
-                    <label for="type" class="form-label">Transaction Type *</label>
+                    <label for="type" class="form-label">Transaction Type * <?php renderHelpIcon("'Income' increases an account balance (like a paycheck), while 'Expense' decreases it (like a purchase)."); ?></label>
                     <select id="type" name="type" class="form-select" required onchange="updateFormForType()">
                         <option value="">Choose type...</option>
                         <option value="inflow" <?= (isset($_POST['type']) && $_POST['type'] === 'inflow') ? 'selected' : '' ?>>

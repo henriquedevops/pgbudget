@@ -39,6 +39,25 @@ document.addEventListener('DOMContentLoaded', function() {
             navMenu.classList.toggle('active');
         });
     }
+
+    // Add error styling for form validation
+    const style = document.createElement('style');
+    style.textContent = `
+        .form-input.error,
+        .form-select.error,
+        .form-textarea.error {
+            border-color: #e53e3e;
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize Tippy.js tooltips
+    tippy('[data-tippy-content]', {
+        theme: 'light',
+        animation: 'shift-away',
+        delay: [100, 200],
+    });
 });
 
 function formatCurrencyInput(e) {
@@ -97,15 +116,3 @@ function validateRequired(form) {
 
     return isValid;
 }
-
-// Add error styling for form validation
-const style = document.createElement('style');
-style.textContent = `
-    .form-input.error,
-    .form-select.error,
-    .form-textarea.error {
-        border-color: #e53e3e;
-        box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
-    }
-`;
-document.head.appendChild(style);

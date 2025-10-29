@@ -2,6 +2,7 @@
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 require_once '../../includes/header.php';
+require_once '../../includes/help-icon.php';
 
 // Require authentication
 requireAuth();
@@ -176,7 +177,7 @@ try {
                             <th>Description</th>
                             <th>Other Account</th>
                             <th>Amount</th>
-                            <th>Running Balance</th>
+                            <th>Running Balance <?php renderHelpIcon("The account balance after each transaction, calculated chronologically."); ?></th>
                             <th>Actions</th>
                         </tr>
                     </thead>

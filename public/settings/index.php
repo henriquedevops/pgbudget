@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
+require_once '../../includes/help-icon.php';
 
 // Require authentication
 requireAuth();
@@ -30,7 +31,7 @@ require_once '../../includes/header.php';
         <div class="settings-card">
             <div class="card-content">
                 <h3>Your Budgets</h3>
-                <p>Manage and create budget ledgers</p>
+                <p>Manage and create budget ledgers <?php renderHelpIcon("A Budget (or Ledger) is the top-level container for all your financial data, including accounts, categories, and transactions."); ?></p>
 
                 <?php if (empty($ledgers)): ?>
                     <div class="empty-state">
