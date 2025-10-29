@@ -107,7 +107,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         } catch (PDOException $e) {
-            $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+            if ($e->getCode() == '23503') { // Foreign key violation
+                $_SESSION['error'] = '❌ Oops! This transaction couldn\'t be saved. The account or category you selected may no longer exist. Please refresh and try again.';
+            } else {
+                $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+            }
         }
     }
 }
