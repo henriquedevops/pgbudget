@@ -109,6 +109,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (PDOException $e) {
             if ($e->getCode() == '23503') { // Foreign key violation
                 $_SESSION['error'] = '❌ Oops! This transaction couldn\'t be saved. The account or category you selected may no longer exist. Please refresh and try again.';
+            } elseif ($e->getCode() == 'P0001') { // Insufficient funds
+                $detail = json_decode($e->getPrevious()->getMessage(), true);
+                $_SESSION['overspending_error'] = [
+                    'overspent_amount' => $detail['overspent_amount'],
+                    'category_name' => $detail['category_name'],
+                    'original_data' => $_POST
+                ];
+                header('Location: add.php?ledger=' . $ledger_uuid);
+                exit;
             } else {
                 $_SESSION['error'] = 'Database error: ' . $e->getMessage();
             }
@@ -1025,6 +1034,84 @@ function initializePayeeAutocomplete() {
         return div.innerHTML;
     }
 }
+</script>
+
+<!-- Overspending Modal -->
+<div id="overspending-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⚠️ Hold on!</h2>
+        </div>
+        <div class="modal-body">
+            <p>This would overspend your "<span id="overspent-category-name"></span>" category by <span id="overspent-amount"></span>.</p>
+            <p>What would you like to do?</p>
+            <ul>
+                <li>Move money from another category</li>
+                <li>Record it anyway (creates overspending)</li>
+                <li>Cancel and adjust the amount</li>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="move-money-btn" class="btn btn-primary">Move Money</button>
+            <button type="button" id="record-anyway-btn" class="btn btn-secondary">Record Anyway</button>
+            <button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (isset($_SESSION['overspending_error'])):
+        $overspending_error = $_SESSION['overspending_error'];
+        unset($_SESSION['overspending_error']); // Unset after use
+    ?>
+        const modal = document.getElementById('overspending-modal');
+        const overspentCategory = document.getElementById('overspent-category-name');
+        const overspentAmount = document.getElementById('overspent-amount');
+        const originalData = <?= json_encode($overspending_error['original_data']) ?>;
+
+        overspentCategory.textContent = '<?= addslashes($overspending_error['category_name']) ?>';
+        overspentAmount.textContent = formatCurrency(<?= $overspending_error['overspent_amount'] ?>);
+        modal.style.display = 'flex';
+
+        // "Record Anyway" button
+        document.getElementById('record-anyway-btn').addEventListener('click', function() {
+            const form = document.querySelector('.transaction-form');
+            // Add a hidden input to the form to allow overspending
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'allow_overspending';
+            hiddenInput.value = 'true';
+            form.appendChild(hiddenInput);
+            // Repopulate form and submit
+            repopulateForm(form, originalData);
+            form.submit();
+        });
+
+        // "Cancel" button
+        document.getElementById('cancel-btn').addEventListener('click', function() {
+            modal.style.display = 'none';
+            // Repopulate form so user can edit
+            repopulateForm(document.querySelector('.transaction-form'), originalData);
+        });
+
+        // "Move Money" button (to be implemented)
+        document.getElementById('move-money-btn').addEventListener('click', function() {
+            alert('"Move Money" functionality is not yet implemented.');
+        });
+
+        function repopulateForm(form, data) {
+            for (const key in data) {
+                if (data.hasOwnProperty(key)) {
+                    const field = form.querySelector(`[name="${key}"]`);
+                    if (field) {
+                        field.value = data[key];
+                    }
+                }
+            }
+        }
+    <?php endif; ?>
+});
 </script>
 
 <?php require_once '../../includes/footer.php'; ?>
