@@ -358,6 +358,7 @@ require_once '../../includes/header.php';
             <a href="../transactions/add.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">+ Add Transaction</a>
             <a href="../categories/manage.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">Manage Categories</a>
             <a href="../recurring/list.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">🔄 Recurring</a>
+            <button type="button" id="show-help-sidebar" class="btn btn-info">[?] Show Help</button>
         </div>
     </div>
 
@@ -2783,5 +2784,32 @@ require_once '../../includes/header.php';
 <!-- Credit Card Features (Phase 5) -->
 <link rel="stylesheet" href="../css/credit-cards.css">
 <script src="../js/schedule-payment-modal.js"></script>
+
+<?php require_once '../../includes/help-sidebar.php'; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const showHelpBtn = document.getElementById('show-help-sidebar');
+    const helpSidebar = document.getElementById('help-sidebar');
+    const closeHelpBtn = document.getElementById('close-help-sidebar');
+
+    if (showHelpBtn && helpSidebar && closeHelpBtn) {
+        showHelpBtn.addEventListener('click', function() {
+            helpSidebar.classList.add('active');
+        });
+
+        closeHelpBtn.addEventListener('click', function() {
+            helpSidebar.classList.remove('active');
+        });
+
+        // Close sidebar when clicking outside of it
+        helpSidebar.addEventListener('click', function(e) {
+            if (e.target === this) {
+                helpSidebar.classList.remove('active');
+            }
+        });
+    }
+});
+</script>
 
 <?php require_once '../../includes/footer.php'; ?>

@@ -19,6 +19,13 @@
     <link rel="stylesheet" href="/pgbudget/css/keyboard-shortcuts.css">
     <link rel="stylesheet" href="/pgbudget/css/undo.css">
     <link rel="stylesheet" href="/pgbudget/css/delete-ledger.css">
+    <link rel="stylesheet" href="/pgbudget/css/tooltips.css">
+    <link rel="stylesheet" href="/pgbudget/css/help-sidebar.css">
+
+    <!-- Tooltip Library (Tippy.js) -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/pgbudget/images/icon-192x192.png">

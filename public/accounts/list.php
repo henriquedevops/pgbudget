@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
+require_once '../../includes/help-icon.php';
 
 // Require authentication
 requireAuth();
@@ -155,7 +156,7 @@ require_once '../../includes/header.php';
                                 <tr>
                                     <th>Account Name</th>
                                     <th>Type</th>
-                                    <th>Current Balance</th>
+                                    <th>Current Balance <?php renderHelpIcon("The current amount of money in this account. For liability accounts, this is the amount you owe."); ?></th>
                                     <?php if ($type === 'liability'): ?>
                                         <th>Payment Available</th>
                                     <?php endif; ?>
