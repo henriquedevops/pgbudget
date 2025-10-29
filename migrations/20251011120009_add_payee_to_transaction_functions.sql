@@ -11,7 +11,8 @@ CREATE OR REPLACE FUNCTION utils.add_transaction(
     p_amount bigint,
     p_account_uuid text,
     p_category_uuid text DEFAULT NULL,
-    p_payee_name text DEFAULT NULL
+    p_payee_name text DEFAULT NULL,
+    p_allow_overspending boolean DEFAULT false
 ) RETURNS text AS $$
 DECLARE
     v_ledger_id bigint;
@@ -88,6 +89,23 @@ BEGIN
         RAISE EXCEPTION 'Invalid transaction type: %', p_type;
     END IF;
 
+    -- Check for overspending on outflow transactions
+    IF p_type = 'outflow' AND p_allow_overspending = false AND v_category_id IS NOT NULL THEN
+        DECLARE
+            v_category_balance bigint;
+        BEGIN
+            v_category_balance := utils.get_account_balance(v_ledger_id, v_category_id);
+            IF (v_category_balance - p_amount) < 0 THEN
+                RAISE EXCEPTION 'Insufficient funds in category'
+                    USING ERRCODE = 'P0001',
+                          DETAIL = json_build_object(
+                              'overspent_amount', p_amount - v_category_balance,
+                              'category_name', (SELECT name FROM data.accounts WHERE id = v_category_id)
+                          )::text;
+            END IF;
+        END;
+    END IF;
+
     -- Insert transaction with payee
     INSERT INTO data.transactions (
         ledger_id,
@@ -122,7 +140,8 @@ CREATE OR REPLACE FUNCTION api.add_transaction(
     p_amount bigint,
     p_account_uuid text,
     p_category_uuid text DEFAULT NULL,
-    p_payee_name text DEFAULT NULL
+    p_payee_name text DEFAULT NULL,
+    p_allow_overspending boolean DEFAULT false
 ) RETURNS text AS $$
 BEGIN
     -- Validate transaction type
@@ -139,7 +158,8 @@ BEGIN
         p_amount,
         p_account_uuid,
         p_category_uuid,
-        p_payee_name
+        p_payee_name,
+        p_allow_overspending
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

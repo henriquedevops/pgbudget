@@ -234,11 +234,14 @@ begin
     if v_payment_category_id is not null then
         v_payment_available := utils.get_account_balance(v_ledger_id, v_payment_category_id);
 
-        -- Warn if paying more than budgeted
+        -- Check for overspending and raise a specific exception
         if p_amount > v_payment_available then
-            raise notice 'Payment amount ($%) exceeds budgeted payment available ($%). This will create overspending in the payment category.',
-                p_amount::numeric / 100,
-                v_payment_available::numeric / 100;
+            RAISE EXCEPTION 'Insufficient funds in category'
+                USING ERRCODE = 'P0001',
+                      DETAIL = json_build_object(
+                          'overspent_amount', p_amount - v_payment_available,
+                          'category_name', (SELECT name FROM data.accounts WHERE id = v_payment_category_id)
+                      )::text;
         end if;
     end if;
 
