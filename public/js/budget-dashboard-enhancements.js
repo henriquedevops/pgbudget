@@ -278,7 +278,7 @@
 
         const form = e.target;
 
-        const type = document.getElementById('quick-transaction-type').value;
+        const type = 'outflow'; // Hardcoded for the new design
         const amount = document.getElementById('quick-amount').value;
         const description = document.getElementById('quick-description').value;
         const account = document.getElementById('quick-account').value;
