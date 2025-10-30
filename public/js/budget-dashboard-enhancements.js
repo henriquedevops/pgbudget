@@ -176,66 +176,57 @@
         modal.innerHTML = `
             <div class="modal-content quick-add-modal">
                 <div class="modal-header">
-                    <h2>⚡ Quick Add Transaction</h2>
+                    <h2>Add Transaction</h2>
                     <button type="button" class="modal-close" aria-label="Close">&times;</button>
                 </div>
                 <div class="modal-body">
                     <form id="quick-add-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="quick-transaction-type" class="form-label">Type *</label>
-                                <select id="quick-transaction-type" class="form-select" required>
-                                    <option value="outflow" selected>Expense (Outflow)</option>
-                                    <option value="inflow">Income (Inflow)</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="quick-amount" class="form-label">Amount *</label>
-                                <input type="text" id="quick-amount" class="form-input" required
-                                       placeholder="0.00" autocomplete="off">
-                            </div>
+                        <div class="form-group">
+                            <label for="quick-amount">I spent...</label>
+                            <input type="text" id="quick-amount" class="form-input" required placeholder="$ 0.00" autocomplete="off">
                         </div>
 
                         <div class="form-group">
-                            <label for="quick-description" class="form-label">Description *</label>
-                            <input type="text" id="quick-description" class="form-input" required
-                                   placeholder="e.g., Grocery shopping" autocomplete="off">
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="quick-account" class="form-label">Account *</label>
-                                <select id="quick-account" class="form-select" required>
-                                    <option value="">Choose account...</option>
-                                    ${accounts.length === 0 ? '<option value="" disabled>No accounts found - please create an account first</option>' : ''}
-                                    ${accounts.map(acc => `
-                                        <option value="${acc.uuid}">${acc.name}${acc.type ? ' (' + acc.type.charAt(0).toUpperCase() + acc.type.slice(1) + ')' : ''}</option>
-                                    `).join('')}
-                                </select>
-                                ${accounts.length === 0 ? '<small class="form-help" style="color: #e53e3e;">You need to create at least one account before adding transactions.</small>' : ''}
-                            </div>
-
-                            <div class="form-group">
-                                <label for="quick-category" class="form-label">Category *</label>
-                                <select id="quick-category" class="form-select" required>
-                                    <option value="">Choose category...</option>
-                                    ${categories.map(cat => `
-                                        <option value="${cat.uuid}">${cat.name}</option>
-                                    `).join('')}
-                                </select>
-                            </div>
+                            <label for="quick-description">At/For:</label>
+                            <input type="text" id="quick-description" class="form-input" required placeholder="Merchant or description" autocomplete="off">
                         </div>
 
                         <div class="form-group">
-                            <label for="quick-date" class="form-label">Date *</label>
-                            <input type="date" id="quick-date" class="form-input" required
-                                   value="${new Date().toISOString().split('T')[0]}">
+                            <label for="quick-account">From account:</label>
+                            <select id="quick-account" class="form-select" required>
+                                <option value="">Choose account...</option>
+                                ${accounts.map(acc => `<option value="${acc.uuid}">${acc.name}</option>`).join('')}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="quick-category">Category:</label>
+                            <select id="quick-category" class="form-select" required>
+                                <option value="">Choose category...</option>
+                                ${categories.map(cat => `<option value="${cat.uuid}">${cat.name}</option>`).join('')}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="quick-date">Date:</label>
+                            <input type="date" id="quick-date" class="form-input" required value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+
+                        <hr>
+
+                        <div class="form-group">
+                            <a href="#" id="advanced-options-toggle">▶ Advanced Options</a>
+                            <div id="advanced-options" style="display: none; margin-top: 1rem;">
+                                <label><input type="checkbox" id="split-transaction"> Split across multiple categories</label><br>
+                                <label><input type="checkbox" id="recurring-transaction"> Make this recurring</label><br>
+                                <label for="quick-memo">Memo/notes:</label>
+                                <textarea id="quick-memo" class="form-textarea"></textarea>
+                            </div>
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">Add Transaction</button>
                             <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Transaction</button>
                         </div>
                     </form>
                 </div>
@@ -256,9 +247,20 @@
         modal.querySelector('#quick-amount').addEventListener('input', function(e) {
             validateCurrencyInput(e.target);
         });
+        modal.querySelector('#advanced-options-toggle').addEventListener('click', function(e) {
+            e.preventDefault();
+            const advancedOptions = document.getElementById('advanced-options');
+            if (advancedOptions.style.display === 'none') {
+                advancedOptions.style.display = 'block';
+                this.textContent = '▼ Advanced Options';
+            } else {
+                advancedOptions.style.display = 'none';
+                this.textContent = '▶ Advanced Options';
+            }
+        });
 
-        // Focus description field
-        modal.querySelector('#quick-description').focus();
+        // Focus amount field
+        modal.querySelector('#quick-amount').focus();
 
         // Close on backdrop click
         modal.addEventListener('click', function(e) {
