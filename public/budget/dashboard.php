@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
+require_once '../../includes/transfer-modal.php';
 
 // Require authentication
 requireAuth();
@@ -303,4 +304,30 @@ require_once '../../includes/header.php';
 }
 </style>
 
+<?php require_once '../../includes/help-sidebar.php'; ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const showHelpBtn = document.getElementById('show-help-sidebar');
+    const helpSidebar = document.getElementById('help-sidebar');
+    const closeHelpBtn = document.getElementById('close-help-sidebar');
+
+    if (showHelpBtn && helpSidebar && closeHelpBtn) {
+        showHelpBtn.addEventListener('click', function() {
+            helpSidebar.classList.add('active');
+        });
+
+        closeHelpBtn.addEventListener('click', function() {
+            helpSidebar.classList.remove('active');
+        });
+
+        // Close on backdrop click
+        helpSidebar.addEventListener('click', function(e) {
+            if (e.target.id === 'help-sidebar') {
+                helpSidebar.classList.remove('active');
+            }
+        });
+    }
+});
+</script>
+<script src="../js/transfer-modal.js"></script>
 <?php require_once '../../includes/footer.php'; ?>

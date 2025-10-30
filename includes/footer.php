@@ -62,7 +62,6 @@
     // Include Quick-Add Modal JS for authenticated users
     if (isset($_SESSION['user_id'])) {
         echo '<script src="/pgbudget/js/quick-add-modal.js"></script>';
-        echo '<script src="/pgbudget/js/transfer-modal.js"></script>';
     }
     ?>
 

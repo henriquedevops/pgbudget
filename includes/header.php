@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="/pgbudget/css/delete-ledger.css">
     <link rel="stylesheet" href="/pgbudget/css/tooltips.css">
     <link rel="stylesheet" href="/pgbudget/css/help-sidebar.css">
+    <link rel="stylesheet" href="/pgbudget/css/modals.css">
 
     <!-- Tooltip Library (Tippy.js) -->
     <script src="https://unpkg.com/@popperjs/core@2"></script>
