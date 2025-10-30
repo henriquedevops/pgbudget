@@ -97,6 +97,36 @@ try {
     exit;
 }
 
+function getCategoryIcon($name) {
+    $map = [
+        'food' => '🍔',
+        'dining' => '🍔',
+        'groceries' => '🛒',
+        'rent' => '🏠',
+        'mortgage' => '🏠',
+        'housing' => '🏠',
+        'transportation' => '🚗',
+        'gas' => '⛽',
+        'utilities' => '💡',
+        'entertainment' => '🎬',
+        'clothing' => '👕',
+        'healthcare' => '🏥',
+        'education' => '📚',
+        'savings' => '💰',
+        'goals' => '🎯',
+    ];
+
+    $name = strtolower($name);
+
+    foreach ($map as $key => $icon) {
+        if (strpos($name, $key) !== false) {
+            return $icon;
+        }
+    }
+
+    return '📁'; // Default icon
+}
+
 require_once '../../includes/header.php';
 ?>
 
@@ -173,23 +203,43 @@ require_once '../../includes/header.php';
                 <h2>Budget Categories</h2>
                 <?php if (empty($budget_status)): ?>
                     <div class="empty-state">
-                        <p>No budget categories yet. Start by creating your first category!</p>
-                        <a href="../categories/manage.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">Create Category</a>
+                        <h3>🎯 Ready to Budget!</h3>
+                        <p>You have <?= formatCurrency($budget_totals['left_to_budget']) ?> waiting to be budgeted.</p>
+                        <p>Click the button below to assign it to your categories.</p>
+                        <a href="../categories/manage.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">💵 Budget Money</a>
                     </div>
                 <?php else: ?>
                     <table class="table">
                         <thead>
                             <tr>
+                                <th></th>
                                 <th>Category</th>
                                 <th>Budgeted</th>
                                 <th>Activity</th>
+                                <th>Progress</th>
                                 <th>Balance</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($budget_status as $category): ?>
-                                <tr class="category-row <?= $category['balance'] < 0 ? 'overspent' : '' ?>">
+                                <?php
+                                $spent_percentage = 0;
+                                if ($category['budgeted'] > 0) {
+                                    $spent_percentage = (abs($category['activity']) / $category['budgeted']) * 100;
+                                }
+
+                                $row_class = '';
+                                if ($category['balance'] < 0) {
+                                    $row_class = 'overspent';
+                                } elseif ($spent_percentage >= 76) {
+                                    $row_class = 'warning';
+                                } else {
+                                    $row_class = 'on-track';
+                                }
+                                ?>
+                                <tr class="category-row <?= $row_class ?>">
+                                    <td><?= getCategoryIcon($category['category_name']) ?></td>
                                     <td class="category-name-cell">
                                         <span class="category-name"><?= htmlspecialchars($category['category_name']) ?></span>
                                     </td>
@@ -202,6 +252,11 @@ require_once '../../includes/header.php';
                                     </td>
                                     <td class="amount category-activity <?= $category['activity'] < 0 ? 'negative' : 'positive' ?>">
                                         <?= formatCurrency($category['activity']) ?>
+                                    </td>
+                                    <td>
+                                        <div class="progress-bar <?= $row_class ?>">
+                                            <div class="progress-bar-fill" style="width: <?= min(100, $spent_percentage) ?>%"></div>
+                                        </div>
                                     </td>
                                     <td class="amount category-balance <?= $category['balance'] > 0 ? 'positive' : ($category['balance'] < 0 ? 'negative' : 'zero') ?>">
                                         <?= formatCurrency($category['balance']) ?>
