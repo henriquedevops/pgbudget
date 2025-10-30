@@ -359,7 +359,29 @@
                 }, 1500);
 
             } else {
-                showNotification(data.error || 'Failed to add transaction', 'error');
+                // Check for overspending error
+                if (data.error_code === 'P0001' && data.detail) {
+                    const detail = data.detail;
+                    const originalTransaction = {
+                        ledger_uuid: ledgerUuid,
+                        type: type,
+                        amount: amount,
+                        description: description,
+                        account_uuid: account,
+                        category_uuid: category,
+                        date: date
+                    };
+
+                    closeQuickAddModal();
+                    openFriendlyOverspendingModal(
+                        category,
+                        detail.category_name,
+                        detail.overspent_amount / 100,
+                        originalTransaction
+                    );
+                } else {
+                    showNotification(data.error || 'Failed to add transaction', 'error');
+                }
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
             }
@@ -494,7 +516,7 @@
         coverBtn.dataset.overspentAmount = overspentAmount;
 
         coverBtn.addEventListener('click', function() {
-            openCoverOverspendingModal(categoryUuid, categoryName, overspentAmount);
+            openFriendlyOverspendingModal(categoryUuid, categoryName, overspentAmount, null);
         });
 
         // Insert at beginning of actions cell
@@ -502,9 +524,49 @@
     }
 
     /**
-     * Open cover overspending modal
+     * Handle record anyway button click
      */
-    function openCoverOverspendingModal(categoryUuid, categoryName, overspentAmount) {
+    async function handleRecordAnyway(e, originalTransaction) {
+        e.preventDefault();
+        const transactionToSubmit = { ...originalTransaction, allow_overspending: true };
+        await submitTransaction(transactionToSubmit);
+        closeCoverOverspendingModal();
+    }
+
+    /**
+     * Submit a transaction to the backend
+     */
+    async function submitTransaction(transactionData) {
+        try {
+            const apiUrl = '/pgbudget/api/quick_add_transaction.php';
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(transactionData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showNotification(data.error || 'Failed to add transaction', 'error');
+            }
+        } catch (error) {
+            console.error('Transaction submission error:', error);
+            showNotification('Network error: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Open friendly overspending modal
+     */
+    function openFriendlyOverspendingModal(categoryUuid, categoryName, overspentAmount, originalTransaction) {
         // Remove existing modal if any
         const existingModal = document.getElementById(config.coverOverspendingModalId);
         if (existingModal) {
@@ -604,6 +666,7 @@
 
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary" id="submit-overspending-btn">Cover Overspending</button>
+                            <button type="button" class="btn btn-warning" id="record-anyway-btn">Record Anyway</button>
                             <button type="button" class="btn btn-secondary modal-close">Cancel</button>
                         </div>
                     </form>
@@ -634,7 +697,10 @@
         // Setup handlers
         modal.querySelector('.modal-close').addEventListener('click', () => closeCoverOverspendingModal());
         modal.querySelector('#cover-overspending-form').addEventListener('submit', function(e) {
-            handleCoverOverspendingSubmit(e, categoryUuid, categoryName, overspentAmount);
+            handleCoverOverspendingSubmit(e, categoryUuid, categoryName, overspentAmount, originalTransaction);
+        });
+        modal.querySelector('#record-anyway-btn').addEventListener('click', function(e) {
+            handleRecordAnyway(e, originalTransaction);
         });
         modal.querySelector('#cover-amount').addEventListener('input', function(e) {
             validateCurrencyInput(e.target);
@@ -689,7 +755,7 @@
     /**
      * Handle cover overspending form submission
      */
-    async function handleCoverOverspendingSubmit(e, toCategory, toCategoryName, overspentAmount) {
+    async function handleCoverOverspendingSubmit(e, toCategory, toCategoryName, overspentAmount, originalTransaction) {
         e.preventDefault();
 
         const form = e.target;
@@ -766,8 +832,11 @@
             if (data.success) {
                 showNotification(data.message, 'success');
                 closeCoverOverspendingModal();
-                // Reload page to update all values
-                setTimeout(() => window.location.reload(), 1000);
+
+                // Now, resubmit the original transaction
+                const transactionToSubmit = { ...originalTransaction, allow_overspending: true };
+                await submitTransaction(transactionToSubmit);
+
             } else {
                 showNotification(data.error || 'Failed to cover overspending', 'error');
                 submitBtn.disabled = false;
