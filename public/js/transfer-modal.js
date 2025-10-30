@@ -283,7 +283,7 @@ const TransferModal = (function() {
      */
     function loadAccountsAndCategories(callback) {
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', '/pgbudget/api/ledger-data.php?ledger=' + encodeURIComponent(currentLedgerUuid), true);
+        xhr.open('GET', '../api/ledger-data.php?ledger=' + encodeURIComponent(currentLedgerUuid), true);
 
         xhr.onload = function() {
             if (xhr.status >= 200 && xhr.status < 300) {
