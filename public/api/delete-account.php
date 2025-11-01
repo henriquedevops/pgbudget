@@ -47,10 +47,10 @@ try {
             SELECT id, name, type
             FROM data.accounts
             WHERE uuid = ?
-            AND user_data = utils.get_user()
+            AND user_data = ?
             AND deleted_at IS NULL
         ");
-        $stmt->execute([$account_uuid]);
+        $stmt->execute([$account_uuid, $_SESSION['user_id']]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$account) {
