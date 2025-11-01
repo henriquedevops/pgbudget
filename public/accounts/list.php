@@ -1160,6 +1160,8 @@ function closeDeleteAccountModal() {
 // Fetch deletion precheck
 async function fetchDeleteAccountPrecheck() {
     try {
+        console.log('🔍 Fetching delete precheck for account:', currentDeleteAccountUuid);
+
         const response = await fetch('/pgbudget/api/delete-account.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -1169,7 +1171,9 @@ async function fetchDeleteAccountPrecheck() {
             })
         });
 
+        console.log('📥 Precheck response status:', response.status);
         const data = await response.json();
+        console.log('📦 Precheck data:', data);
 
         if (!response.ok || !data.success) {
             alert('Error: ' + (data.error || 'Failed to check account deletion'));
