@@ -2,6 +2,7 @@
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 require_once '../../includes/transfer-modal.php';
+require_once '../../includes/quick-add-modal.php';
 
 // Require authentication
 requireAuth();
@@ -384,5 +385,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<script src="../js/transfer-modal.js"></script>
+<script src="../js/quick-add-modal.js"></script>
 <?php require_once '../../includes/footer.php'; ?>
