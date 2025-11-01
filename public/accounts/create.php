@@ -33,6 +33,7 @@ try {
         $name = sanitizeInput($_POST['name'] ?? '');
         $description = sanitizeInput($_POST['description'] ?? '');
         $type = $_POST['type'] ?? '';
+        $liability_subtype = $_POST['liability_subtype'] ?? null;
 
         // Validation
         if (empty($name)) {
@@ -41,18 +42,28 @@ try {
             $_SESSION['error'] = 'Account type is required.';
         } elseif (!in_array($type, ['asset', 'liability', 'equity', 'revenue', 'expense'])) {
             $_SESSION['error'] = 'Invalid account type.';
+        } elseif ($type === 'liability' && empty($liability_subtype)) {
+            $_SESSION['error'] = 'Please specify the type of liability account.';
+        } elseif ($type === 'liability' && !in_array($liability_subtype, ['credit_card', 'loan', 'mortgage', 'line_of_credit', 'other'])) {
+            $_SESSION['error'] = 'Invalid liability subtype.';
         } else {
             // Determine internal_type based on type
             $internal_type = in_array($type, ['asset', 'expense']) ? 'asset_like' : 'liability_like';
 
+            // Build metadata JSON
+            $metadata = null;
+            if ($type === 'liability' && !empty($liability_subtype)) {
+                $metadata = json_encode(['liability_subtype' => $liability_subtype]);
+            }
+
             try {
                 // Insert new account
                 $stmt = $db->prepare("
-                    INSERT INTO data.accounts (name, description, type, internal_type, ledger_id)
-                    VALUES (?, ?, ?, ?, (SELECT id FROM data.ledgers WHERE uuid = ?))
+                    INSERT INTO data.accounts (name, description, type, internal_type, metadata, ledger_id)
+                    VALUES (?, ?, ?, ?, ?::jsonb, (SELECT id FROM data.ledgers WHERE uuid = ?))
                 ");
 
-                $stmt->execute([$name, $description, $type, $internal_type, $ledger_uuid]);
+                $stmt->execute([$name, $description, $type, $internal_type, $metadata, $ledger_uuid]);
 
                 $_SESSION['success'] = 'Account created successfully!';
                 header('Location: list.php?ledger=' . urlencode($ledger_uuid));
@@ -118,6 +129,29 @@ require_once '../../includes/header.php';
                     </option>
                 </select>
                 <small class="form-hint">Choose the type that best describes this account</small>
+            </div>
+
+            <div class="form-group" id="liability-subtype-group" style="display: none;">
+                <label for="liability_subtype">Liability Type *</label>
+                <select id="liability_subtype" name="liability_subtype">
+                    <option value="">Select liability type...</option>
+                    <option value="credit_card" <?= ($_POST['liability_subtype'] ?? '') === 'credit_card' ? 'selected' : '' ?>>
+                        💳 Credit Card
+                    </option>
+                    <option value="loan" <?= ($_POST['liability_subtype'] ?? '') === 'loan' ? 'selected' : '' ?>>
+                        💰 Personal Loan
+                    </option>
+                    <option value="mortgage" <?= ($_POST['liability_subtype'] ?? '') === 'mortgage' ? 'selected' : '' ?>>
+                        🏠 Mortgage
+                    </option>
+                    <option value="line_of_credit" <?= ($_POST['liability_subtype'] ?? '') === 'line_of_credit' ? 'selected' : '' ?>>
+                        💼 Line of Credit
+                    </option>
+                    <option value="other" <?= ($_POST['liability_subtype'] ?? '') === 'other' ? 'selected' : '' ?>>
+                        📋 Other Liability
+                    </option>
+                </select>
+                <small class="form-hint">Specify what type of liability this is</small>
             </div>
 
             <div class="form-group">
@@ -263,5 +297,31 @@ require_once '../../includes/header.php';
     font-style: italic;
 }
 </style>
+
+<script>
+// Show/hide liability subtype field based on account type selection
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('type');
+    const liabilitySubtypeGroup = document.getElementById('liability-subtype-group');
+    const liabilitySubtypeSelect = document.getElementById('liability_subtype');
+
+    function toggleLiabilitySubtype() {
+        if (typeSelect.value === 'liability') {
+            liabilitySubtypeGroup.style.display = 'block';
+            liabilitySubtypeSelect.required = true;
+        } else {
+            liabilitySubtypeGroup.style.display = 'none';
+            liabilitySubtypeSelect.required = false;
+            liabilitySubtypeSelect.value = '';
+        }
+    }
+
+    // Check on page load (in case of form errors)
+    toggleLiabilitySubtype();
+
+    // Check when type changes
+    typeSelect.addEventListener('change', toggleLiabilitySubtype);
+});
+</script>
 
 <?php require_once '../../includes/footer.php'; ?>

@@ -46,6 +46,7 @@ try {
     }
 
     // Get all credit card accounts with their limits and balances
+    // Only include liability accounts that are specifically marked as credit cards
     $stmt = $db->prepare("
         SELECT
             cc.uuid as account_uuid,
@@ -65,6 +66,7 @@ try {
         LEFT JOIN data.credit_card_limits ccl ON ccl.credit_card_account_id = cc.id AND ccl.is_active = true
         WHERE cc.ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
         AND cc.type = 'liability'
+        AND utils.is_credit_card(cc.id) = true
         ORDER BY cc.name
     ");
     $stmt->execute([$ledger_uuid, $ledger_uuid]);

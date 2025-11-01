@@ -43,6 +43,17 @@ try {
         exit;
     }
 
+    // Verify this is actually a credit card (not just any liability)
+    $stmt = $db->prepare("SELECT utils.is_credit_card((SELECT id FROM data.accounts WHERE uuid = ?))");
+    $stmt->execute([$card_uuid]);
+    $is_credit_card = $stmt->fetchColumn();
+
+    if (!$is_credit_card) {
+        $_SESSION['error'] = 'This account is not a credit card.';
+        header('Location: ../accounts/list.php?ledger=' . urlencode($ledger_uuid));
+        exit;
+    }
+
     // Get all statements for this credit card
     $stmt = $db->prepare("
         SELECT
