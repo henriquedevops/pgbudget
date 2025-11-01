@@ -70,6 +70,19 @@ try {
                 throw new Exception('Missing or invalid field: credit_limit');
             }
 
+            // Verify the account is actually a credit card (not just any liability)
+            $stmt_check = $db->prepare("
+                SELECT utils.is_credit_card(a.id) as is_cc
+                FROM data.accounts a
+                WHERE a.uuid = ? AND a.user_data = utils.get_user()
+            ");
+            $stmt_check->execute([$input['account_uuid']]);
+            $check_result = $stmt_check->fetch(PDO::FETCH_ASSOC);
+
+            if (!$check_result || !$check_result['is_cc']) {
+                throw new Exception('This account is not a credit card. Credit limits can only be set on credit card accounts.');
+            }
+
             // Build SQL for creating/updating limit
             $stmt = $db->prepare("
                 INSERT INTO data.credit_card_limits (
@@ -110,6 +123,7 @@ try {
                 FROM data.accounts a
                 WHERE a.uuid = ?
                     AND a.type = 'liability'
+                    AND utils.is_credit_card(a.id) = true
                     AND a.user_data = utils.get_user()
                 ON CONFLICT (credit_card_account_id, user_data) DO UPDATE SET
                     credit_limit = EXCLUDED.credit_limit,
