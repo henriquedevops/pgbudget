@@ -96,12 +96,15 @@
                 </div>
             <?php endif; ?>
             <ul class="nav-menu">
-                <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] !== 'demo_user'): ?>
+                <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item">
                         <a href="/pgbudget/" class="nav-link">Dashboard</a>
                     </li>
                     <?php if (isset($_GET['ledger']) || isset($ledger_uuid)): ?>
                         <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
+                        <li class="nav-item">
+                            <a href="/pgbudget/accounts/list.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Accounts</a>
+                        </li>
                         <li class="nav-item">
                             <a href="/pgbudget/transactions/add.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Add Transaction</a>
                         </li>
@@ -123,34 +126,6 @@
                     </li>
                     <li class="nav-item">
                         <a href="/pgbudget/auth/logout.php" class="nav-link nav-logout">Logout</a>
-                    </li>
-                <?php elseif (isset($_SESSION['user_id']) && $_SESSION['user_id'] === 'demo_user'): ?>
-                    <li class="nav-item">
-                        <a href="/pgbudget/" class="nav-link">Dashboard</a>
-                    </li>
-                    <?php if (isset($_GET['ledger']) || isset($ledger_uuid)): ?>
-                        <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
-                        <li class="nav-item">
-                            <a href="/pgbudget/transactions/add.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Add Transaction</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/credit-cards/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Credit Cards</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💰 Loans</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">📅 Installments</a>
-                        </li>
-                    <?php endif; ?>
-                    <li class="nav-item">
-                        <a href="/pgbudget/settings/" class="nav-link">⚙️ Settings</a>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-user">Demo Mode</span>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/pgbudget/auth/login.php" class="nav-link">Login</a>
                     </li>
                 <?php else: ?>
                     <li class="nav-item">
