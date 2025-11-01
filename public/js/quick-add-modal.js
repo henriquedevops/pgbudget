@@ -254,10 +254,12 @@ const QuickAddModal = (function() {
         if (days === 'custom') {
             // Show custom date picker
             dateInput.style.display = 'block';
+            dateInput.required = true;
             dateInput.value = getTodayDate();
         } else {
             // Hide custom date picker
             dateInput.style.display = 'none';
+            dateInput.required = false;
 
             // Calculate date
             const date = new Date();

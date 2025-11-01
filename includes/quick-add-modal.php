@@ -33,7 +33,7 @@
                             <button type="button" class="date-quick-btn" data-days="-1">Yesterday</button>
                             <button type="button" class="date-quick-btn" data-days="custom">Custom</button>
                         </div>
-                        <input type="date" id="qa-date" name="date" class="form-input" required
+                        <input type="date" id="qa-date" name="date" class="form-input"
                                style="display: none;">
                     </div>
                 </div>
