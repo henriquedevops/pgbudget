@@ -1,8 +1,9 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
-require_once '../../includes/transfer-modal.php';
-require_once '../../includes/quick-add-modal.php';
 
 // Require authentication
 requireAuth();
@@ -59,6 +60,9 @@ try {
     $stmt->execute([$ledger_uuid]);
     $overspent_categories = $stmt->fetchAll();
     $total_overspending = array_sum(array_column($overspent_categories, 'overspent_amount'));
+
+    // Calculate total activity (spending) from budget status
+    $total_activity = array_sum(array_column($budget_status, 'activity'));
 
     // Get recent transactions
     $stmt = $db->prepare("
@@ -175,7 +179,7 @@ require_once '../../includes/header.php';
             </div>
             <div class="summary-item">
                 <span class="summary-label">Spent so far</span>
-                <span class="summary-amount"><?= formatCurrency($budget_totals['activity']) ?></span>
+                <span class="summary-amount"><?= formatCurrency($total_activity) ?></span>
             </div>
         </div>
     <?php endif; ?>
@@ -360,7 +364,11 @@ require_once '../../includes/header.php';
 }
 </style>
 
-<?php require_once '../../includes/help-sidebar.php'; ?>
+<?php
+require_once '../../includes/help-sidebar.php';
+require_once '../../includes/transfer-modal.php';
+require_once '../../includes/quick-add-modal.php';
+?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const showHelpBtn = document.getElementById('show-help-sidebar');
