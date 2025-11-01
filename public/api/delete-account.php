@@ -24,7 +24,23 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Parse input
-$input = json_decode(file_get_contents('php://input'), true);
+$raw_input = file_get_contents('php://input');
+$input = json_decode($raw_input, true);
+
+// Validate JSON parsing
+if ($raw_input && $input === null) {
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Invalid JSON in request body'
+    ]);
+    exit;
+}
+
+// Ensure input is an array
+if (!is_array($input)) {
+    $input = [];
+}
 
 try {
     $db = getDbConnection();
@@ -103,6 +119,8 @@ try {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine()
     ]);
 }
