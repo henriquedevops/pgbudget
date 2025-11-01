@@ -106,6 +106,9 @@
                             <a href="/pgbudget/accounts/list.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Accounts</a>
                         </li>
                         <li class="nav-item">
+                            <a href="/pgbudget/categories/manage.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">📊 Categories</a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/pgbudget/transactions/add.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Add Transaction</a>
                         </li>
                         <li class="nav-item">
