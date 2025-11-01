@@ -137,6 +137,9 @@ const QuickAddModal = (function() {
 
         // Load accounts and categories
         loadAccountsAndCategories(function() {
+            // Clear form first
+            resetForm();
+
             // Set form values
             document.getElementById('qa-ledger-uuid').value = currentLedgerUuid;
 
@@ -150,9 +153,6 @@ const QuickAddModal = (function() {
 
             // Set default date to today
             setDate('0');
-
-            // Clear form
-            resetForm();
 
             // Show modal with animation
             modal.style.display = 'flex';
