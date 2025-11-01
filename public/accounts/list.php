@@ -194,6 +194,21 @@ require_once '../../includes/header.php';
                                             <?php if ($account['account_type'] === 'asset' || $account['account_type'] === 'liability'): ?>
                                                 <a href="reconcile.php?account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-warning" title="Reconcile Account">⚖️ Reconcile</a>
                                             <?php endif; ?>
+
+                                            <?php
+                                            // Don't show delete button for special system accounts
+                                            $is_special = in_array($account['account_name'], ['Income', 'Off-budget', 'Unassigned']) && $account['account_type'] === 'equity';
+                                            if (!$is_special):
+                                            ?>
+                                                <button class="btn btn-small btn-danger delete-account-btn"
+                                                        data-account-uuid="<?= $account['account_uuid'] ?>"
+                                                        data-account-name="<?= htmlspecialchars($account['account_name']) ?>"
+                                                        data-account-type="<?= $account['account_type'] ?>"
+                                                        title="Delete Account">
+                                                    🗑️ Delete
+                                                </button>
+                                            <?php endif; ?>
+
                                             <?php if ($account['account_type'] === 'liability'): ?>
                                                 <button class="btn btn-small btn-success pay-cc-btn"
                                                         data-cc-uuid="<?= $account['account_uuid'] ?>"
@@ -1032,6 +1047,38 @@ require_once '../../includes/header.php';
     </div>
 </div>
 
+<!-- Delete Account Modal -->
+<div id="deleteAccountModal" class="delete-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⚠️ Delete Account: <span id="delete-account-name"></span></h2>
+        </div>
+        <div class="modal-body">
+            <div id="delete-loading-message" style="text-align: center; padding: 2rem;">
+                <p>Checking account deletion impact...</p>
+            </div>
+            <div id="delete-warning-content" style="display: none;">
+                <div class="warning-box" style="background-color: #fff5f5; border-left: 4px solid #fc8181; padding: 1rem; margin-bottom: 1rem;">
+                    <p style="margin: 0; color: #742a2a; font-weight: 600;">⚠️ This action will soft-delete the account and all its transactions.</p>
+                </div>
+
+                <div id="delete-warnings-list"></div>
+
+                <div style="margin-top: 1rem; padding: 1rem; background-color: #f7fafc; border-radius: 6px;">
+                    <p style="margin: 0; font-size: 0.875rem; color: #4a5568;">
+                        <strong>Note:</strong> The account will be hidden from view, but not permanently removed from the database.
+                        Historical data is preserved for audit purposes.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeDeleteAccountModal()">Cancel</button>
+            <button class="btn btn-danger" id="confirm-delete-account-btn" onclick="confirmDeleteAccount()" disabled>Delete Account</button>
+        </div>
+    </div>
+</div>
+
 <!-- Delete Category Modal -->
 <div id="deleteCategoryModal" class="delete-modal">
     <div class="modal-content">
@@ -1075,6 +1122,159 @@ require_once '../../includes/header.php';
 </div>
 
 <script>
+// ============================================================================
+// ACCOUNT DELETION HANDLERS
+// ============================================================================
+
+let currentDeleteAccountUuid = null;
+let currentDeleteAccountName = null;
+let currentDeleteAccountType = null;
+let deleteAccountWarnings = [];
+
+// Open delete account modal
+document.querySelectorAll('.delete-account-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        currentDeleteAccountUuid = this.dataset.accountUuid;
+        currentDeleteAccountName = this.dataset.accountName;
+        currentDeleteAccountType = this.dataset.accountType;
+
+        document.getElementById('delete-account-name').textContent = currentDeleteAccountName;
+        document.getElementById('deleteAccountModal').classList.add('active');
+        document.getElementById('delete-loading-message').style.display = 'block';
+        document.getElementById('delete-warning-content').style.display = 'none';
+
+        // Fetch account deletion precheck
+        await fetchDeleteAccountPrecheck();
+    });
+});
+
+// Close delete account modal
+function closeDeleteAccountModal() {
+    document.getElementById('deleteAccountModal').classList.remove('active');
+    currentDeleteAccountUuid = null;
+    currentDeleteAccountName = null;
+    currentDeleteAccountType = null;
+    deleteAccountWarnings = [];
+}
+
+// Fetch deletion precheck
+async function fetchDeleteAccountPrecheck() {
+    try {
+        const response = await fetch('/pgbudget/api/delete-account.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                account_uuid: currentDeleteAccountUuid,
+                precheck: true
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            alert('Error: ' + (data.error || 'Failed to check account deletion'));
+            closeDeleteAccountModal();
+            return;
+        }
+
+        if (!data.can_delete) {
+            alert('Cannot delete this account: ' + data.reason);
+            closeDeleteAccountModal();
+            return;
+        }
+
+        deleteAccountWarnings = data.warnings || [];
+        displayDeleteWarnings();
+    } catch (error) {
+        alert('Error: ' + error.message);
+        closeDeleteAccountModal();
+    }
+}
+
+// Display deletion warnings
+function displayDeleteWarnings() {
+    const warningsList = document.getElementById('delete-warnings-list');
+
+    if (deleteAccountWarnings.length === 0) {
+        warningsList.innerHTML = '<p style="color: #38a169;">✓ This account has no transactions or related data. Safe to delete.</p>';
+    } else {
+        let html = '<ul style="margin: 0; padding-left: 1.5rem;">';
+        deleteAccountWarnings.forEach(warning => {
+            html += `<li style="margin-bottom: 0.5rem; color: #744210;">${warning}</li>`;
+        });
+        html += '</ul>';
+        warningsList.innerHTML = html;
+    }
+
+    document.getElementById('delete-loading-message').style.display = 'none';
+    document.getElementById('delete-warning-content').style.display = 'block';
+    document.getElementById('confirm-delete-account-btn').disabled = false;
+}
+
+// Confirm account deletion
+async function confirmDeleteAccount() {
+    const hasTransactions = deleteAccountWarnings.some(w => w.includes('transaction'));
+
+    let confirmMsg = `Are you sure you want to delete the account "${currentDeleteAccountName}"?\n\n`;
+
+    if (hasTransactions) {
+        confirmMsg += 'This will also soft-delete all transactions associated with this account.\n\n';
+    }
+
+    confirmMsg += 'This action cannot be easily undone!';
+
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+
+    // Disable button and show loading
+    const btn = document.getElementById('confirm-delete-account-btn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+
+    try {
+        const response = await fetch('/pgbudget/api/delete-account.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                account_uuid: currentDeleteAccountUuid
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            alert('Error: ' + (data.error || 'Failed to delete account'));
+            btn.disabled = false;
+            btn.textContent = 'Delete Account';
+            return;
+        }
+
+        let successMsg = data.message;
+        if (data.deleted_transactions > 0) {
+            successMsg += `\n\n${data.deleted_transactions} transaction(s) were also soft-deleted.`;
+        }
+
+        alert(successMsg);
+        window.location.reload();
+    } catch (error) {
+        alert('Error: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = 'Delete Account';
+    }
+}
+
+// Close modal when clicking outside
+document.getElementById('deleteAccountModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteAccountModal();
+    }
+});
+
+// ============================================================================
+// CATEGORY DELETION HANDLERS
+// ============================================================================
+
 let currentCategoryUuid = null;
 let currentLedgerUuid = null;
 let impactData = null;
