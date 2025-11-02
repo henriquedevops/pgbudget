@@ -75,6 +75,14 @@ try {
         }
     }
 
+    // Add initial amount paid (payments made before tracking began)
+    $initial_amount_paid = floatval($loan['initial_amount_paid'] ?? 0);
+    $total_paid += $initial_amount_paid;
+
+    // Calculate actual amount paid from principal reduction
+    // This is more accurate as it reflects the true balance change
+    $total_amount_paid_against_principal = floatval($loan['principal_amount']) - floatval($loan['current_balance']);
+
     $percent_complete = $total_payments > 0 ? ($paid_count / $total_payments) * 100 : 0;
     $percent_paid = $loan['principal_amount'] > 0 ?
         (($loan['principal_amount'] - $loan['current_balance']) / $loan['principal_amount']) * 100 : 0;
@@ -154,7 +162,14 @@ require_once '../../includes/header.php';
             <div class="card-content">
                 <div class="card-label">Total Paid</div>
                 <div class="card-value amount positive"><?= formatCurrency($total_paid) ?></div>
-                <div class="card-detail">Interest: <?= formatCurrency($total_interest_paid) ?></div>
+                <div class="card-detail">
+                    <?php if ($initial_amount_paid > 0): ?>
+                        Tracked: <?= formatCurrency($total_paid - $initial_amount_paid) ?>
+                        + Initial: <?= formatCurrency($initial_amount_paid) ?>
+                    <?php else: ?>
+                        Interest: <?= formatCurrency($total_interest_paid) ?>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
