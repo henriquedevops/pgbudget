@@ -155,6 +155,9 @@ require_once '../../includes/header.php';
             <button type="button" class="btn btn-primary quick-add-transaction-btn" onclick="QuickAddModal.open({ledger_uuid: '<?= htmlspecialchars($ledger_uuid) ?>'})">
                 ⚡ Quick Add
             </button>
+            <a href="../transactions/assign.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-success">
+                💵 Assign Money
+            </a>
             <button type="button" class="btn btn-primary" onclick="TransferModal.open({ledger_uuid: '<?= htmlspecialchars($ledger_uuid) ?>'})">
                 ⇄ Transfer
             </button>

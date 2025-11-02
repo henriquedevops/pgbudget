@@ -209,7 +209,7 @@ class KeyboardShortcuts {
     assignMoney() {
         const ledger = this.getCurrentLedger();
         if (ledger) {
-            window.location.href = `/pgbudget/budget/assign.php?ledger=${ledger}`;
+            window.location.href = `/pgbudget/transactions/assign.php?ledger=${ledger}`;
         }
     }
 
