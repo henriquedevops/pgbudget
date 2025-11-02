@@ -243,10 +243,10 @@ All functionality uses existing tables with metadata.
 
 ```bash
 # Apply migration
-goose -dir migrations postgres "user=pgbudget password= dbname=pgbudget host=localhost sslmode=disable" up
+goose -dir migrations postgres "user=pgbudget dbname=pgbudget host=localhost sslmode=disable" up
 
 # Rollback migration (if needed)
-goose -dir migrations postgres "user=pgbudget password= dbname=pgbudget host=localhost sslmode=disable" down
+goose -dir migrations postgres "user=pgbudget dbname=pgbudget host=localhost sslmode=disable" down
 ```
 
 ## Next Steps (Phase 4.4+)
