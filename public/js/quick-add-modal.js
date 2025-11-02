@@ -577,8 +577,24 @@ const QuickAddModal = (function() {
                 } catch (e) {
                     callback(false, 'Error parsing response.');
                 }
+            } else if (xhr.status === 400) {
+                // Handle validation errors (like insufficient funds)
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    callback(false, response.error || 'Validation error. Please check your input.');
+                } catch (e) {
+                    callback(false, 'Validation error. Please check your input.');
+                }
+            } else if (xhr.status === 401) {
+                callback(false, 'Session expired. Please refresh the page and try again.');
             } else {
-                callback(false, 'Network error. Please try again.');
+                // Try to parse error message from response for other errors
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    callback(false, response.error || 'Network error. Please try again.');
+                } catch (e) {
+                    callback(false, 'Network error. Please try again.');
+                }
             }
         };
 
