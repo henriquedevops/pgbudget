@@ -163,11 +163,39 @@ try {
     file_put_contents($logFile, "Stack trace: " . $e->getTraceAsString() . "\n", FILE_APPEND);
     error_log("PDO Exception: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Database error: ' . $e->getMessage()
-    ]);
+
+    // Check if this is a user-defined validation error (SQLSTATE P0001)
+    if (strpos($e->getCode(), 'P0001') !== false || strpos($e->getMessage(), 'SQLSTATE[P0001]') !== false) {
+        // Extract user-friendly error message from the exception
+        $message = $e->getMessage();
+
+        // Check for insufficient funds error
+        if (strpos($message, 'Insufficient funds in category') !== false) {
+            // Extract category name from JSON detail if available
+            preg_match('/"category_name"\s*:\s*"([^"]+)"/', $message, $matches);
+            $categoryName = isset($matches[1]) ? $matches[1] : 'this category';
+
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'error' => "Insufficient funds in $categoryName. Please add more budget to the category or choose a different category."
+            ]);
+        } else {
+            // Other validation errors
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Validation error: ' . $e->getMessage()
+            ]);
+        }
+    } else {
+        // Real database error
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Database error: ' . $e->getMessage()
+        ]);
+    }
 } catch (Exception $e) {
     file_put_contents($logFile, "General Exception: " . $e->getMessage() . "\n", FILE_APPEND);
     file_put_contents($logFile, "Stack trace: " . $e->getTraceAsString() . "\n", FILE_APPEND);
