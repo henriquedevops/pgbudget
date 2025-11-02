@@ -109,15 +109,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (PDOException $e) {
             if ($e->getCode() == '23503') { // Foreign key violation
                 $_SESSION['error'] = '❌ Oops! This transaction couldn\'t be saved. The account or category you selected may no longer exist. Please refresh and try again.';
-            } elseif ($e->getCode() == 'P0001') { // Insufficient funds
-                $detail = json_decode($e->getPrevious()->getMessage(), true);
-                $_SESSION['overspending_error'] = [
-                    'overspent_amount' => $detail['overspent_amount'],
-                    'category_name' => $detail['category_name'],
-                    'original_data' => $_POST
-                ];
-                header('Location: add.php?ledger=' . $ledger_uuid);
-                exit;
+            } elseif (strpos($e->getCode(), 'P0001') !== false || strpos($e->getMessage(), 'SQLSTATE[P0001]') !== false) { // Insufficient funds
+                // Extract error details from exception message
+                $message = $e->getMessage();
+
+                // Check for insufficient funds error
+                if (strpos($message, 'Insufficient funds in category') !== false) {
+                    // Extract details from JSON in DETAIL section
+                    preg_match('/"overspent_amount"\s*:\s*(\d+)/', $message, $overspent_matches);
+                    preg_match('/"category_name"\s*:\s*"([^"]+)"/', $message, $category_matches);
+
+                    $overspent_amount = isset($overspent_matches[1]) ? (int)$overspent_matches[1] : 0;
+                    $category_name = isset($category_matches[1]) ? $category_matches[1] : 'unknown';
+
+                    $_SESSION['overspending_error'] = [
+                        'overspent_amount' => $overspent_amount,
+                        'category_name' => $category_name,
+                        'original_data' => $_POST
+                    ];
+                    header('Location: add.php?ledger=' . $ledger_uuid);
+                    exit;
+                } else {
+                    // Other P0001 errors
+                    $_SESSION['error'] = 'Validation error: ' . $e->getMessage();
+                }
             } else {
                 $_SESSION['error'] = 'Database error: ' . $e->getMessage();
             }
