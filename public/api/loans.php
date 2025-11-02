@@ -75,7 +75,9 @@ try {
                     p_compounding_frequency := ?,
                     p_payment_day_of_month := ?,
                     p_amortization_type := ?,
-                    p_notes := ?
+                    p_notes := ?,
+                    p_initial_amount_paid := ?,
+                    p_initial_paid_as_of_date := ?
                 )
             ");
 
@@ -94,7 +96,9 @@ try {
                 $input['compounding_frequency'] ?? 'monthly',
                 isset($input['payment_day_of_month']) ? intval($input['payment_day_of_month']) : null,
                 $input['amortization_type'] ?? 'standard',
-                $input['notes'] ?? null
+                $input['notes'] ?? null,
+                isset($input['initial_amount_paid']) ? floatval($input['initial_amount_paid']) : 0,
+                $input['initial_paid_as_of_date'] ?? null
             ]);
 
             $loan = $stmt->fetch(PDO::FETCH_ASSOC);

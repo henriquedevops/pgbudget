@@ -247,6 +247,15 @@ require_once '../../includes/header.php';
                 <span class="detail-value">Day <?= $loan['payment_day_of_month'] ?> of month</span>
             </div>
             <?php endif; ?>
+            <?php if ($loan['initial_amount_paid'] > 0): ?>
+            <div class="detail-item" style="grid-column: 1 / -1;">
+                <div class="initial-payment-notice">
+                    <strong>📊 Initial Payments Recorded:</strong>
+                    <?= formatCurrency($loan['initial_amount_paid']) ?> paid as of <?= date('M d, Y', strtotime($loan['initial_paid_as_of_date'])) ?>
+                    <br><small>The current balance and payment schedule reflect payments made before tracking began.</small>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
 
         <?php if ($loan['notes']): ?>
@@ -456,6 +465,27 @@ require_once '../../includes/header.php';
     font-size: 1rem;
     color: #333;
     font-weight: 600;
+}
+
+.initial-payment-notice {
+    background: #e6f7ff;
+    border: 1px solid #91d5ff;
+    border-radius: 6px;
+    padding: 1rem;
+    color: #0050b3;
+}
+
+.initial-payment-notice strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+}
+
+.initial-payment-notice small {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #0066cc;
 }
 
 .notes-section {
