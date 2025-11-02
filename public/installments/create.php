@@ -76,7 +76,7 @@ try {
         AND t.description NOT LIKE 'DELETED:%'
         AND t.description NOT LIKE 'REVERSAL:%'
         ORDER BY t.date DESC
-        LIMIT 50
+        LIMIT 100
     ");
     $stmt->execute([$ledger_uuid]);
     $recent_transactions = $stmt->fetchAll();
