@@ -2,7 +2,7 @@
 <div class="onboarding-step step-welcome">
     <div class="step-icon">🎉</div>
     
-    <h1>Welcome to PGBudget!</h1>
+    <h1>Welcome to PGBudget! <?= rand() ?></h1>
     
     <p class="lead">
         You're about to take control of your money. Let's set up your budget together.
@@ -16,9 +16,11 @@
         <button type="button" class="btn btn-primary btn-lg" onclick="nextStep()">
             Get Started
         </button>
+        <?php if (isLoggedIn()): ?>
         <button type="button" class="btn btn-link" onclick="skipOnboarding()">
             Skip - I'm a pro
         </button>
+        <?php endif; ?>
     </div>
     
     <div class="step-features">
@@ -43,21 +45,32 @@ function nextStep() {
 }
 
 function skipOnboarding() {
-    if (confirm('Are you sure you want to skip the setup wizard? You can always access help later.')) {
-        fetch('/api/onboarding/skip.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(response => response.json())
-        .then(data => {
+    fetch('/pgbudget/api/onboarding/skip.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include' // Include cookies
+    })
+    .then(response => {
+        if (response.status === 401) {
+            // Not logged in, redirect to login
+            alert('You need to be logged in to skip the setup wizard. Redirecting to login page.');
+            window.location.href = '/pgbudget/auth/login.php';
+            return null;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data) {
             if (data.success) {
-                window.location.href = '/';
+                window.location.href = '/pgbudget/';
+            } else {
+                alert(data.error || 'An error occurred.');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to skip onboarding. Please try again.');
-        });
-    }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('A network error occurred.');
+    });
 }
 </script>

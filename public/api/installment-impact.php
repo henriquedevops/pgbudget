@@ -61,6 +61,7 @@ try {
         LEFT JOIN data.installment_schedules isc ON ip.id = isc.installment_plan_id
         WHERE a.ledger_uuid = ?
         AND a.type = 'equity'
+        AND (a.is_group = false OR a.is_group IS NULL)
         GROUP BY a.uuid, a.name, ba.budgeted_amount, ba.actual_amount
         HAVING COALESCE(SUM(
             CASE

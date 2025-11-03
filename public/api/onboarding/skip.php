@@ -5,7 +5,7 @@ require_once '../../../includes/auth.php';
 header('Content-Type: application/json');
 
 // Require authentication
-requireAuth(false);
+requireAuth(true);
 
 // Set PostgreSQL user context
 $db = getDbConnection();

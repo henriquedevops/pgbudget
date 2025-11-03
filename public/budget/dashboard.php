@@ -1,4 +1,5 @@
 <?php
+require_once '../../includes/session.php';
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -95,6 +96,57 @@ try {
     ");
     $stmt->execute([$ledger_uuid]);
     $ledger_accounts = $stmt->fetchAll();
+
+    // Get categories organized by groups for grouped view
+    $stmt = $db->prepare("SELECT * FROM api.get_categories_by_group(?)");
+    $stmt->execute([$ledger_uuid]);
+    $categories_by_group = $stmt->fetchAll();
+
+    // Get group subtotals if there are groups
+    $group_subtotals = [];
+    if ($selected_period) {
+        $stmt = $db->prepare("SELECT * FROM api.get_group_subtotals(?, ?)");
+        $stmt->execute([$ledger_uuid, $selected_period]);
+    } else {
+        $stmt = $db->prepare("SELECT * FROM api.get_group_subtotals(?)");
+        $stmt->execute([$ledger_uuid]);
+    }
+    $group_subtotals = $stmt->fetchAll();
+
+    // Organize grouped categories into a hierarchical structure
+    $grouped_categories = [];
+    foreach ($categories_by_group as $cat) {
+        if ($cat['is_group']) {
+            // This is a group header
+            if (!isset($grouped_categories[$cat['category_uuid']])) {
+                $grouped_categories[$cat['category_uuid']] = [
+                    'group' => $cat,
+                    'categories' => []
+                ];
+            }
+        } else {
+            // This is a regular category
+            if ($cat['parent_uuid']) {
+                // Category belongs to a group
+                if (!isset($grouped_categories[$cat['parent_uuid']])) {
+                    $grouped_categories[$cat['parent_uuid']] = [
+                        'group' => null,
+                        'categories' => []
+                    ];
+                }
+                $grouped_categories[$cat['parent_uuid']]['categories'][] = $cat;
+            } else {
+                // Category has no group - put in special "ungrouped" section
+                if (!isset($grouped_categories['_ungrouped'])) {
+                    $grouped_categories['_ungrouped'] = [
+                        'group' => null,
+                        'categories' => []
+                    ];
+                }
+                $grouped_categories['_ungrouped']['categories'][] = $cat;
+            }
+        }
+    }
 
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
@@ -208,7 +260,23 @@ require_once '../../includes/header.php';
 
             <!-- Budget Categories -->
             <div class="categories-section">
-                <h2>Budget Categories</h2>
+                <div class="categories-header">
+                    <h2>Budget Categories</h2>
+                    <div class="view-toggle">
+                        <button type="button" id="view-toggle-flat" class="view-toggle-btn active" title="Flat view">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M0 2h16v2H0V2zm0 5h16v2H0V7zm0 5h16v2H0v-2z"/>
+                            </svg>
+                            <span>List</span>
+                        </button>
+                        <button type="button" id="view-toggle-grouped" class="view-toggle-btn" title="Grouped view">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M0 2h16v2H0V2zm2 5h14v2H2V7zm2 5h12v2H4v-2z"/>
+                            </svg>
+                            <span>Groups</span>
+                        </button>
+                    </div>
+                </div>
                 <?php if (empty($budget_status)): ?>
                     <div class="empty-state">
                         <h3>🎯 Ready to Budget!</h3>
@@ -217,6 +285,8 @@ require_once '../../includes/header.php';
                         <a href="../categories/manage.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">💵 Budget Money</a>
                     </div>
                 <?php else: ?>
+                    <!-- Flat View (default) -->
+                    <div id="categories-flat-view" class="categories-view">
                     <table class="table">
                         <thead>
                             <tr>
@@ -295,6 +365,166 @@ require_once '../../includes/header.php';
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                    </div><!-- end flat view -->
+
+                    <!-- Grouped View -->
+                    <div id="categories-grouped-view" class="categories-view" style="display: none;">
+                    <?php if (empty($grouped_categories) || (count($grouped_categories) === 1 && isset($grouped_categories['_ungrouped']))): ?>
+                        <div class="no-groups-message">
+                            <p>You haven't created any category groups yet.</p>
+                            <p><a href="../categories/manage.php?ledger=<?= $ledger_uuid ?>">Organize your categories into groups</a> to use this view.</p>
+                        </div>
+                    <?php else: ?>
+                        <table class="table grouped-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Category</th>
+                                    <th>Budgeted</th>
+                                    <th>Activity</th>
+                                    <th>Progress</th>
+                                    <th>Balance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($grouped_categories as $group_uuid => $group_data): ?>
+                                    <?php if ($group_uuid === '_ungrouped' && empty($group_data['categories'])): continue; endif; ?>
+
+                                    <?php if ($group_data['group']): ?>
+                                        <!-- Group Header Row -->
+                                        <?php
+                                        // Find group subtotals
+                                        $group_subtotal = null;
+                                        foreach ($group_subtotals as $subtotal) {
+                                            if ($subtotal['group_uuid'] === $group_uuid) {
+                                                $group_subtotal = $subtotal;
+                                                break;
+                                            }
+                                        }
+                                        ?>
+                                        <tr class="group-header-row" data-group-uuid="<?= $group_uuid ?>">
+                                            <td colspan="2" class="group-name-cell">
+                                                <button type="button" class="group-toggle-btn">▼</button>
+                                                <strong><?= htmlspecialchars($group_data['group']['category_name']) ?></strong>
+                                                <span class="group-count">(<?= count($group_data['categories']) ?> categories)</span>
+                                            </td>
+                                            <?php if ($group_subtotal): ?>
+                                                <td class="amount"><?= formatCurrency($group_subtotal['total_budgeted']) ?></td>
+                                                <td class="amount <?= $group_subtotal['total_activity'] < 0 ? 'negative' : 'positive' ?>"><?= formatCurrency($group_subtotal['total_activity']) ?></td>
+                                                <td>
+                                                    <?php
+                                                    $group_spent_percentage = 0;
+                                                    if ($group_subtotal['total_budgeted'] > 0) {
+                                                        $group_spent_percentage = (abs($group_subtotal['total_activity']) / $group_subtotal['total_budgeted']) * 100;
+                                                    }
+                                                    $group_row_class = 'on-track';
+                                                    if ($group_subtotal['total_balance'] < 0) {
+                                                        $group_row_class = 'overspent';
+                                                    } elseif ($group_spent_percentage >= 76) {
+                                                        $group_row_class = 'warning';
+                                                    }
+                                                    ?>
+                                                    <div class="progress-bar <?= $group_row_class ?>">
+                                                        <div class="progress-bar-fill" style="width: <?= min(100, $group_spent_percentage) ?>%"></div>
+                                                    </div>
+                                                </td>
+                                                <td class="amount <?= $group_subtotal['total_balance'] > 0 ? 'positive' : ($group_subtotal['total_balance'] < 0 ? 'negative' : 'zero') ?>"><?= formatCurrency($group_subtotal['total_balance']) ?></td>
+                                            <?php else: ?>
+                                                <td colspan="4" class="amount">—</td>
+                                            <?php endif; ?>
+                                            <td></td>
+                                        </tr>
+                                    <?php elseif ($group_uuid === '_ungrouped'): ?>
+                                        <!-- Ungrouped Section Header -->
+                                        <tr class="group-header-row ungrouped-header" data-group-uuid="_ungrouped">
+                                            <td colspan="7" class="group-name-cell">
+                                                <button type="button" class="group-toggle-btn">▼</button>
+                                                <span style="opacity: 0.7;">Ungrouped Categories</span>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+
+                                    <!-- Category Rows under this group -->
+                                    <?php foreach ($group_data['categories'] as $cat): ?>
+                                        <?php
+                                        // Find budget status for this category
+                                        $category_budget = null;
+                                        foreach ($budget_status as $bs) {
+                                            if ($bs['category_uuid'] === $cat['category_uuid']) {
+                                                $category_budget = $bs;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!$category_budget) continue; // Skip if no budget data
+
+                                        $spent_percentage = 0;
+                                        if ($category_budget['budgeted'] > 0) {
+                                            $spent_percentage = (abs($category_budget['activity']) / $category_budget['budgeted']) * 100;
+                                        }
+
+                                        $row_class = '';
+                                        if ($category_budget['balance'] < 0) {
+                                            $row_class = 'overspent';
+                                        } elseif ($spent_percentage >= 76) {
+                                            $row_class = 'warning';
+                                        } else {
+                                            $row_class = 'on-track';
+                                        }
+                                        ?>
+                                        <tr class="category-row grouped-category-row <?= $row_class ?>" data-parent-group="<?= $group_uuid ?>">
+                                            <td><?= getCategoryIcon($category_budget['category_name']) ?></td>
+                                            <td class="category-name-cell indented">
+                                                <span class="category-name"><?= htmlspecialchars($category_budget['category_name']) ?></span>
+                                            </td>
+                                            <td class="amount budget-amount-editable"
+                                                data-category-uuid="<?= htmlspecialchars($category_budget['category_uuid']) ?>"
+                                                data-category-name="<?= htmlspecialchars($category_budget['category_name']) ?>"
+                                                data-current-amount="<?= $category_budget['budgeted'] ?>"
+                                                title="Click to assign budget">
+                                                <?= formatCurrency($category_budget['budgeted']) ?>
+                                            </td>
+                                            <td class="amount category-activity <?= $category_budget['activity'] < 0 ? 'negative' : 'positive' ?>">
+                                                <?= formatCurrency($category_budget['activity']) ?>
+                                            </td>
+                                            <td>
+                                                <div class="progress-bar <?= $row_class ?>">
+                                                    <div class="progress-bar-fill" style="width: <?= min(100, $spent_percentage) ?>%"></div>
+                                                </div>
+                                            </td>
+                                            <td class="amount category-balance <?= $category_budget['balance'] > 0 ? 'positive' : ($category_budget['balance'] < 0 ? 'negative' : 'zero') ?>">
+                                                <?= formatCurrency($category_budget['balance']) ?>
+                                            </td>
+                                            <td class="category-actions-cell">
+                                                <?php if ($category_budget['balance'] < 0): ?>
+                                                    <button type="button"
+                                                            class="btn btn-small cover-overspending-btn"
+                                                            data-category-uuid="<?= htmlspecialchars($category_budget['category_uuid']) ?>"
+                                                            data-category-name="<?= htmlspecialchars($category_budget['category_name']) ?>"
+                                                            data-overspent-amount="<?= abs($category_budget['balance']) ?>"
+                                                            onclick="showCoverOverspendingModal('<?= htmlspecialchars($category_budget['category_uuid']) ?>', '<?= htmlspecialchars($category_budget['category_name']) ?>', <?= abs($category_budget['balance']) ?>)"
+                                                            title="Cover this overspending">
+                                                        🩹 Cover
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button type="button"
+                                                            class="btn btn-small btn-move move-money-btn"
+                                                            data-category-uuid="<?= htmlspecialchars($category_budget['category_uuid']) ?>"
+                                                            data-category-name="<?= htmlspecialchars($category_budget['category_name']) ?>"
+                                                            title="Move money from this category"
+                                                            <?= $category_budget['balance'] <= 0 ? 'disabled' : '' ?>>
+                                                        💸 Move
+                                                    </button>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                    </div><!-- end grouped view -->
                 <?php endif; ?>
             </div>
         </div>
@@ -365,6 +595,141 @@ require_once '../../includes/header.php';
 .summary-amount.zero {
     color: #718096;
 }
+
+/* Category View Toggle Styles */
+.categories-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 0;
+    background: #f7fafc;
+    border-radius: 6px;
+    padding: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.view-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #4a5568;
+    transition: all 0.2s;
+}
+
+.view-toggle-btn:hover {
+    background: #e2e8f0;
+    color: #2d3748;
+}
+
+.view-toggle-btn.active {
+    background: white;
+    color: #3182ce;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.view-toggle-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Grouped View Styles */
+.grouped-table .group-header-row {
+    background: #f7fafc;
+    font-weight: 600;
+    border-top: 2px solid #e2e8f0;
+}
+
+.grouped-table .group-header-row:first-child {
+    border-top: none;
+}
+
+.group-name-cell {
+    padding: 0.75rem 1rem !important;
+}
+
+.group-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 0.5rem;
+    font-size: 0.875rem;
+    color: #4a5568;
+    transition: transform 0.2s;
+}
+
+.group-toggle-btn.collapsed {
+    transform: rotate(-90deg);
+}
+
+.group-count {
+    font-size: 0.875rem;
+    color: #718096;
+    font-weight: normal;
+    margin-left: 0.5rem;
+}
+
+.grouped-category-row {
+    display: table-row;
+}
+
+.grouped-category-row.hidden {
+    display: none;
+}
+
+.grouped-category-row .category-name-cell.indented {
+    padding-left: 2.5rem;
+}
+
+.no-groups-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: #f7fafc;
+    border-radius: 8px;
+    color: #4a5568;
+}
+
+.no-groups-message p {
+    margin: 0.5rem 0;
+}
+
+.no-groups-message a {
+    color: #3182ce;
+    text-decoration: underline;
+}
+
+.ungrouped-header .group-name-cell {
+    font-weight: normal;
+}
+
+@media (max-width: 768px) {
+    .categories-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .view-toggle {
+        width: 100%;
+    }
+
+    .view-toggle-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
 </style>
 
 <?php
@@ -394,6 +759,63 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Category View Toggle
+    const flatViewBtn = document.getElementById('view-toggle-flat');
+    const groupedViewBtn = document.getElementById('view-toggle-grouped');
+    const flatView = document.getElementById('categories-flat-view');
+    const groupedView = document.getElementById('categories-grouped-view');
+
+    if (flatViewBtn && groupedViewBtn && flatView && groupedView) {
+        // Load saved preference from localStorage
+        const savedView = localStorage.getItem('categoryView') || 'flat';
+        if (savedView === 'grouped') {
+            switchToGroupedView();
+        }
+
+        flatViewBtn.addEventListener('click', function() {
+            switchToFlatView();
+        });
+
+        groupedViewBtn.addEventListener('click', function() {
+            switchToGroupedView();
+        });
+
+        function switchToFlatView() {
+            flatView.style.display = 'block';
+            groupedView.style.display = 'none';
+            flatViewBtn.classList.add('active');
+            groupedViewBtn.classList.remove('active');
+            localStorage.setItem('categoryView', 'flat');
+        }
+
+        function switchToGroupedView() {
+            flatView.style.display = 'none';
+            groupedView.style.display = 'block';
+            flatViewBtn.classList.remove('active');
+            groupedViewBtn.classList.add('active');
+            localStorage.setItem('categoryView', 'grouped');
+        }
+    }
+
+    // Group Expand/Collapse Functionality
+    const groupToggleBtns = document.querySelectorAll('.group-toggle-btn');
+    groupToggleBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const groupRow = this.closest('.group-header-row');
+            const groupUuid = groupRow.dataset.groupUuid;
+            const categoryRows = document.querySelectorAll(`tr.grouped-category-row[data-parent-group="${groupUuid}"]`);
+
+            // Toggle button rotation
+            this.classList.toggle('collapsed');
+
+            // Toggle category rows visibility
+            categoryRows.forEach(row => {
+                row.classList.toggle('hidden');
+            });
+        });
+    });
 });
 </script>
 <script src="../js/quick-add-modal.js"></script>

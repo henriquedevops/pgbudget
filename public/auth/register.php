@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../config/database.php';
 
 // If user is already logged in, redirect to dashboard

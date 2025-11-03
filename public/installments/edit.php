@@ -73,11 +73,12 @@ try {
         exit;
     }
 
-    // Get category accounts (equity accounts) for category reassignment
+    // Get category accounts (equity accounts, excluding groups) for category reassignment
     $stmt = $db->prepare("
         SELECT uuid, name
         FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'equity'
+        AND (is_group = false OR is_group IS NULL)
         ORDER BY name
     ");
     $stmt->execute([$ledger_uuid]);

@@ -1,4 +1,5 @@
 <?php
+require_once '../includes/session.php';
 require_once '../config/database.php';
 require_once '../includes/auth.php';
 
@@ -12,16 +13,16 @@ setUserContext($db);
 // Check if user needs onboarding (only if columns exist)
 try {
     $stmt = $db->prepare("
-        SELECT onboarding_completed, onboarding_step 
-        FROM data.users 
-        WHERE user_data = current_setting('app.current_user_id', true)
+        SELECT onboarding_completed, onboarding_step
+        FROM data.users
+        WHERE username = current_setting('app.current_user_id', true)
     ");
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Redirect to onboarding if not completed (unless they just completed it)
     if ($user && !$user['onboarding_completed'] && !isset($_GET['onboarding_complete'])) {
-        header('Location: /onboarding/wizard.php?step=' . max(1, $user['onboarding_step']));
+        header('Location: onboarding/wizard.php?step=' . max(1, $user['onboarding_step']));
         exit;
     }
 } catch (PDOException $e) {

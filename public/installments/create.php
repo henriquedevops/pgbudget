@@ -47,11 +47,12 @@ try {
     $stmt->execute([$ledger_uuid]);
     $credit_cards = $stmt->fetchAll();
 
-    // Get category accounts (equity accounts)
+    // Get category accounts (equity accounts, excluding groups)
     $stmt = $db->prepare("
         SELECT uuid, name
         FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'equity'
+        AND (is_group = false OR is_group IS NULL)
         ORDER BY name
     ");
     $stmt->execute([$ledger_uuid]);

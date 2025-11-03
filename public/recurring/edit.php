@@ -100,11 +100,12 @@ try {
     $stmt->execute([$ledger_uuid]);
     $accounts = $stmt->fetchAll();
 
-    // Get categories
+    // Get categories (excluding groups)
     $stmt = $db->prepare("
         SELECT uuid, name FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'equity'
         AND name NOT IN ('Income', 'Off-budget', 'Unassigned')
+        AND (is_group = false OR is_group IS NULL)
         ORDER BY name
     ");
     $stmt->execute([$ledger_uuid]);

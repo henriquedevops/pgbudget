@@ -1,4 +1,5 @@
 <?php
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 require_once '../../includes/error-handler.php';
@@ -142,10 +143,11 @@ try {
     $stmt->execute([$ledger_uuid]);
     $accounts = $stmt->fetchAll();
 
-    // Get available categories (excluding system accounts)
+    // Get available categories (excluding system accounts and groups)
     $stmt = $db->prepare("
         SELECT uuid, name FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'equity'
+        AND (is_group = false OR is_group IS NULL)
         ORDER BY
             CASE WHEN name = 'Income' THEN 1
                  WHEN name = 'Unassigned' THEN 2

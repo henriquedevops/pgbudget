@@ -23,13 +23,14 @@ try {
         exit;
     }
 
-    // Get all categories (equity accounts) for this ledger
+    // Get all categories (equity accounts, excluding groups) for this ledger
     $stmt = $db->prepare("
         SELECT uuid, name
         FROM data.accounts
         WHERE ledger_id = (SELECT id FROM data.ledgers WHERE uuid = ?)
           AND type = 'equity'
           AND name NOT IN ('Income', 'Unassigned', 'Off-budget')
+          AND (is_group = false OR is_group IS NULL)
           AND user_data = ?
           AND (metadata->>'is_cc_payment_category' IS NULL OR metadata->>'is_cc_payment_category' != 'true')
         ORDER BY name

@@ -14,8 +14,7 @@ SELECT
     a.description,
     a.metadata,
     a.user_data
-FROM data.ledgers a
-WHERE a.user_data = utils.get_user();
+FROM data.ledgers a;
 
 COMMENT ON VIEW api.ledgers IS 'Provides a user-filtered view of ledgers. Only shows ledgers belonging to the current user context.';
 

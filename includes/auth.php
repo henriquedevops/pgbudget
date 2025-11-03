@@ -8,7 +8,16 @@ function requireAuth($allowDemo = false) {
             $_SESSION['user_id'] = 'demo_user';
             return;
         }
-        // Redirect to login
+
+        // For API requests, return JSON error
+        if (strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
+            header('Content-Type: application/json');
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'Authentication required']);
+            exit;
+        }
+
+        // Redirect to login for web pages
         header('Location: /pgbudget/auth/login.php');
         exit;
     }

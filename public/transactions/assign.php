@@ -1,4 +1,5 @@
 <?php
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 require_once '../../includes/help-icon.php';
@@ -84,11 +85,12 @@ try {
     $stmt->execute([$ledger_uuid]);
     $budget_totals = $stmt->fetch();
 
-    // Get categories (equity accounts that aren't special)
+    // Get categories (equity accounts that aren't special or groups)
     $stmt = $db->prepare("
         SELECT uuid, name FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'equity'
         AND name NOT IN ('Income', 'Off-budget', 'Unassigned')
+        AND (is_group = false OR is_group IS NULL)
         ORDER BY name
     ");
     $stmt->execute([$ledger_uuid]);

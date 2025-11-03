@@ -1,9 +1,10 @@
 <?php
+require_once __DIR__ . '/../../includes/session.php';
 require_once __DIR__ . '/../../config/database.php';
 
 // If user is already logged in, redirect to dashboard
 if (isset($_SESSION['user_id']) && $_SESSION['user_id'] !== 'demo_user') {
-    header('Location: /');
+    header('Location: /pgbudget/');
     exit;
 }
 
@@ -35,6 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Set PostgreSQL user context
                 $stmt = $db->prepare("SELECT set_config('app.current_user_id', ?, false)");
                 $stmt->execute([$username]);
+
+                // Ensure session is written before redirect
+                session_write_close();
 
                 // Redirect to dashboard
                 header('Location: /pgbudget/');
@@ -242,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="demo-login">
                 <p>Don't have an account yet?</p>
-                <a href="/?demo=1" class="btn-demo">Continue as Demo User</a>
+                <a href="/pgbudget/?demo=1" class="btn-demo">Continue as Demo User</a>
             </div>
         </form>
 

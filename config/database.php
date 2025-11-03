@@ -1,5 +1,4 @@
 <?php
-session_start();
 
 // Set timezone to GMT-3 (America/Sao_Paulo - Brazil)
 date_default_timezone_set('America/Sao_Paulo');

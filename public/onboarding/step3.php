@@ -67,7 +67,7 @@ function handleCreateBudget(event) {
         description: form.budgetDescription.value.trim() || null
     };
     
-    fetch('/api/ledgers/create.php', {
+    fetch('/pgbudget/api/ledgers/create.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

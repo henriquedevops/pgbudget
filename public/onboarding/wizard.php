@@ -1,4 +1,5 @@
 <?php
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 
@@ -10,18 +11,23 @@ $db = getDbConnection();
 setUserContext($db);
 
 // Get current user's onboarding status
-$stmt = $db->prepare("
-    SELECT onboarding_completed, onboarding_step 
-    FROM data.users 
-    WHERE user_data = current_setting('app.current_user_id', true)
-");
-$stmt->execute();
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+try {
+    $stmt = $db->prepare("
+        SELECT onboarding_completed, onboarding_step
+        FROM data.users
+        WHERE username = current_setting('app.current_user_id', true)
+    ");
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// If onboarding is already completed, redirect to dashboard
-if ($user && $user['onboarding_completed']) {
-    header('Location: /');
-    exit;
+    // If onboarding is already completed, redirect to dashboard
+    if ($user && $user['onboarding_completed']) {
+        header('Location: /pgbudget/');
+        exit;
+    }
+} catch (PDOException $e) {
+    // Columns don't exist - continue with wizard
+    $user = null;
 }
 
 // Get current step from query parameter or user's saved step
@@ -45,7 +51,7 @@ $pageTitle = "Welcome to PGBudget - Step {$currentStep} of 5";
 require_once '../../includes/header.php';
 ?>
 
-<link rel="stylesheet" href="/css/onboarding.css">
+<link rel="stylesheet" href="../css/onboarding.css">
 
 <div class="onboarding-container">
     <!-- Progress indicator -->
@@ -62,6 +68,40 @@ require_once '../../includes/header.php';
     </div>
 </div>
 
-<script src="/js/onboarding.js"></script>
+<script>
+function completeStep(stepNumber, nextUrl) {
+    fetch('/pgbudget/api/onboarding/complete-step.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            step: stepNumber
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Log the response text to see what the server is returning
+            response.text().then(text => console.error('Server response:', text));
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Navigate to next step or completion page
+            window.location.href = nextUrl;
+        } else {
+            console.error('Failed to complete step:', data.error);
+            alert('Failed to save progress. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error completing step:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
+</script>
+<script src="/pgbudget/js/onboarding.js?v=<?= time() ?>"></script>
 
 <?php require_once '../../includes/footer.php'; ?>

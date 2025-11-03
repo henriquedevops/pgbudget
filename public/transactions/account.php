@@ -86,7 +86,8 @@ try {
 
     // Calculate running balance (simplified - would need more complex logic for proper accounting)
     $balance = 0;
-    foreach (array_reverse($transactions) as &$transaction) {
+    $transactions = array_reverse($transactions); // Reverse to oldest first
+    foreach ($transactions as &$transaction) {
         if ($transaction['side'] === 'debit') {
             if (in_array($account['type'], ['asset', 'expense'])) {
                 $balance += $transaction['amount']; // Debit increases assets/expenses
@@ -102,7 +103,8 @@ try {
         }
         $transaction['running_balance'] = $balance;
     }
-    $transactions = array_reverse($transactions); // Restore original order
+    unset($transaction); // Break the reference
+    $transactions = array_reverse($transactions); // Restore original order (newest first)
 
 } catch (Exception $e) {
     $_SESSION['error'] = 'Database error occurred.';

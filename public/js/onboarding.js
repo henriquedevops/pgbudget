@@ -3,36 +3,7 @@
  * Handles step progression and API calls
  */
 
-/**
- * Complete a step and move to the next
- * @param {number} stepNumber - The step number being completed
- * @param {string} nextUrl - URL to navigate to after completion
- */
-function completeStep(stepNumber, nextUrl) {
-    fetch('/api/onboarding/complete-step.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            step: stepNumber
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Navigate to next step or completion page
-            window.location.href = nextUrl;
-        } else {
-            console.error('Failed to complete step:', data.error);
-            alert('Failed to save progress. Please try again.');
-        }
-    })
-    .catch(error => {
-        console.error('Error completing step:', error);
-        alert('An error occurred. Please try again.');
-    });
-}
+
 
 /**
  * Format currency for display

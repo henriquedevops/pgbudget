@@ -1,4 +1,5 @@
 <?php
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 require_once '../../includes/help-icon.php';
@@ -163,11 +164,12 @@ try {
     $stmt->execute([$ledger_uuid]);
     $accounts = $stmt->fetchAll();
 
-    // Get categories (equity accounts that aren't special)
+    // Get categories (equity accounts that aren't special or groups)
     $stmt = $db->prepare("
         SELECT uuid, name FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'equity'
         AND name NOT IN ('Income', 'Off-budget', 'Unassigned')
+        AND (is_group = false OR is_group IS NULL)
         ORDER BY name
     ");
     $stmt->execute([$ledger_uuid]);
@@ -262,6 +264,77 @@ require_once '../../includes/header.php';
                     <option value="unassigned">Unassigned</option>
                 </select>
                 <small class="form-help">Leave blank to use default Income account for inflows</small>
+            </div>
+
+            <!-- Installment Plan Section (only for CC outflows) -->
+            <div id="installment-section" class="installment-section" style="display: none;">
+                <div class="installment-header">
+                    <label class="installment-toggle">
+                        <input type="checkbox" id="enable-installment" name="enable_installment" value="1">
+                        <span class="installment-toggle-label">💳 Create installment plan for this purchase</span>
+                    </label>
+                    <small class="form-help">Spread this purchase across multiple budget periods</small>
+                </div>
+
+                <div id="installment-config" class="installment-config" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="number_of_installments" class="form-label">Number of Installments *</label>
+                            <input type="range"
+                                   id="installments-range"
+                                   min="2"
+                                   max="36"
+                                   value="6"
+                                   step="1"
+                                   class="installment-range">
+                            <div class="range-value-display">
+                                <input type="number"
+                                       id="number_of_installments"
+                                       name="number_of_installments"
+                                       min="2"
+                                       max="36"
+                                       value="6"
+                                       class="form-input installment-number">
+                                <span>payments</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="installment_frequency" class="form-label">Frequency *</label>
+                            <select id="installment_frequency" name="installment_frequency" class="form-select">
+                                <option value="monthly" selected>Monthly</option>
+                                <option value="bi-weekly">Bi-weekly</option>
+                                <option value="weekly">Weekly</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="installment_start_date" class="form-label">First Installment Date *</label>
+                        <input type="date"
+                               id="installment_start_date"
+                               name="installment_start_date"
+                               class="form-input"
+                               value="">
+                        <small class="form-help">When should the first installment be processed?</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="installment_notes" class="form-label">Notes (Optional)</label>
+                        <textarea id="installment_notes"
+                                  name="installment_notes"
+                                  class="form-input"
+                                  rows="2"
+                                  placeholder="e.g., 0% APR promotion, special payment terms..."></textarea>
+                    </div>
+
+                    <div class="installment-preview">
+                        <h4>Payment Preview</h4>
+                        <div id="installment-preview-content">
+                            <div class="preview-loading">Enter an amount to see payment breakdown</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -412,6 +485,157 @@ require_once '../../includes/header.php';
 
     .form-actions {
         flex-direction: column;
+    }
+}
+
+/* Installment plan styles */
+.installment-section {
+    background: #ebf8ff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 2px solid #bee3f8;
+    margin-top: 1rem;
+}
+
+.installment-header {
+    margin-bottom: 1rem;
+}
+
+.installment-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.installment-toggle input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.installment-toggle-label {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.installment-config {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border: 1px solid #bee3f8;
+}
+
+.installment-range {
+    width: 100%;
+    margin: 0.5rem 0;
+    cursor: pointer;
+}
+
+.range-value-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.installment-number {
+    width: 80px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.installment-preview {
+    background: #f7fafc;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    margin-top: 1.5rem;
+}
+
+.installment-preview h4 {
+    color: #2d3748;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#installment-preview-content {
+    font-size: 0.875rem;
+}
+
+.preview-loading {
+    color: #718096;
+    font-style: italic;
+}
+
+.preview-installments {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.preview-installment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.preview-installment-info {
+    color: #4a5568;
+}
+
+.preview-installment-amount {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.preview-total {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 2px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+
+.preview-total-label {
+    color: #4a5568;
+}
+
+.preview-total-amount {
+    color: #2d3748;
+    font-size: 1.1rem;
+}
+
+.preview-total-amount.match {
+    color: #38a169;
+}
+
+.preview-total-amount.no-match {
+    color: #e53e3e;
+}
+
+@media (max-width: 768px) {
+    .installment-config .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .range-value-display {
+        justify-content: center;
     }
 }
 
@@ -617,6 +841,183 @@ function updateFormForType() {
         categoryGroup.querySelector('.form-help').textContent = 'Choose the budget category for this expense';
         categorySelect.required = true;
     }
+
+    // Update installment section visibility
+    updateInstallmentVisibility();
+}
+
+function updateInstallmentVisibility() {
+    const type = document.getElementById('type').value;
+    const account = document.getElementById('account').value;
+    const installmentSection = document.getElementById('installment-section');
+
+    // Only show installment option for outflows on credit card accounts
+    if (type === 'outflow' && account) {
+        // Check if selected account is a liability (credit card)
+        const accountSelect = document.getElementById('account');
+        const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+        const accountType = selectedOption.textContent.match(/\((.*?)\)/)?.[1];
+
+        if (accountType === 'liability') {
+            installmentSection.style.display = 'block';
+        } else {
+            installmentSection.style.display = 'none';
+            // Reset installment checkbox if hidden
+            document.getElementById('enable-installment').checked = false;
+            document.getElementById('installment-config').style.display = 'none';
+        }
+    } else {
+        installmentSection.style.display = 'none';
+        // Reset installment checkbox if hidden
+        document.getElementById('enable-installment').checked = false;
+        document.getElementById('installment-config').style.display = 'none';
+    }
+}
+
+// Installment Plan Management
+function initializeInstallment() {
+    const enableInstallmentCheckbox = document.getElementById('enable-installment');
+    const installmentConfig = document.getElementById('installment-config');
+    const installmentsRange = document.getElementById('installments-range');
+    const numberOfInstallments = document.getElementById('number_of_installments');
+    const startDateInput = document.getElementById('installment_start_date');
+    const frequencySelect = document.getElementById('installment_frequency');
+    const amountInput = document.getElementById('amount');
+
+    // Set default start date to next month
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    nextMonth.setDate(1); // First day of next month
+    startDateInput.value = nextMonth.toISOString().split('T')[0];
+
+    // Toggle installment config visibility
+    enableInstallmentCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            installmentConfig.style.display = 'block';
+            updateInstallmentPreview();
+            // Disable split transaction if installment is enabled
+            const enableSplit = document.getElementById('enable-split');
+            if (enableSplit.checked) {
+                enableSplit.checked = false;
+                document.getElementById('split-container').style.display = 'none';
+                document.getElementById('is-split').value = '0';
+                document.getElementById('category-group').style.display = 'block';
+            }
+        } else {
+            installmentConfig.style.display = 'none';
+        }
+    });
+
+    // Sync range slider with number input
+    installmentsRange.addEventListener('input', function() {
+        numberOfInstallments.value = this.value;
+        updateInstallmentPreview();
+    });
+
+    numberOfInstallments.addEventListener('input', function() {
+        const value = parseInt(this.value);
+        if (value >= 2 && value <= 36) {
+            installmentsRange.value = value;
+            updateInstallmentPreview();
+        }
+    });
+
+    // Update preview when amount, frequency, or start date changes
+    amountInput.addEventListener('input', updateInstallmentPreview);
+    frequencySelect.addEventListener('change', updateInstallmentPreview);
+    startDateInput.addEventListener('change', updateInstallmentPreview);
+}
+
+function updateInstallmentPreview() {
+    const enableInstallment = document.getElementById('enable-installment').checked;
+    if (!enableInstallment) return;
+
+    const amountInput = document.getElementById('amount');
+    const numberOfInstallments = parseInt(document.getElementById('number_of_installments').value);
+    const frequency = document.getElementById('installment_frequency').value;
+    const startDate = document.getElementById('installment_start_date').value;
+    const previewContent = document.getElementById('installment-preview-content');
+
+    // Parse amount
+    let amountValue = amountInput.value.replace(/[^0-9,.]/g, '');
+    amountValue = amountValue.replace(',', '.');
+    const amount = parseFloat(amountValue);
+
+    if (isNaN(amount) || amount <= 0 || !numberOfInstallments || numberOfInstallments < 2) {
+        previewContent.innerHTML = '<div class="preview-loading">Enter an amount to see payment breakdown</div>';
+        return;
+    }
+
+    // Calculate installment amounts
+    const installmentAmount = Math.floor((amount * 100) / numberOfInstallments) / 100;
+    const totalScheduled = installmentAmount * (numberOfInstallments - 1);
+    const lastInstallment = Math.round((amount - totalScheduled) * 100) / 100;
+
+    // Generate preview HTML
+    let html = '<div class="preview-installments">';
+
+    // Calculate dates
+    let currentDate = new Date(startDate || new Date());
+    if (!startDate) {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        currentDate.setDate(1);
+    }
+
+    for (let i = 1; i <= Math.min(numberOfInstallments, 6); i++) {
+        const displayAmount = (i === numberOfInstallments) ? lastInstallment : installmentAmount;
+        const dateStr = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        html += `
+            <div class="preview-installment-row">
+                <span class="preview-installment-info">Payment ${i} - ${dateStr}</span>
+                <span class="preview-installment-amount">$${displayAmount.toFixed(2)}</span>
+            </div>
+        `;
+
+        // Calculate next date
+        switch (frequency) {
+            case 'weekly':
+                currentDate.setDate(currentDate.getDate() + 7);
+                break;
+            case 'bi-weekly':
+                currentDate.setDate(currentDate.getDate() + 14);
+                break;
+            case 'monthly':
+            default:
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                break;
+        }
+    }
+
+    if (numberOfInstallments > 6) {
+        html += `<div class="preview-installment-row" style="font-style: italic; opacity: 0.7;">
+            <span class="preview-installment-info">... and ${numberOfInstallments - 6} more payments</span>
+            <span class="preview-installment-amount">$${installmentAmount.toFixed(2)} each</span>
+        </div>`;
+    }
+
+    html += '</div>';
+
+    // Add total
+    const calculatedTotal = (installmentAmount * (numberOfInstallments - 1)) + lastInstallment;
+    const matches = Math.abs(calculatedTotal - amount) < 0.01;
+
+    html += `
+        <div class="preview-total">
+            <span class="preview-total-label">Total:</span>
+            <span class="preview-total-amount ${matches ? 'match' : 'no-match'}">
+                $${calculatedTotal.toFixed(2)} ${matches ? '✓' : '⚠'}
+            </span>
+        </div>
+    `;
+
+    if (numberOfInstallments > 1) {
+        html += `<div style="margin-top: 0.5rem; font-size: 0.75rem; color: #718096;">
+            ${numberOfInstallments - 1} payments of $${installmentAmount.toFixed(2)} + 1 payment of $${lastInstallment.toFixed(2)}
+        </div>`;
+    }
+
+    previewContent.innerHTML = html;
 }
 
 // Handle amount input with both comma and period decimal separators
@@ -683,7 +1084,12 @@ document.querySelector('.transaction-form').addEventListener('submit', function(
 document.addEventListener('DOMContentLoaded', function() {
     updateFormForType();
     initializeSplitTransaction();
+    initializeInstallment();
     initializePayeeAutocomplete();
+
+    // Add listener for account changes to update installment visibility
+    document.getElementById('account').addEventListener('change', updateInstallmentVisibility);
+    document.getElementById('type').addEventListener('change', updateInstallmentVisibility);
 });
 
 // Split Transaction Management
@@ -704,6 +1110,13 @@ function initializeSplitTransaction() {
             splitContainer.style.display = 'block';
             categoryGroup.style.display = 'none';
             isSplitInput.value = '1';
+
+            // Disable installments if split is enabled
+            const enableInstallment = document.getElementById('enable-installment');
+            if (enableInstallment.checked) {
+                enableInstallment.checked = false;
+                document.getElementById('installment-config').style.display = 'none';
+            }
 
             // Add first split row if none exist
             if (document.querySelectorAll('.split-row').length === 0) {
@@ -865,6 +1278,69 @@ function updateSplitSummary() {
         remainingRow.classList.add('zero');
     }
 }
+
+// Handle installment transaction submission via AJAX
+document.querySelector('.transaction-form').addEventListener('submit', function(e) {
+    const enableInstallment = document.getElementById('enable-installment').checked;
+
+    if (enableInstallment) {
+        e.preventDefault();
+
+        // Gather form data
+        const formData = {
+            ledger_uuid: document.querySelector('input[name="ledger_uuid"]')?.value || '<?= $ledger_uuid ?>',
+            type: document.getElementById('type').value,
+            amount: document.getElementById('amount').value,
+            date: document.getElementById('date').value,
+            description: document.getElementById('description').value,
+            account: document.getElementById('account').value,
+            category: document.getElementById('category').value,
+            payee: document.getElementById('payee').value,
+            installment: {
+                enabled: true,
+                number_of_installments: parseInt(document.getElementById('number_of_installments').value),
+                start_date: document.getElementById('installment_start_date').value,
+                frequency: document.getElementById('installment_frequency').value,
+                notes: document.getElementById('installment_notes').value
+            }
+        };
+
+        // Show loading state
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Creating...';
+
+        // Send to combined API endpoint
+        fetch('/pgbudget/public/api/add-transaction-with-installment.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message and redirect
+                alert(data.message || 'Transaction and installment plan created successfully!');
+                window.location.href = '../budget/dashboard.php?ledger=' + formData.ledger_uuid;
+            } else {
+                // Show error
+                alert('Error: ' + (data.error || 'Failed to create transaction and installment plan'));
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+        });
+
+        return false;
+    }
+});
 
 // Validate split transaction before submission
 document.querySelector('.transaction-form').addEventListener('submit', function(e) {
