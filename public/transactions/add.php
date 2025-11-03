@@ -164,12 +164,13 @@ try {
     $stmt->execute([$ledger_uuid]);
     $accounts = $stmt->fetchAll();
 
-    // Get categories (equity accounts that aren't special or groups)
+    // Get categories (equity accounts that aren't special, groups, or CC payment categories)
     $stmt = $db->prepare("
         SELECT uuid, name FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'equity'
         AND name NOT IN ('Income', 'Off-budget', 'Unassigned')
         AND (is_group = false OR is_group IS NULL)
+        AND (metadata->>'is_cc_payment_category' IS NULL OR metadata->>'is_cc_payment_category' != 'true')
         ORDER BY name
     ");
     $stmt->execute([$ledger_uuid]);

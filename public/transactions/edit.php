@@ -143,11 +143,12 @@ try {
     $stmt->execute([$ledger_uuid]);
     $accounts = $stmt->fetchAll();
 
-    // Get available categories (excluding system accounts and groups)
+    // Get available categories (excluding system accounts, groups, and CC payment categories)
     $stmt = $db->prepare("
         SELECT uuid, name FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'equity'
         AND (is_group = false OR is_group IS NULL)
+        AND (metadata->>'is_cc_payment_category' IS NULL OR metadata->>'is_cc_payment_category' != 'true')
         ORDER BY
             CASE WHEN name = 'Income' THEN 1
                  WHEN name = 'Unassigned' THEN 2
