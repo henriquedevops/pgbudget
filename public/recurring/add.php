@@ -93,7 +93,7 @@ try {
         SELECT uuid, name FROM api.accounts
         WHERE ledger_uuid = ? AND type = 'equity'
         AND name NOT IN ('Income', 'Off-budget', 'Unassigned')
-        AND (is_group = false OR is_group IS NULL)
+        AND NOT COALESCE(is_group, false)
         AND (metadata->>'is_cc_payment_category' IS NULL OR metadata->>'is_cc_payment_category' != 'true')
         ORDER BY name
     ");
