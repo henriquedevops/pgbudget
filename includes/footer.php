@@ -46,6 +46,7 @@
     <?php
     // Include Quick-Add Modal for authenticated users
     if (isset($_SESSION['user_id'])) {
+        require_once __DIR__ . '/quick-add-modal.php';
         require_once __DIR__ . '/transfer-modal.php';
     }
     ?>
@@ -57,9 +58,12 @@
     <script src="/pgbudget/js/undo-manager.js"></script>
     <script src="/pgbudget/js/delete-ledger.js"></script>
 
+    <?php
     if (isset($_SESSION['user_id'])) {
+        echo '<script src="/pgbudget/js/quick-add-modal.js"></script>';
         echo '<script src="/pgbudget/js/transfer-modal.js"></script>';
     }
+    ?>
 
     <!-- PWA Service Worker Registration -->
     <script>

@@ -199,11 +199,16 @@ class KeyboardShortcuts {
 
     // Action shortcuts
     newTransaction() {
-        const ledger = this.getCurrentLedger();
-        const url = ledger
-            ? `/pgbudget/transactions/add.php?ledger=${ledger}`
-            : '/pgbudget/transactions/add.php';
-        window.location.href = url;
+        // Open quick-add modal if available, otherwise redirect to add page
+        if (typeof QuickAddModal !== 'undefined' && QuickAddModal.open) {
+            QuickAddModal.open();
+        } else {
+            const ledger = this.getCurrentLedger();
+            const url = ledger
+                ? `/pgbudget/transactions/add.php?ledger=${ledger}`
+                : '/pgbudget/transactions/add.php';
+            window.location.href = url;
+        }
     }
 
     assignMoney() {

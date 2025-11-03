@@ -6,6 +6,9 @@
  * Handles AJAX requests to add transactions from the quick-add modal
  */
 
+// Start session first
+session_start();
+
 $logFile = __DIR__ . '/../../logs/quick-add-api.log';
 @file_put_contents($logFile, "\n\n=== " . date('Y-m-d H:i:s') . " - SCRIPT EXECUTION STARTED ===\n", FILE_APPEND);
 @file_put_contents($logFile, "Request URI: " . ($_SERVER['REQUEST_URI'] ?? 'N/A') . "\n", FILE_APPEND);

@@ -99,13 +99,8 @@ const QuickAddModal = (function() {
      * Setup keyboard shortcuts
      */
     function setupKeyboardShortcuts() {
-        document.addEventListener('keydown', function(e) {
-            // 'T' key to open modal (not in input fields)
-            if (e.key === 'T' && !isInputActive() && modal.style.display === 'none') {
-                e.preventDefault();
-                open();
-            }
-        });
+        // Note: The 't' key shortcut is now handled by keyboard-shortcuts.js
+        // which calls QuickAddModal.open()
     }
 
     /**
