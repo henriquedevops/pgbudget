@@ -77,8 +77,10 @@ try {
     }
 
     // Add initial amount paid (payments made before tracking began)
+    // Convert from dollars to cents to match payment amounts
     $initial_amount_paid = floatval($loan['initial_amount_paid'] ?? 0);
-    $total_paid += $initial_amount_paid;
+    $initial_amount_paid_cents = $initial_amount_paid * 100;
+    $total_paid += $initial_amount_paid_cents;
 
     // Calculate actual amount paid from principal reduction
     // This is more accurate as it reflects the true balance change
@@ -165,8 +167,8 @@ require_once '../../includes/header.php';
                 <div class="card-value amount positive"><?= formatCurrency($total_paid) ?></div>
                 <div class="card-detail">
                     <?php if ($initial_amount_paid > 0): ?>
-                        Tracked: <?= formatCurrency($total_paid - $initial_amount_paid) ?>
-                        + Initial: <?= formatCurrency($initial_amount_paid) ?>
+                        Tracked: <?= formatCurrency($total_paid - $initial_amount_paid_cents) ?>
+                        + Initial: <?= formatLoanAmount($initial_amount_paid) ?>
                     <?php else: ?>
                         Interest: <?= formatCurrency($total_interest_paid) ?>
                     <?php endif; ?>
@@ -263,12 +265,16 @@ require_once '../../includes/header.php';
                 <span class="detail-value">Day <?= $loan['payment_day_of_month'] ?> of month</span>
             </div>
             <?php endif; ?>
-            <?php if ($loan['initial_amount_paid'] > 0): ?>
+            <?php if (isset($loan['initial_payments_made']) && $loan['initial_payments_made'] > 0): ?>
             <div class="detail-item" style="grid-column: 1 / -1;">
                 <div class="initial-payment-notice">
                     <strong>📊 Initial Payments Recorded:</strong>
-                    <?= formatCurrency($loan['initial_amount_paid']) ?> paid as of <?= date('M d, Y', strtotime($loan['initial_paid_as_of_date'])) ?>
-                    <br><small>The current balance and payment schedule reflect payments made before tracking began.</small>
+                    <?= $loan['initial_payments_made'] ?> payment<?= $loan['initial_payments_made'] > 1 ? 's' : '' ?> already made
+                    <?php if ($loan['initial_amount_paid'] > 0): ?>
+                        (<?= formatLoanAmount($loan['initial_amount_paid']) ?> paid)
+                    <?php endif; ?>
+                    as of <?= date('M d, Y', strtotime($loan['initial_paid_as_of_date'])) ?>
+                    <br><small>The current balance is adjusted and payment schedule starts from payment #<?= $loan['initial_payments_made'] + 1 ?>.</small>
                 </div>
             </div>
             <?php endif; ?>

@@ -5,6 +5,7 @@
  * Part of Step 2.1 of LOAN_MANAGEMENT_IMPLEMENTATION.md
  */
 
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 
@@ -77,7 +78,8 @@ try {
                     p_amortization_type := ?,
                     p_notes := ?,
                     p_initial_amount_paid := ?,
-                    p_initial_paid_as_of_date := ?
+                    p_initial_paid_as_of_date := ?,
+                    p_initial_payments_made := ?
                 )
             ");
 
@@ -98,7 +100,8 @@ try {
                 $input['amortization_type'] ?? 'standard',
                 $input['notes'] ?? null,
                 isset($input['initial_amount_paid']) ? floatval($input['initial_amount_paid']) : 0,
-                $input['initial_paid_as_of_date'] ?? null
+                $input['initial_paid_as_of_date'] ?? null,
+                isset($input['initial_payments_made']) ? intval($input['initial_payments_made']) : 0
             ]);
 
             $loan = $stmt->fetch(PDO::FETCH_ASSOC);

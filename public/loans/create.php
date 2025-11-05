@@ -263,14 +263,14 @@ require_once '../../includes/header.php';
                 <div id="initialPaymentFields" style="display: none;">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="initial_amount_paid">Total Amount Paid So Far *</label>
+                            <label for="initial_payments_made">Number of Payments Already Made *</label>
                             <input type="number"
-                                   id="initial_amount_paid"
-                                   name="initial_amount_paid"
-                                   min="0.01"
-                                   step="0.01"
-                                   placeholder="0.00">
-                            <small class="form-hint">Total amount you've paid toward principal and interest</small>
+                                   id="initial_payments_made"
+                                   name="initial_payments_made"
+                                   min="1"
+                                   step="1"
+                                   placeholder="0">
+                            <small class="form-hint">How many payments have you already made?</small>
                         </div>
 
                         <div class="form-group">
@@ -278,12 +278,25 @@ require_once '../../includes/header.php';
                             <input type="date"
                                    id="initial_paid_as_of_date"
                                    name="initial_paid_as_of_date">
-                            <small class="form-hint">Date when this paid amount was current</small>
+                            <small class="form-hint">Date when these payments were current</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="initial_amount_paid">Total Amount Paid So Far (Optional)</label>
+                            <input type="number"
+                                   id="initial_amount_paid"
+                                   name="initial_amount_paid"
+                                   min="0.01"
+                                   step="0.01"
+                                   placeholder="0.00">
+                            <small class="form-hint">Total amount you've paid (leave blank to auto-calculate from number of payments)</small>
                         </div>
                     </div>
 
                     <div class="alert alert-info">
-                        <strong>Note:</strong> The current balance and remaining months will be automatically adjusted based on the amount you've already paid.
+                        <strong>Note:</strong> The payment schedule will start from payment #<span id="nextPaymentNumber">1</span>, and the current balance will be adjusted based on the payments already made.
                     </div>
                 </div>
             </div>
@@ -618,19 +631,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toggle initial payment fields
     const hasInitialPaymentCheckbox = document.getElementById('has_initial_payment');
     const initialPaymentFields = document.getElementById('initialPaymentFields');
+    const initialPaymentsMadeInput = document.getElementById('initial_payments_made');
+    const nextPaymentNumberSpan = document.getElementById('nextPaymentNumber');
 
     hasInitialPaymentCheckbox.addEventListener('change', function() {
         if (this.checked) {
             initialPaymentFields.style.display = 'block';
-            document.getElementById('initial_amount_paid').required = true;
+            document.getElementById('initial_payments_made').required = true;
             document.getElementById('initial_paid_as_of_date').required = true;
         } else {
             initialPaymentFields.style.display = 'none';
-            document.getElementById('initial_amount_paid').required = false;
+            document.getElementById('initial_payments_made').required = false;
             document.getElementById('initial_paid_as_of_date').required = false;
-            document.getElementById('initial_amount_paid').value = '';
+            document.getElementById('initial_amount_paid').required = false;
+            document.getElementById('initial_payments_made').value = '';
             document.getElementById('initial_paid_as_of_date').value = '';
+            document.getElementById('initial_amount_paid').value = '';
+            nextPaymentNumberSpan.textContent = '1';
         }
+    });
+
+    // Update next payment number when initial payments made changes
+    initialPaymentsMadeInput.addEventListener('input', function() {
+        const paymentsMade = parseInt(this.value) || 0;
+        nextPaymentNumberSpan.textContent = paymentsMade + 1;
     });
 
     // Form submission
@@ -687,21 +711,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Include initial payment data if provided
         if (hasInitialPaymentCheckbox.checked) {
-            const initialAmountPaid = parseFloat(document.getElementById('initial_amount_paid').value);
+            const initialPaymentsMade = parseInt(document.getElementById('initial_payments_made').value);
             const initialPaidDate = document.getElementById('initial_paid_as_of_date').value;
+            const initialAmountPaid = parseFloat(document.getElementById('initial_amount_paid').value);
 
-            if (!initialAmountPaid || !initialPaidDate) {
-                alert('Please fill in both initial payment amount and date');
+            if (!initialPaymentsMade || !initialPaidDate) {
+                alert('Please fill in the number of payments already made and the date');
                 return;
             }
 
-            if (initialAmountPaid > principal) {
-                alert('Initial amount paid cannot exceed the principal amount');
+            if (initialPaymentsMade >= loanTerm) {
+                alert('Initial payments made cannot exceed or equal the loan term');
                 return;
             }
 
-            formData.initial_amount_paid = initialAmountPaid;
+            formData.initial_payments_made = initialPaymentsMade;
             formData.initial_paid_as_of_date = initialPaidDate;
+
+            // Include initial amount paid if provided
+            if (initialAmountPaid && initialAmountPaid > 0) {
+                if (initialAmountPaid > principal) {
+                    alert('Initial amount paid cannot exceed the principal amount');
+                    return;
+                }
+                formData.initial_amount_paid = initialAmountPaid;
+            }
         }
 
         // Disable submit button
