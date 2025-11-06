@@ -87,6 +87,7 @@ $description = sanitizeInput($data['description']);
 $account_uuid = sanitizeInput($data['account']);
 $category_uuid = isset($data['category']) && !empty($data['category']) ? sanitizeInput($data['category']) : null;
 $payee_name = isset($data['payee']) && !empty($data['payee']) ? sanitizeInput($data['payee']) : null;
+$loan_payment_uuid = isset($data['loan_payment_uuid']) && !empty($data['loan_payment_uuid']) ? sanitizeInput($data['loan_payment_uuid']) : null;
 
 // Validate transaction type
 if (!in_array($type, ['inflow', 'outflow'])) {
@@ -127,10 +128,10 @@ try {
     $stmt = $db->prepare("SELECT set_config('app.current_user_id', ?, false)");
     $stmt->execute([$userId]);
 
-    // Add transaction using API function
-    file_put_contents($logFile, "Calling api.add_transaction with: ledger=$ledger_uuid, date=$date, desc=$description, type=$type, amount=$amount, account=$account_uuid, category=$category_uuid, payee=$payee_name\n", FILE_APPEND);
-    error_log("Calling api.add_transaction with: ledger=$ledger_uuid, date=$date, desc=$description, type=$type, amount=$amount, account=$account_uuid, category=$category_uuid, payee=$payee_name");
-    $stmt = $db->prepare("SELECT api.add_transaction(?, ?, ?, ?, ?, ?, ?, ?)");
+    // Add transaction using API function (with optional loan payment linking)
+    file_put_contents($logFile, "Calling api.add_transaction with: ledger=$ledger_uuid, date=$date, desc=$description, type=$type, amount=$amount, account=$account_uuid, category=$category_uuid, payee=$payee_name, loan_payment=$loan_payment_uuid\n", FILE_APPEND);
+    error_log("Calling api.add_transaction with: ledger=$ledger_uuid, date=$date, desc=$description, type=$type, amount=$amount, account=$account_uuid, category=$category_uuid, payee=$payee_name, loan_payment=$loan_payment_uuid");
+    $stmt = $db->prepare("SELECT api.add_transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([
         $ledger_uuid,
         $date,
@@ -139,7 +140,8 @@ try {
         $amount,
         $account_uuid,
         $category_uuid,
-        $payee_name
+        $payee_name,
+        $loan_payment_uuid
     ]);
 
     $result = $stmt->fetch();

@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category_uuid = sanitizeInput($_POST['category']);
     $payee_name = isset($_POST['payee']) ? sanitizeInput($_POST['payee']) : null;
     $is_split = isset($_POST['is_split']) && $_POST['is_split'] === '1';
+    $loan_payment_uuid = isset($_POST['loan_payment_uuid']) && !empty($_POST['loan_payment_uuid']) ? sanitizeInput($_POST['loan_payment_uuid']) : null;
 
     if (empty($description) || $amount <= 0 || empty($date) || empty($account_uuid)) {
         $_SESSION['error'] = 'Please fill in all required fields.';
@@ -85,8 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             } else {
-                // Handle regular transaction
-                $stmt = $db->prepare("SELECT api.add_transaction(?, ?, ?, ?, ?, ?, ?, ?)");
+                // Handle regular transaction (with optional loan payment linking)
+                $stmt = $db->prepare("SELECT api.add_transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([
                     $ledger_uuid,
                     $date,
@@ -95,7 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $amount,
                     $account_uuid,
                     ($category_uuid && $category_uuid !== 'unassigned') ? $category_uuid : null,
-                    $payee_name
+                    $payee_name,
+                    $loan_payment_uuid
                 ]);
 
                 $result = $stmt->fetch();
