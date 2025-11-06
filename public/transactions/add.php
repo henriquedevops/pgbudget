@@ -269,6 +269,64 @@ require_once '../../includes/header.php';
                 <small class="form-help">Leave blank to use default Income account for inflows</small>
             </div>
 
+            <!-- Loan Payment Section (only for outflows) -->
+            <div id="loan-payment-section" class="loan-payment-section" style="display: none;">
+                <div class="loan-payment-header">
+                    <label class="loan-payment-toggle">
+                        <input type="checkbox" id="enable-loan-payment" name="enable_loan_payment" value="1">
+                        <span class="loan-payment-toggle-label">🏦 This is a loan payment</span>
+                    </label>
+                    <small class="form-help">Track this payment against a loan schedule</small>
+                </div>
+
+                <div id="loan-payment-config" class="loan-payment-config" style="display: none;">
+                    <div class="form-group">
+                        <label for="loan_uuid" class="form-label">Select Loan *</label>
+                        <select id="loan_uuid" name="loan_uuid" class="form-select">
+                            <option value="">Choose loan...</option>
+                            <!-- Populated via JavaScript -->
+                        </select>
+                    </div>
+
+                    <div id="payment-selection-group" class="form-group" style="display: none;">
+                        <label for="loan_payment_uuid" class="form-label">Select Payment *</label>
+                        <select id="loan_payment_uuid" name="loan_payment_uuid" class="form-select">
+                            <option value="">Choose scheduled payment...</option>
+                            <!-- Populated via JavaScript -->
+                        </select>
+                        <small class="form-help">Shows unpaid scheduled payments for this loan</small>
+                    </div>
+
+                    <div id="payment-details" class="payment-details" style="display: none;">
+                        <h4>Payment Details</h4>
+                        <div class="detail-row">
+                            <span>Scheduled Amount:</span>
+                            <span id="detail-scheduled-amount">$0.00</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Principal:</span>
+                            <span id="detail-principal">$0.00</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Interest:</span>
+                            <span id="detail-interest">$0.00</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Due Date:</span>
+                            <span id="detail-due-date">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Status:</span>
+                            <span id="detail-status">-</span>
+                        </div>
+                    </div>
+
+                    <div id="amount-warning" class="warning-message" style="display: none;">
+                        ⚠️ Transaction amount differs from scheduled payment amount
+                    </div>
+                </div>
+            </div>
+
             <!-- Installment Plan Section (only for CC outflows) -->
             <div id="installment-section" class="installment-section" style="display: none;">
                 <div class="installment-header">
@@ -771,6 +829,113 @@ require_once '../../includes/header.php';
     }
 }
 
+/* Loan Payment Styles */
+.loan-payment-section {
+    background: #f0f9ff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 2px solid #bfdbfe;
+    margin-top: 1rem;
+}
+
+.loan-payment-header {
+    margin-bottom: 1rem;
+}
+
+.loan-payment-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.loan-payment-toggle input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.loan-payment-toggle-label {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.loan-payment-config {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border: 1px solid #bfdbfe;
+}
+
+.payment-details {
+    background: #f7fafc;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    margin-top: 1rem;
+}
+
+.payment-details h4 {
+    color: #2d3748;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    color: #4a5568;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row span:first-child {
+    font-weight: 500;
+}
+
+.detail-row span:last-child {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.warning-message {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border-left: 4px solid #f59e0b;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+    .loan-payment-section {
+        padding: 1rem;
+    }
+
+    .loan-payment-config {
+        padding: 1rem;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+
 /* Payee Autocomplete Styles */
 .payee-autocomplete-wrapper {
     position: relative;
@@ -904,6 +1069,14 @@ function initializeInstallment() {
                 enableSplit.checked = false;
                 document.getElementById('split-container').style.display = 'none';
                 document.getElementById('is-split').value = '0';
+                document.getElementById('category-group').style.display = 'block';
+            }
+            // Disable loan payment if installment is enabled
+            const enableLoanPayment = document.getElementById('enable-loan-payment');
+            if (enableLoanPayment && enableLoanPayment.checked) {
+                enableLoanPayment.checked = false;
+                document.getElementById('loan-payment-config').style.display = 'none';
+                resetLoanPaymentForm();
                 document.getElementById('category-group').style.display = 'block';
             }
         } else {
@@ -1083,16 +1256,243 @@ document.querySelector('.transaction-form').addEventListener('submit', function(
     }
 });
 
+// Loan Payment Management
+function initializeLoanPayment() {
+    const enableLoanPaymentCheckbox = document.getElementById('enable-loan-payment');
+    const loanPaymentConfig = document.getElementById('loan-payment-config');
+    const loanSelect = document.getElementById('loan_uuid');
+    const paymentSelect = document.getElementById('loan_payment_uuid');
+    const amountInput = document.getElementById('amount');
+
+    // Toggle loan payment config visibility
+    enableLoanPaymentCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            loanPaymentConfig.style.display = 'block';
+            loadLoans();
+
+            // Disable split and installment
+            disableOtherPaymentFeatures();
+        } else {
+            loanPaymentConfig.style.display = 'none';
+            resetLoanPaymentForm();
+        }
+    });
+
+    // Load payments when loan selected
+    loanSelect.addEventListener('change', function() {
+        if (this.value) {
+            loadUnpaidPayments(this.value);
+        } else {
+            document.getElementById('payment-selection-group').style.display = 'none';
+            document.getElementById('payment-details').style.display = 'none';
+            paymentSelect.innerHTML = '<option value="">Choose scheduled payment...</option>';
+        }
+    });
+
+    // Auto-populate fields when payment selected
+    paymentSelect.addEventListener('change', function() {
+        if (this.value) {
+            autoPopulateFromPayment(this.value);
+        } else {
+            document.getElementById('payment-details').style.display = 'none';
+            document.getElementById('amount-warning').style.display = 'none';
+        }
+    });
+
+    // Check amount match when amount changes
+    amountInput.addEventListener('input', function() {
+        checkAmountMatch();
+    });
+}
+
+function loadLoans() {
+    const ledgerUuid = '<?= $ledger_uuid ?>';
+    const loanSelect = document.getElementById('loan_uuid');
+
+    loanSelect.innerHTML = '<option value="">Loading...</option>';
+
+    fetch(`/pgbudget/public/api/loans.php?ledger_uuid=${ledgerUuid}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.loans && data.loans.length > 0) {
+                let options = '<option value="">Choose loan...</option>';
+                data.loans.forEach(loan => {
+                    const displayName = `${loan.lender_name} - ${loan.loan_type.charAt(0).toUpperCase() + loan.loan_type.slice(1)}`;
+                    options += `<option value="${loan.uuid}">${displayName}</option>`;
+                });
+                loanSelect.innerHTML = options;
+            } else {
+                loanSelect.innerHTML = '<option value="">No loans found</option>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading loans:', error);
+            loanSelect.innerHTML = '<option value="">Error loading loans</option>';
+        });
+}
+
+function loadUnpaidPayments(loanUuid) {
+    const paymentSelect = document.getElementById('loan_payment_uuid');
+    const paymentSelectionGroup = document.getElementById('payment-selection-group');
+
+    paymentSelect.innerHTML = '<option value="">Loading...</option>';
+    paymentSelectionGroup.style.display = 'block';
+
+    fetch(`/pgbudget/public/api/loan-payments-unpaid.php?loan_uuid=${loanUuid}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.payments && data.payments.length > 0) {
+                let options = '<option value="">Choose scheduled payment...</option>';
+                data.payments.forEach(payment => {
+                    const dueDate = new Date(payment.due_date).toLocaleDateString();
+                    const amount = parseFloat(payment.scheduled_amount).toFixed(2);
+                    const statusIcon = payment.payment_status === 'overdue' ? '⚠️' :
+                                      payment.payment_status === 'due_today' ? '📅' : '🗓️';
+                    const displayName = `${statusIcon} Payment #${payment.payment_number} - Due ${dueDate} ($${amount})`;
+                    options += `<option value="${payment.uuid}" data-payment='${JSON.stringify(payment)}'>${displayName}</option>`;
+                });
+                paymentSelect.innerHTML = options;
+            } else {
+                paymentSelect.innerHTML = '<option value="">No unpaid payments found</option>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading payments:', error);
+            paymentSelect.innerHTML = '<option value="">Error loading payments</option>';
+        });
+}
+
+// Store current payment data globally for reference
+let currentPaymentData = null;
+
+function autoPopulateFromPayment(paymentUuid) {
+    const paymentSelect = document.getElementById('loan_payment_uuid');
+    const selectedOption = paymentSelect.options[paymentSelect.selectedIndex];
+
+    if (!selectedOption || !selectedOption.dataset.payment) {
+        return;
+    }
+
+    currentPaymentData = JSON.parse(selectedOption.dataset.payment);
+    const payment = currentPaymentData;
+
+    // Auto-populate fields
+    document.getElementById('amount').value = parseFloat(payment.scheduled_amount).toFixed(2);
+    document.getElementById('date').value = payment.due_date;
+    document.getElementById('description').value = `Loan Payment - ${payment.lender_name} #${payment.payment_number}`;
+    document.getElementById('payee').value = payment.lender_name;
+
+    // Display payment details
+    const detailsPanel = document.getElementById('payment-details');
+    document.getElementById('detail-scheduled-amount').textContent = `$${parseFloat(payment.scheduled_amount).toFixed(2)}`;
+    document.getElementById('detail-principal').textContent = `$${parseFloat(payment.scheduled_principal).toFixed(2)}`;
+    document.getElementById('detail-interest').textContent = `$${parseFloat(payment.scheduled_interest).toFixed(2)}`;
+    document.getElementById('detail-due-date').textContent = new Date(payment.due_date).toLocaleDateString();
+
+    // Show status with appropriate styling
+    let statusDisplay = payment.payment_status;
+    if (payment.payment_status === 'overdue') {
+        statusDisplay = `⚠️ Overdue (${payment.days_past_due} days)`;
+    } else if (payment.payment_status === 'due_today') {
+        statusDisplay = '📅 Due Today';
+    } else {
+        statusDisplay = `🗓️ Due in ${payment.days_until_due} days`;
+    }
+    document.getElementById('detail-status').textContent = statusDisplay;
+
+    detailsPanel.style.display = 'block';
+
+    // Check amount match
+    checkAmountMatch();
+}
+
+function checkAmountMatch() {
+    if (!currentPaymentData) {
+        return;
+    }
+
+    const amountInput = document.getElementById('amount');
+    const warningDiv = document.getElementById('amount-warning');
+
+    // Parse and normalize amounts
+    let inputAmount = amountInput.value.replace(/[^0-9,.]/g, '');
+    inputAmount = inputAmount.replace(',', '.');
+    const inputValue = parseFloat(inputAmount);
+    const scheduledValue = parseFloat(currentPaymentData.scheduled_amount);
+
+    if (isNaN(inputValue)) {
+        warningDiv.style.display = 'none';
+        return;
+    }
+
+    // Show warning if amounts differ by more than 0.01
+    if (Math.abs(inputValue - scheduledValue) > 0.01) {
+        warningDiv.textContent = `⚠️ Transaction amount ($${inputValue.toFixed(2)}) differs from scheduled payment ($${scheduledValue.toFixed(2)})`;
+        warningDiv.style.display = 'block';
+    } else {
+        warningDiv.style.display = 'none';
+    }
+}
+
+function resetLoanPaymentForm() {
+    document.getElementById('loan_uuid').value = '';
+    document.getElementById('loan_payment_uuid').value = '';
+    document.getElementById('payment-selection-group').style.display = 'none';
+    document.getElementById('payment-details').style.display = 'none';
+    document.getElementById('amount-warning').style.display = 'none';
+    currentPaymentData = null;
+}
+
+function disableOtherPaymentFeatures() {
+    // Disable split transaction
+    const enableSplit = document.getElementById('enable-split');
+    if (enableSplit && enableSplit.checked) {
+        enableSplit.checked = false;
+        document.getElementById('split-container').style.display = 'none';
+        document.getElementById('is-split').value = '0';
+        document.getElementById('category-group').style.display = 'block';
+    }
+
+    // Disable installment
+    const enableInstallment = document.getElementById('enable-installment');
+    if (enableInstallment && enableInstallment.checked) {
+        enableInstallment.checked = false;
+        document.getElementById('installment-config').style.display = 'none';
+    }
+}
+
+function updateLoanPaymentVisibility() {
+    const type = document.getElementById('type').value;
+    const loanPaymentSection = document.getElementById('loan-payment-section');
+
+    // Only show for outflows
+    if (type === 'outflow') {
+        loanPaymentSection.style.display = 'block';
+    } else {
+        loanPaymentSection.style.display = 'none';
+        const enableLoanPayment = document.getElementById('enable-loan-payment');
+        if (enableLoanPayment.checked) {
+            enableLoanPayment.checked = false;
+            document.getElementById('loan-payment-config').style.display = 'none';
+            resetLoanPaymentForm();
+        }
+    }
+}
+
 // Initialize form state
 document.addEventListener('DOMContentLoaded', function() {
     updateFormForType();
     initializeSplitTransaction();
     initializeInstallment();
     initializePayeeAutocomplete();
+    initializeLoanPayment();
 
     // Add listener for account changes to update installment visibility
     document.getElementById('account').addEventListener('change', updateInstallmentVisibility);
-    document.getElementById('type').addEventListener('change', updateInstallmentVisibility);
+    document.getElementById('type').addEventListener('change', function() {
+        updateInstallmentVisibility();
+        updateLoanPaymentVisibility();
+    });
 });
 
 // Split Transaction Management
@@ -1119,6 +1519,14 @@ function initializeSplitTransaction() {
             if (enableInstallment.checked) {
                 enableInstallment.checked = false;
                 document.getElementById('installment-config').style.display = 'none';
+            }
+
+            // Disable loan payment if split is enabled
+            const enableLoanPayment = document.getElementById('enable-loan-payment');
+            if (enableLoanPayment && enableLoanPayment.checked) {
+                enableLoanPayment.checked = false;
+                document.getElementById('loan-payment-config').style.display = 'none';
+                resetLoanPaymentForm();
             }
 
             // Add first split row if none exist
