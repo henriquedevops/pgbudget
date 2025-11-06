@@ -102,7 +102,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $result = $stmt->fetch();
                 if ($result) {
-                    $_SESSION['success'] = 'Transaction added successfully!';
+                    // Check if this was a loan payment transaction
+                    if ($loan_payment_uuid) {
+                        // Get updated loan information for success message
+                        $stmt = $db->prepare("
+                            SELECT
+                                l.lender_name,
+                                l.current_balance,
+                                l.remaining_months,
+                                lp.payment_number,
+                                lp.actual_amount_paid
+                            FROM data.loan_payments lp
+                            JOIN data.loans l ON l.id = lp.loan_id
+                            WHERE lp.uuid = ?
+                        ");
+                        $stmt->execute([$loan_payment_uuid]);
+                        $paymentInfo = $stmt->fetch();
+
+                        if ($paymentInfo) {
+                            $formattedBalance = number_format($paymentInfo['current_balance'] / 100, 2);
+                            $formattedAmount = number_format($paymentInfo['actual_amount_paid'] / 100, 2);
+                            $_SESSION['success'] = "✅ Loan payment recorded successfully!\n\n" .
+                                "Payment #{$paymentInfo['payment_number']} to {$paymentInfo['lender_name']}\n" .
+                                "Amount paid: \${$formattedAmount}\n" .
+                                "Remaining balance: \${$formattedBalance}\n" .
+                                "Payments remaining: {$paymentInfo['remaining_months']}";
+                        } else {
+                            $_SESSION['success'] = 'Transaction and loan payment added successfully!';
+                        }
+                    } else {
+                        $_SESSION['success'] = 'Transaction added successfully!';
+                    }
                     header("Location: ../budget/dashboard.php?ledger=" . $ledger_uuid);
                     exit;
                 } else {
@@ -318,6 +348,13 @@ require_once '../../includes/header.php';
                         <div class="detail-row">
                             <span>Status:</span>
                             <span id="detail-status">-</span>
+                        </div>
+                        <div id="detail-next-payment" class="detail-next-payment" style="display: none; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 2px dashed #e2e8f0;">
+                            <small style="color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem;">After This Payment:</small>
+                            <div class="detail-row" style="border: none; padding: 0.25rem 0;">
+                                <span style="font-size: 0.875rem;">Next Payment Due:</span>
+                                <span id="detail-next-due" style="font-size: 0.875rem;">-</span>
+                            </div>
                         </div>
                     </div>
 
@@ -1310,24 +1347,38 @@ function loadLoans() {
     const loanSelect = document.getElementById('loan_uuid');
 
     loanSelect.innerHTML = '<option value="">Loading...</option>';
+    loanSelect.disabled = true;
 
     fetch(`/pgbudget/public/api/loans.php?ledger_uuid=${ledgerUuid}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success && data.loans && data.loans.length > 0) {
                 let options = '<option value="">Choose loan...</option>';
                 data.loans.forEach(loan => {
                     const displayName = `${loan.lender_name} - ${loan.loan_type.charAt(0).toUpperCase() + loan.loan_type.slice(1)}`;
-                    options += `<option value="${loan.uuid}">${displayName}</option>`;
+                    const balanceDisplay = `(Balance: $${parseFloat(loan.current_balance).toFixed(2)})`;
+                    options += `<option value="${loan.uuid}">${displayName} ${balanceDisplay}</option>`;
                 });
                 loanSelect.innerHTML = options;
+                loanSelect.disabled = false;
+            } else if (data.success && (!data.loans || data.loans.length === 0)) {
+                loanSelect.innerHTML = '<option value="">No active loans found</option>';
+                loanSelect.disabled = true;
+                showLoanPaymentMessage('info', 'You don\'t have any active loans. Create a loan first to track payments.');
             } else {
-                loanSelect.innerHTML = '<option value="">No loans found</option>';
+                throw new Error(data.error || 'Unknown error loading loans');
             }
         })
         .catch(error => {
             console.error('Error loading loans:', error);
-            loanSelect.innerHTML = '<option value="">Error loading loans</option>';
+            loanSelect.innerHTML = '<option value="">Error loading loans - please try again</option>';
+            loanSelect.disabled = true;
+            showLoanPaymentMessage('error', 'Failed to load loans. Please refresh the page and try again.');
         });
 }
 
@@ -1336,30 +1387,83 @@ function loadUnpaidPayments(loanUuid) {
     const paymentSelectionGroup = document.getElementById('payment-selection-group');
 
     paymentSelect.innerHTML = '<option value="">Loading...</option>';
+    paymentSelect.disabled = true;
     paymentSelectionGroup.style.display = 'block';
 
     fetch(`/pgbudget/public/api/loan-payments-unpaid.php?loan_uuid=${loanUuid}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success && data.payments && data.payments.length > 0) {
                 let options = '<option value="">Choose scheduled payment...</option>';
-                data.payments.forEach(payment => {
+                data.payments.forEach((payment, index) => {
                     const dueDate = new Date(payment.due_date).toLocaleDateString();
                     const amount = parseFloat(payment.scheduled_amount).toFixed(2);
                     const statusIcon = payment.payment_status === 'overdue' ? '⚠️' :
                                       payment.payment_status === 'due_today' ? '📅' : '🗓️';
                     const displayName = `${statusIcon} Payment #${payment.payment_number} - Due ${dueDate} ($${amount})`;
+
+                    // Attach next payment info if available
+                    if (index < data.payments.length - 1) {
+                        payment.next_payment = data.payments[index + 1];
+                    }
+
                     options += `<option value="${payment.uuid}" data-payment='${JSON.stringify(payment)}'>${displayName}</option>`;
                 });
                 paymentSelect.innerHTML = options;
+                paymentSelect.disabled = false;
+            } else if (data.success && (!data.payments || data.payments.length === 0)) {
+                paymentSelect.innerHTML = '<option value="">All payments completed! 🎉</option>';
+                paymentSelect.disabled = true;
+                showLoanPaymentMessage('success', 'All scheduled payments for this loan have been completed!');
             } else {
-                paymentSelect.innerHTML = '<option value="">No unpaid payments found</option>';
+                throw new Error(data.error || 'Unknown error loading payments');
             }
         })
         .catch(error => {
             console.error('Error loading payments:', error);
-            paymentSelect.innerHTML = '<option value="">Error loading payments</option>';
+            paymentSelect.innerHTML = '<option value="">Error loading payments - please try again</option>';
+            paymentSelect.disabled = true;
+            showLoanPaymentMessage('error', 'Failed to load payments. Please refresh and try again.');
         });
+}
+
+// Helper function to show messages in loan payment section
+function showLoanPaymentMessage(type, message) {
+    const config = document.getElementById('loan-payment-config');
+    const existingMessage = config.querySelector('.loan-payment-inline-message');
+
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'loan-payment-inline-message';
+
+    const colors = {
+        error: { bg: '#fee2e2', text: '#991b1b', border: '#dc2626', icon: '❌' },
+        success: { bg: '#d1fae5', text: '#065f46', border: '#10b981', icon: '✅' },
+        info: { bg: '#dbeafe', text: '#1e40af', border: '#3b82f6', icon: 'ℹ️' }
+    };
+
+    const color = colors[type] || colors.info;
+
+    messageDiv.style.cssText = `
+        background: ${color.bg};
+        color: ${color.text};
+        padding: 0.75rem;
+        border-radius: 6px;
+        border-left: 4px solid ${color.border};
+        margin-top: 1rem;
+        font-size: 0.875rem;
+    `;
+    messageDiv.textContent = `${color.icon} ${message}`;
+
+    config.insertBefore(messageDiv, config.firstChild);
 }
 
 // Store current payment data globally for reference
@@ -1382,6 +1486,9 @@ function autoPopulateFromPayment(paymentUuid) {
     document.getElementById('description').value = `Loan Payment - ${payment.lender_name} #${payment.payment_number}`;
     document.getElementById('payee').value = payment.lender_name;
 
+    // Store loan balance for validation
+    currentPaymentData.loan_balance = parseFloat(payment.loan_current_balance);
+
     // Display payment details
     const detailsPanel = document.getElementById('payment-details');
     document.getElementById('detail-scheduled-amount').textContent = `$${parseFloat(payment.scheduled_amount).toFixed(2)}`;
@@ -1401,6 +1508,17 @@ function autoPopulateFromPayment(paymentUuid) {
     document.getElementById('detail-status').textContent = statusDisplay;
 
     detailsPanel.style.display = 'block';
+
+    // Show next payment info if available
+    const nextPaymentDiv = document.getElementById('detail-next-payment');
+    if (payment.next_payment) {
+        const nextDueDate = new Date(payment.next_payment.due_date).toLocaleDateString();
+        const nextAmount = parseFloat(payment.next_payment.scheduled_amount).toFixed(2);
+        document.getElementById('detail-next-due').textContent = `Payment #${payment.next_payment.payment_number} on ${nextDueDate} ($${nextAmount})`;
+        nextPaymentDiv.style.display = 'block';
+    } else {
+        nextPaymentDiv.style.display = 'none';
+    }
 
     // Check amount match
     checkAmountMatch();
@@ -1425,10 +1543,31 @@ function checkAmountMatch() {
         return;
     }
 
-    // Show warning if amounts differ by more than 0.01
-    if (Math.abs(inputValue - scheduledValue) > 0.01) {
-        warningDiv.textContent = `⚠️ Transaction amount ($${inputValue.toFixed(2)}) differs from scheduled payment ($${scheduledValue.toFixed(2)})`;
+    // Check for overpayment beyond loan balance
+    const loanBalance = currentPaymentData.loan_balance || 999999999;
+
+    if (inputValue > loanBalance + 0.01) {
+        warningDiv.textContent = `❌ Amount ($${inputValue.toFixed(2)}) exceeds remaining loan balance ($${loanBalance.toFixed(2)})`;
         warningDiv.style.display = 'block';
+        warningDiv.style.background = '#fee2e2';
+        warningDiv.style.color = '#991b1b';
+        warningDiv.style.borderLeftColor = '#dc2626';
+    } else if (Math.abs(inputValue - scheduledValue) > 0.01) {
+        // Show warning if amounts differ
+        let message = `⚠️ Transaction amount ($${inputValue.toFixed(2)}) differs from scheduled payment ($${scheduledValue.toFixed(2)})`;
+
+        if (inputValue > scheduledValue) {
+            const extraPrincipal = inputValue - scheduledValue;
+            message += `\n💡 Extra $${extraPrincipal.toFixed(2)} will be applied to principal`;
+        } else {
+            message += `\n⚠️ This is a partial payment`;
+        }
+
+        warningDiv.textContent = message;
+        warningDiv.style.display = 'block';
+        warningDiv.style.background = '#fef3c7';
+        warningDiv.style.color = '#92400e';
+        warningDiv.style.borderLeftColor = '#f59e0b';
     } else {
         warningDiv.style.display = 'none';
     }
