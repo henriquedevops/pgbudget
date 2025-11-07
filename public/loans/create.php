@@ -38,16 +38,6 @@ try {
         exit;
     }
 
-    // Get liability accounts for the dropdown
-    $stmt = $db->prepare("
-        SELECT uuid, name
-        FROM api.accounts
-        WHERE ledger_uuid = ? AND type = 'liability'
-        ORDER BY name
-    ");
-    $stmt->execute([$ledger_uuid]);
-    $liability_accounts = $stmt->fetchAll();
-
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
     header('Location: ../index.php');
@@ -101,17 +91,8 @@ require_once '../../includes/header.php';
                     <small class="form-hint">What type of loan is this?</small>
                 </div>
 
-                <div class="form-group">
-                    <label for="account_uuid">Linked Liability Account (Optional)</label>
-                    <select id="account_uuid" name="account_uuid">
-                        <option value="">-- None --</option>
-                        <?php foreach ($liability_accounts as $account): ?>
-                            <option value="<?= $account['uuid'] ?>">
-                                <?= htmlspecialchars($account['name']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <small class="form-hint">Link this loan to a liability account (optional)</small>
+                <div class="alert alert-info">
+                    <strong>📝 Note:</strong> A liability account will be automatically created for this loan based on the lender name and loan type (e.g., "Chase Mortgage", "Toyota Auto Loan"). This account will be linked to the loan and can be used for tracking the loan balance in your budget.
                 </div>
             </div>
 
@@ -694,11 +675,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         // Optional fields
-        const accountUuid = document.getElementById('account_uuid').value;
-        if (accountUuid) {
-            formData.account_uuid = accountUuid;
-        }
-
         const paymentDay = document.getElementById('payment_day_of_month').value;
         if (paymentDay) {
             formData.payment_day_of_month = parseInt(paymentDay);
