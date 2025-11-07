@@ -36,6 +36,14 @@ try {
         $stmt->execute([$ledger_uuid]);
         $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Filter out auto-created CC Payment categories
+        $categories = array_filter($categories, function($cat) {
+            return strpos($cat['category_name'], 'CC Payment: ') !== 0;
+        });
+
+        // Re-index array after filtering
+        $categories = array_values($categories);
+
         echo json_encode([
             'success' => true,
             'categories' => $categories

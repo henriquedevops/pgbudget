@@ -58,6 +58,11 @@ try {
             continue;
         }
 
+        // Skip auto-created CC Payment categories
+        if (strpos($cat['category_name'], 'CC Payment: ') === 0) {
+            continue;
+        }
+
         if ($cat['is_group']) {
             // This is a group header
             $groups[$cat['category_uuid']] = [

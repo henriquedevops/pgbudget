@@ -116,6 +116,11 @@ try {
     // Organize grouped categories into a hierarchical structure
     $grouped_categories = [];
     foreach ($categories_by_group as $cat) {
+        // Skip auto-created CC Payment categories
+        if (strpos($cat['category_name'], 'CC Payment: ') === 0) {
+            continue;
+        }
+
         if ($cat['is_group']) {
             // This is a group header
             if (!isset($grouped_categories[$cat['category_uuid']])) {
