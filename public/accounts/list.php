@@ -1166,6 +1166,7 @@ async function fetchDeleteAccountPrecheck() {
         const response = await fetch('/pgbudget/api/delete-account.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
+            credentials: 'same-origin',
             body: JSON.stringify({
                 account_uuid: currentDeleteAccountUuid,
                 precheck: true
@@ -1241,6 +1242,7 @@ async function confirmDeleteAccount() {
         const response = await fetch('/pgbudget/api/delete-account.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
+            credentials: 'same-origin',
             body: JSON.stringify({
                 account_uuid: currentDeleteAccountUuid
             })

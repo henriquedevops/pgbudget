@@ -56,8 +56,9 @@ try {
     $payments = $stmt->fetchAll();
 
     // Calculate payment statistics
-    $total_payments = count($payments);
-    $paid_count = 0;
+    $total_payments = intval($loan['loan_term_months']); // Use total loan term, not just scheduled payments
+    $initial_payments_made = intval($loan['initial_payments_made'] ?? 0);
+    $tracked_paid_count = 0; // Count of payments tracked in system
     $total_paid = 0;
     $total_interest_paid = 0;
     $total_principal_paid = 0;
@@ -65,7 +66,7 @@ try {
 
     foreach ($payments as $payment) {
         if ($payment['status'] === 'paid') {
-            $paid_count++;
+            $tracked_paid_count++;
             $total_paid += floatval($payment['actual_amount_paid'] ?? 0);
             $total_interest_paid += floatval($payment['actual_interest'] ?? 0);
             $total_principal_paid += floatval($payment['actual_principal'] ?? 0);
@@ -75,6 +76,9 @@ try {
             }
         }
     }
+
+    // Calculate total payments made (initial + tracked)
+    $paid_count = $initial_payments_made + $tracked_paid_count;
 
     // Add initial amount paid (payments made before tracking began)
     // Convert from dollars to cents to match payment amounts
