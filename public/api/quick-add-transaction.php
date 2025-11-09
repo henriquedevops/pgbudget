@@ -21,7 +21,8 @@ ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
 try {
-    require_once '../../config/database.php';
+    require_once '../../includes/session.php';
+require_once '../../config/database.php';
     file_put_contents($logFile, "Database config loaded\n", FILE_APPEND);
     file_put_contents($logFile, "Cookies received: " . print_r($_COOKIE, true) . "\n", FILE_APPEND);
     file_put_contents($logFile, "Session ID: " . session_id() . "\n", FILE_APPEND);

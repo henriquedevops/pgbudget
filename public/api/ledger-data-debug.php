@@ -20,7 +20,8 @@ try {
     }
     echo json_encode(['step' => 'database.php exists']) . "\n";
 
-    require_once '../../config/database.php';
+    require_once '../../includes/session.php';
+require_once '../../config/database.php';
     echo json_encode(['step' => 'database.php loaded']) . "\n";
 
     if (!file_exists('../../includes/auth.php')) {

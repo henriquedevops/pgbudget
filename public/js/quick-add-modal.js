@@ -11,7 +11,12 @@
  * - Payee autocomplete
  */
 
-const QuickAddModal = (function() {
+// Prevent redeclaration error if script is loaded multiple times
+if (typeof QuickAddModal === 'undefined') {
+    var QuickAddModal;
+}
+
+QuickAddModal = (function() {
     'use strict';
 
     // Private variables

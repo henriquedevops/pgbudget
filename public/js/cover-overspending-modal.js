@@ -5,7 +5,12 @@
  * Handles the modal for covering overspending by moving budget from another category
  */
 
-const CoverOverspendingModal = {
+// Prevent redeclaration error if script is loaded multiple times
+if (typeof CoverOverspendingModal === 'undefined') {
+    var CoverOverspendingModal;
+}
+
+CoverOverspendingModal = {
     // Modal state
     isOpen: false,
     overspentCategoryUuid: null,

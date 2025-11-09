@@ -3,7 +3,12 @@
  * Handles scheduling credit card payments with various payment types
  */
 
-const SchedulePaymentModal = {
+// Prevent redeclaration error if script is loaded multiple times
+if (typeof SchedulePaymentModal === 'undefined') {
+    var SchedulePaymentModal;
+}
+
+SchedulePaymentModal = {
     modal: null,
     currentCardUuid: null,
     currentCardName: null,

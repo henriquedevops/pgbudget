@@ -6,6 +6,7 @@
  * Part of transaction-installment integration (Phase 1)
  */
 
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 

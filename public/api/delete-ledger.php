@@ -4,6 +4,7 @@
  * Deletes a ledger and all its related data
  */
 
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 

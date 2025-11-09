@@ -5,6 +5,7 @@
  * Part of Phase 4 (Payment Scheduling) of CREDIT_CARD_LIMITS_DESIGN_GUIDE.md
  */
 
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 

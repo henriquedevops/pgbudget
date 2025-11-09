@@ -5,7 +5,12 @@
  * Handles the account transfer modal functionality
  */
 
-const TransferModal = (function() {
+// Prevent redeclaration error if script is loaded multiple times
+if (typeof TransferModal === 'undefined') {
+    var TransferModal;
+}
+
+TransferModal = (function() {
     'use strict';
 
     // State

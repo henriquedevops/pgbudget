@@ -3,6 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 

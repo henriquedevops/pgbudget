@@ -5,6 +5,7 @@
  * Part of Step 2.1 of INSTALLMENT_PAYMENTS_IMPLEMENTATION.md
  */
 
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 

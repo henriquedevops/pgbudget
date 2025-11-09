@@ -5,6 +5,7 @@
  * Phase 2.5: Goal Calculations - Auto-funding Suggestions
  */
 
+require_once '../../includes/session.php';
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 
