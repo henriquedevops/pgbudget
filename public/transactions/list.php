@@ -123,9 +123,11 @@ try {
         JOIN data.accounts da ON t.debit_account_id = da.id
         JOIN data.accounts ca ON t.credit_account_id = ca.id
         JOIN data.ledgers l ON t.ledger_id = l.id
+        LEFT JOIN data.transaction_log tl ON t.id = tl.original_transaction_id AND tl.mutation_type = 'deletion'
         WHERE $where_clause AND t.deleted_at IS NULL
         AND t.description NOT LIKE 'DELETED:%'
         AND t.description NOT LIKE 'REVERSAL:%'
+        AND tl.id IS NULL
     ";
     $stmt = $db->prepare($count_query);
     $stmt->execute($params);
@@ -151,9 +153,11 @@ try {
         JOIN data.accounts ca ON t.credit_account_id = ca.id
         JOIN data.ledgers l ON t.ledger_id = l.id
         LEFT JOIN data.installment_plans ip ON t.id = ip.original_transaction_id
+        LEFT JOIN data.transaction_log tl ON t.id = tl.original_transaction_id AND tl.mutation_type = 'deletion'
         WHERE $where_clause AND t.deleted_at IS NULL
         AND t.description NOT LIKE 'DELETED:%'
         AND t.description NOT LIKE 'REVERSAL:%'
+        AND tl.id IS NULL
         $order_by
         LIMIT ? OFFSET ?
     ";

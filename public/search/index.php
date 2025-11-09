@@ -46,10 +46,12 @@ try {
             JOIN data.accounts da ON t.debit_account_id = da.id
             JOIN data.accounts ca ON t.credit_account_id = ca.id
             JOIN data.ledgers l ON t.ledger_id = l.id
+            LEFT JOIN data.transaction_log tl ON t.id = tl.original_transaction_id AND tl.mutation_type = 'deletion'
             WHERE l.uuid = ? AND t.deleted_at IS NULL
               AND t.description ILIKE ?
               AND t.description NOT LIKE 'DELETED:%'
               AND t.description NOT LIKE 'REVERSAL:%'
+              AND tl.id IS NULL
             ORDER BY t.date DESC
             LIMIT 20
         ");
