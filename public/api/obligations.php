@@ -41,6 +41,10 @@ try {
                 markPaymentAsPaid($db);
                 break;
 
+            case 'edit_payment':
+                editPayment($db);
+                break;
+
             default:
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Invalid action']);
@@ -289,6 +293,70 @@ function updateObligation($db) {
 }
 
 /**
+ * Edit an existing payment
+ */
+function editPayment($db) {
+    $payment_uuid = $_POST['payment_uuid'] ?? '';
+    $actual_amount = $_POST['actual_amount'] ?? '';
+    $paid_date = $_POST['paid_date'] ?? '';
+    $payment_method = $_POST['payment_method'] ?? null;
+    $confirmation_number = $_POST['confirmation_number'] ?? null;
+    $notes = $_POST['notes'] ?? null;
+    $status = $_POST['status'] ?? null;
+
+    if (empty($payment_uuid) || empty($actual_amount)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
+        exit;
+    }
+
+    try {
+        $db->beginTransaction();
+
+        // Update the payment record
+        $stmt = $db->prepare("
+            UPDATE data.obligation_payments
+            SET
+                actual_amount_paid = ?::decimal,
+                paid_date = ?::date,
+                payment_method = ?,
+                confirmation_number = ?,
+                notes = ?,
+                status = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE uuid = ?
+            AND user_data = utils.get_user()
+        ");
+
+        $stmt->execute([
+            $actual_amount,
+            $paid_date,
+            $payment_method,
+            $confirmation_number,
+            $notes,
+            $status,
+            $payment_uuid
+        ]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Payment not found or access denied');
+        }
+
+        $db->commit();
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Payment updated successfully'
+        ]);
+
+    } catch (Exception $e) {
+        $db->rollBack();
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+}
+
+/**
  * Mark an obligation payment as paid
  */
 function markPaymentAsPaid($db) {
@@ -296,6 +364,8 @@ function markPaymentAsPaid($db) {
     $paid_date = $_POST['paid_date'] ?? '';
     $actual_amount = $_POST['actual_amount'] ?? '';
     $notes = $_POST['notes'] ?? null;
+    $payment_method = $_POST['payment_method'] ?? null;
+    $confirmation_number = $_POST['confirmation_number'] ?? null;
     $create_transaction = isset($_POST['create_transaction']) && $_POST['create_transaction'] === '1';
 
     if (empty($payment_uuid) || empty($paid_date) || empty($actual_amount)) {
@@ -315,8 +385,8 @@ function markPaymentAsPaid($db) {
                 p_actual_amount := ?::decimal,
                 p_transaction_uuid := null,
                 p_payment_account_uuid := null,
-                p_payment_method := null,
-                p_confirmation_number := null,
+                p_payment_method := ?,
+                p_confirmation_number := ?,
                 p_notes := ?
             )
         ");
@@ -324,6 +394,8 @@ function markPaymentAsPaid($db) {
             $payment_uuid,
             $paid_date,
             $actual_amount,
+            $payment_method,
+            $confirmation_number,
             $notes
         ]);
 
