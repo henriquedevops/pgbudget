@@ -147,12 +147,20 @@ try {
                ip.description as installment_plan_description,
                ip.number_of_installments,
                ip.completed_installments,
-               ip.status as installment_plan_status
+               ip.status as installment_plan_status,
+               op.uuid as obligation_payment_uuid,
+               o.uuid as obligation_uuid,
+               o.name as obligation_name,
+               o.payee_name as obligation_payee,
+               op.status as obligation_payment_status,
+               op.due_date as obligation_due_date
         FROM data.transactions t
         JOIN data.accounts da ON t.debit_account_id = da.id
         JOIN data.accounts ca ON t.credit_account_id = ca.id
         JOIN data.ledgers l ON t.ledger_id = l.id
         LEFT JOIN data.installment_plans ip ON t.id = ip.original_transaction_id
+        LEFT JOIN data.obligation_payments op ON t.id = op.transaction_id
+        LEFT JOIN data.obligations o ON op.obligation_id = o.id
         LEFT JOIN data.transaction_log tl ON t.id = tl.original_transaction_id AND tl.mutation_type = 'deletion'
         WHERE $where_clause AND t.deleted_at IS NULL
         AND t.description NOT LIKE 'DELETED:%'
@@ -373,6 +381,13 @@ try {
                                        class="installment-indicator"
                                        title="Installment Plan: <?= htmlspecialchars($txn['installment_plan_description']) ?> (<?= $txn['completed_installments'] ?>/<?= $txn['number_of_installments'] ?> completed)">
                                         💳 Installment Plan
+                                    </a>
+                                <?php endif; ?>
+                                <?php if (!empty($txn['obligation_payment_uuid'])): ?>
+                                    <a href="../obligations/payments.php?ledger=<?= urlencode($ledger_uuid) ?>&obligation=<?= urlencode($txn['obligation_uuid']) ?>"
+                                       class="obligation-indicator"
+                                       title="Bill Payment: <?= htmlspecialchars($txn['obligation_name']) ?> - <?= htmlspecialchars($txn['obligation_payee']) ?> (Due: <?= date('M j, Y', strtotime($txn['obligation_due_date'])) ?>)">
+                                        📋 <?= htmlspecialchars($txn['obligation_name']) ?>
                                     </a>
                                 <?php endif; ?>
                             </td>
@@ -782,6 +797,28 @@ try {
     background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+/* Obligation Indicator */
+.obligation-indicator {
+    display: inline-block;
+    margin-top: 0.25rem;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%);
+    border: 1px solid #10b981;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #065f46;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.obligation-indicator:hover {
+    background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
 }
 
 /* Create Installment Plan Button */

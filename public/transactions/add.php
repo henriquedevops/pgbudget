@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payee_name = isset($_POST['payee']) ? sanitizeInput($_POST['payee']) : null;
     $is_split = isset($_POST['is_split']) && $_POST['is_split'] === '1';
     $loan_payment_uuid = isset($_POST['loan_payment_uuid']) && !empty($_POST['loan_payment_uuid']) ? sanitizeInput($_POST['loan_payment_uuid']) : null;
+    $obligation_payment_uuid = isset($_POST['obligation_payment_uuid']) && !empty($_POST['obligation_payment_uuid']) ? sanitizeInput($_POST['obligation_payment_uuid']) : null;
 
     if (empty($description) || $amount <= 0 || empty($date) || empty($account_uuid)) {
         $_SESSION['error'] = 'Please fill in all required fields.';
@@ -102,8 +103,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $result = $stmt->fetch();
                 if ($result) {
+                    $transaction_uuid = $result['add_transaction'];
+
+                    // Check if this should be linked to an obligation payment
+                    if ($obligation_payment_uuid) {
+                        // Link transaction to obligation payment
+                        $linkStmt = $db->prepare("SELECT api.link_transaction_to_obligation(?, ?)");
+                        $linkStmt->execute([$transaction_uuid, $obligation_payment_uuid]);
+
+                        // Get obligation payment info for success message
+                        $stmt = $db->prepare("
+                            SELECT
+                                o.name as obligation_name,
+                                o.payee_name,
+                                op.due_date,
+                                op.scheduled_amount,
+                                op.status
+                            FROM data.obligation_payments op
+                            JOIN data.obligations o ON o.id = op.obligation_id
+                            WHERE op.uuid = ?
+                        ");
+                        $stmt->execute([$obligation_payment_uuid]);
+                        $obligationInfo = $stmt->fetch();
+
+                        if ($obligationInfo) {
+                            $formattedAmount = number_format($obligationInfo['scheduled_amount'] / 100, 2);
+                            $dueDate = date('M j, Y', strtotime($obligationInfo['due_date']));
+                            $_SESSION['success'] = "✅ Bill payment recorded successfully!\n\n" .
+                                "Obligation: {$obligationInfo['obligation_name']}\n" .
+                                "Payee: {$obligationInfo['payee_name']}\n" .
+                                "Due date: {$dueDate}\n" .
+                                "Amount: \${$formattedAmount}";
+                        } else {
+                            $_SESSION['success'] = 'Transaction and obligation payment added successfully!';
+                        }
+                    }
                     // Check if this was a loan payment transaction
-                    if ($loan_payment_uuid) {
+                    else if ($loan_payment_uuid) {
                         // Get updated loan information for success message
                         $stmt = $db->prepare("
                             SELECT
@@ -359,6 +395,61 @@ require_once '../../includes/header.php';
                     </div>
 
                     <div id="amount-warning" class="warning-message" style="display: none;">
+                        ⚠️ Transaction amount differs from scheduled payment amount
+                    </div>
+                </div>
+            </div>
+
+            <!-- Obligation Payment Section (only for outflows) -->
+            <div id="obligation-payment-section" class="obligation-payment-section" style="display: none;">
+                <div class="obligation-payment-header">
+                    <label class="obligation-payment-toggle">
+                        <input type="checkbox" id="link-to-obligation" name="link_to_obligation" value="1">
+                        <span class="obligation-payment-toggle-label">📋 Link to Bill/Obligation Payment</span>
+                    </label>
+                    <small class="form-help">Mark this transaction as payment for a scheduled bill or obligation</small>
+                </div>
+
+                <div id="obligation-payment-config" class="obligation-payment-config" style="display: none;">
+                    <div id="obligation-suggestions" class="obligation-suggestions" style="display: none;">
+                        <h4>💡 Suggested Matches</h4>
+                        <div id="obligation-suggestions-list"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="obligation_payment_uuid" class="form-label">Select Obligation Payment *</label>
+                        <select id="obligation_payment_uuid" name="obligation_payment_uuid" class="form-select">
+                            <option value="">Choose obligation payment...</option>
+                            <!-- Populated via JavaScript -->
+                        </select>
+                        <small class="form-help">Shows pending bills and obligations for this budget</small>
+                    </div>
+
+                    <div id="obligation-details" class="obligation-details" style="display: none;">
+                        <h4>Payment Details</h4>
+                        <div class="detail-row">
+                            <span>Obligation:</span>
+                            <span id="detail-obligation-name">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Payee:</span>
+                            <span id="detail-payee-name">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Scheduled Amount:</span>
+                            <span id="detail-obligation-amount">$0.00</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Due Date:</span>
+                            <span id="detail-due-date-obligation">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Status:</span>
+                            <span id="detail-obligation-status">-</span>
+                        </div>
+                    </div>
+
+                    <div id="obligation-amount-warning" class="warning-message" style="display: none;">
                         ⚠️ Transaction amount differs from scheduled payment amount
                     </div>
                 </div>
@@ -864,6 +955,136 @@ require_once '../../includes/header.php';
         width: 100%;
         margin-top: 0.5rem;
     }
+}
+
+/* Obligation Payment Styles */
+.obligation-payment-section {
+    background: #fef3c7;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 2px solid #fde68a;
+    margin-top: 1rem;
+}
+
+.obligation-payment-header {
+    margin-bottom: 1rem;
+}
+
+.obligation-payment-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.obligation-payment-toggle input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.obligation-payment-toggle-label {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.obligation-payment-config {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border: 1px solid #fde68a;
+}
+
+.obligation-suggestions {
+    background: #ecfdf5;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 2px solid #6ee7b7;
+    margin-bottom: 1.5rem;
+}
+
+.obligation-suggestions h4 {
+    color: #065f46;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.obligation-suggestion-item {
+    background: white;
+    padding: 0.75rem;
+    border-radius: 4px;
+    border: 1px solid #a7f3d0;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.obligation-suggestion-item:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    transform: translateX(2px);
+}
+
+.obligation-suggestion-item.selected {
+    background: #10b981;
+    color: white;
+    border-color: #059669;
+}
+
+.obligation-suggestion-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.obligation-suggestion-details {
+    font-size: 0.75rem;
+    color: #6b7280;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.obligation-suggestion-item.selected .obligation-suggestion-details {
+    color: #d1fae5;
+}
+
+.obligation-suggestion-match-badge {
+    display: inline-block;
+    background: #10b981;
+    color: white;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.obligation-suggestion-item.selected .obligation-suggestion-match-badge {
+    background: white;
+    color: #10b981;
+}
+
+.obligation-details {
+    background: #f7fafc;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    margin-top: 1rem;
+}
+
+.obligation-details h4 {
+    color: #2d3748;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Loan Payment Styles */
@@ -1598,6 +1819,14 @@ function disableOtherPaymentFeatures() {
         enableInstallment.checked = false;
         document.getElementById('installment-config').style.display = 'none';
     }
+
+    // Disable obligation payment
+    const linkToObligation = document.getElementById('link-to-obligation');
+    if (linkToObligation && linkToObligation.checked) {
+        linkToObligation.checked = false;
+        document.getElementById('obligation-payment-config').style.display = 'none';
+        resetObligationPaymentForm();
+    }
 }
 
 function updateLoanPaymentVisibility() {
@@ -1618,6 +1847,381 @@ function updateLoanPaymentVisibility() {
     }
 }
 
+// Obligation Payment Management
+let currentObligationData = null;
+let pendingObligations = [];
+
+function initializeObligationPayment() {
+    const linkToObligationCheckbox = document.getElementById('link-to-obligation');
+    const obligationPaymentConfig = document.getElementById('obligation-payment-config');
+    const obligationSelect = document.getElementById('obligation_payment_uuid');
+    const amountInput = document.getElementById('amount');
+    const dateInput = document.getElementById('date');
+    const payeeInput = document.getElementById('payee');
+
+    // Toggle obligation payment config visibility
+    linkToObligationCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            obligationPaymentConfig.style.display = 'block';
+            loadPendingObligations();
+
+            // Disable other payment features
+            disableOtherPaymentFeatures();
+        } else {
+            obligationPaymentConfig.style.display = 'none';
+            resetObligationPaymentForm();
+        }
+    });
+
+    // When obligation selected, auto-populate fields
+    obligationSelect.addEventListener('change', function() {
+        if (this.value) {
+            const selected = pendingObligations.find(o => o.payment_uuid === this.value);
+            if (selected) {
+                autoPopulateFromObligation(selected);
+            }
+        } else {
+            document.getElementById('obligation-details').style.display = 'none';
+            document.getElementById('obligation-amount-warning').style.display = 'none';
+            currentObligationData = null;
+        }
+    });
+
+    // Check amount match when amount changes
+    amountInput.addEventListener('input', function() {
+        checkObligationAmountMatch();
+    });
+
+    // Auto-suggest when amount, date, or payee changes
+    let suggestionTimeout = null;
+    function triggerSuggestions() {
+        clearTimeout(suggestionTimeout);
+        suggestionTimeout = setTimeout(() => {
+            if (linkToObligationCheckbox.checked && amountInput.value && dateInput.value) {
+                loadObligationSuggestions();
+            }
+        }, 500);
+    }
+
+    amountInput.addEventListener('input', triggerSuggestions);
+    dateInput.addEventListener('change', triggerSuggestions);
+    payeeInput.addEventListener('input', triggerSuggestions);
+}
+
+function loadPendingObligations() {
+    const ledgerUuid = '<?= $ledger_uuid ?>';
+    const obligationSelect = document.getElementById('obligation_payment_uuid');
+
+    obligationSelect.innerHTML = '<option value="">Loading...</option>';
+    obligationSelect.disabled = true;
+
+    fetch(`/pgbudget/public/api/pending-obligation-payments.php?ledger_uuid=${ledgerUuid}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.payments && data.payments.length > 0) {
+                pendingObligations = data.payments;
+                let options = '<option value="">Choose obligation payment...</option>';
+
+                data.payments.forEach(payment => {
+                    const dueDate = new Date(payment.due_date).toLocaleDateString();
+                    const amount = parseFloat(payment.scheduled_amount).toFixed(2);
+                    const daysUntilDue = parseInt(payment.days_until_due);
+
+                    let statusIcon = '📅';
+                    if (daysUntilDue < 0) {
+                        statusIcon = '⚠️';  // Overdue
+                    } else if (daysUntilDue === 0) {
+                        statusIcon = '🔔';  // Due today
+                    } else if (daysUntilDue <= 7) {
+                        statusIcon = '⏰';  // Due soon
+                    }
+
+                    const displayName = `${statusIcon} ${payment.obligation_name} - Due ${dueDate} ($${amount})`;
+                    options += `<option value="${payment.payment_uuid}">${displayName}</option>`;
+                });
+
+                obligationSelect.innerHTML = options;
+                obligationSelect.disabled = false;
+            } else if (data.success && (!data.payments || data.payments.length === 0)) {
+                obligationSelect.innerHTML = '<option value="">No pending obligations found</option>';
+                obligationSelect.disabled = true;
+                showObligationMessage('info', 'No pending obligations found for this budget.');
+            } else {
+                throw new Error(data.error || 'Unknown error loading obligations');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading obligations:', error);
+            obligationSelect.innerHTML = '<option value="">Error loading obligations</option>';
+            obligationSelect.disabled = true;
+            showObligationMessage('error', 'Failed to load obligations. Please refresh and try again.');
+        });
+}
+
+function loadObligationSuggestions() {
+    const amountInput = document.getElementById('amount');
+    const dateInput = document.getElementById('date');
+    const suggestionsContainer = document.getElementById('obligation-suggestions');
+    const suggestionsList = document.getElementById('obligation-suggestions-list');
+
+    // Get current transaction data (we'll create it temporarily to get suggestions)
+    let amount = amountInput.value.replace(/[^0-9,.]/g, '');
+    amount = amount.replace(',', '.');
+    const parsedAmount = parseFloat(amount);
+    const date = dateInput.value;
+
+    if (!parsedAmount || !date) {
+        suggestionsContainer.style.display = 'none';
+        return;
+    }
+
+    suggestionsList.innerHTML = '<div style="color: #6b7280; font-style: italic;">Finding matching obligations...</div>';
+    suggestionsContainer.style.display = 'block';
+
+    // We need to create a temporary transaction to get suggestions
+    // For now, we'll use the pending obligations and do client-side matching
+    const suggestions = findClientSideSuggestions(parsedAmount, date);
+
+    if (suggestions.length === 0) {
+        suggestionsContainer.style.display = 'none';
+        return;
+    }
+
+    let html = '';
+    suggestions.forEach((suggestion, index) => {
+        const matchReasons = suggestion.match_reasons.join(', ');
+        const matchScore = suggestion.match_score;
+        const dueDate = new Date(suggestion.due_date).toLocaleDateString();
+
+        html += `
+            <div class="obligation-suggestion-item" data-payment-uuid="${suggestion.payment_uuid}" onclick="selectSuggestion('${suggestion.payment_uuid}')">
+                <div class="obligation-suggestion-name">
+                    ${suggestion.obligation_name}
+                    <span class="obligation-suggestion-match-badge">${matchScore}% match</span>
+                </div>
+                <div class="obligation-suggestion-details">
+                    <span>👤 ${suggestion.payee_name}</span>
+                    <span>📅 Due: ${dueDate}</span>
+                    <span>💰 $${parseFloat(suggestion.scheduled_amount).toFixed(2)}</span>
+                    <span>✓ ${matchReasons}</span>
+                </div>
+            </div>
+        `;
+    });
+
+    suggestionsList.innerHTML = html;
+}
+
+function findClientSideSuggestions(amount, date) {
+    const transactionDate = new Date(date);
+    const suggestions = [];
+    const matchTolerance = 7; // days
+    const amountTolerance = 0.10; // 10%
+
+    pendingObligations.forEach(obligation => {
+        const dueDate = new Date(obligation.due_date);
+        const scheduledAmount = parseFloat(obligation.scheduled_amount);
+
+        // Calculate date difference
+        const daysDiff = Math.abs((transactionDate - dueDate) / (1000 * 60 * 60 * 24));
+
+        // Calculate amount difference
+        const amountMin = scheduledAmount * (1 - amountTolerance);
+        const amountMax = scheduledAmount * (1 + amountTolerance);
+
+        let matchScore = 0;
+        let matchReasons = [];
+
+        // Date matching
+        if (daysDiff === 0) {
+            matchScore += 50;
+            matchReasons.push('Exact date match');
+        } else if (daysDiff <= matchTolerance) {
+            matchScore += Math.max(0, 30 - (daysDiff * 3));
+            matchReasons.push(`Within ${Math.floor(daysDiff)} days`);
+        }
+
+        // Amount matching
+        if (Math.abs(amount - scheduledAmount) < 0.01) {
+            matchScore += 30;
+            matchReasons.push('Exact amount');
+        } else if (amount >= amountMin && amount <= amountMax) {
+            matchScore += 20;
+            matchReasons.push('Similar amount');
+        }
+
+        // Payee matching (we don't have payee in transaction form yet, skip for now)
+
+        if (matchScore > 20) {  // Only include if score is meaningful
+            suggestions.push({
+                ...obligation,
+                match_score: matchScore,
+                match_reasons: matchReasons
+            });
+        }
+    });
+
+    // Sort by score descending
+    suggestions.sort((a, b) => b.match_score - a.match_score);
+
+    // Return top 3 suggestions
+    return suggestions.slice(0, 3);
+}
+
+function selectSuggestion(paymentUuid) {
+    // Remove selection from all items
+    document.querySelectorAll('.obligation-suggestion-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+
+    // Add selection to clicked item
+    const selectedItem = document.querySelector(`[data-payment-uuid="${paymentUuid}"]`);
+    if (selectedItem) {
+        selectedItem.classList.add('selected');
+    }
+
+    // Update the select dropdown
+    const obligationSelect = document.getElementById('obligation_payment_uuid');
+    obligationSelect.value = paymentUuid;
+
+    // Trigger the change event to populate details
+    const obligation = pendingObligations.find(o => o.payment_uuid === paymentUuid);
+    if (obligation) {
+        autoPopulateFromObligation(obligation);
+    }
+}
+
+function autoPopulateFromObligation(obligation) {
+    currentObligationData = obligation;
+
+    // Auto-populate fields
+    document.getElementById('amount').value = parseFloat(obligation.scheduled_amount).toFixed(2);
+    document.getElementById('date').value = obligation.due_date;
+    document.getElementById('description').value = `${obligation.obligation_name} - ${obligation.payee_name}`;
+    document.getElementById('payee').value = obligation.payee_name;
+
+    // Display obligation details
+    const detailsPanel = document.getElementById('obligation-details');
+    document.getElementById('detail-obligation-name').textContent = obligation.obligation_name;
+    document.getElementById('detail-payee-name').textContent = obligation.payee_name;
+    document.getElementById('detail-obligation-amount').textContent = `$${parseFloat(obligation.scheduled_amount).toFixed(2)}`;
+    document.getElementById('detail-due-date-obligation').textContent = new Date(obligation.due_date).toLocaleDateString();
+
+    // Show status
+    const daysUntilDue = parseInt(obligation.days_until_due);
+    let statusDisplay = obligation.status;
+    if (daysUntilDue < 0) {
+        statusDisplay = `⚠️ Overdue (${Math.abs(daysUntilDue)} days)`;
+    } else if (daysUntilDue === 0) {
+        statusDisplay = '🔔 Due Today';
+    } else if (daysUntilDue <= 7) {
+        statusDisplay = `⏰ Due Soon (${daysUntilDue} days)`;
+    } else {
+        statusDisplay = `📅 Scheduled (${daysUntilDue} days)`;
+    }
+    document.getElementById('detail-obligation-status').textContent = statusDisplay;
+
+    detailsPanel.style.display = 'block';
+
+    // Check amount match
+    checkObligationAmountMatch();
+}
+
+function checkObligationAmountMatch() {
+    if (!currentObligationData) {
+        return;
+    }
+
+    const amountInput = document.getElementById('amount');
+    const warningDiv = document.getElementById('obligation-amount-warning');
+
+    // Parse amounts
+    let inputAmount = amountInput.value.replace(/[^0-9,.]/g, '');
+    inputAmount = inputAmount.replace(',', '.');
+    const inputValue = parseFloat(inputAmount);
+    const scheduledValue = parseFloat(currentObligationData.scheduled_amount);
+
+    if (isNaN(inputValue)) {
+        warningDiv.style.display = 'none';
+        return;
+    }
+
+    if (Math.abs(inputValue - scheduledValue) > 0.01) {
+        let message = `⚠️ Transaction amount ($${inputValue.toFixed(2)}) differs from scheduled payment ($${scheduledValue.toFixed(2)})`;
+
+        if (inputValue > scheduledValue) {
+            const extra = inputValue - scheduledValue;
+            message += `\n💡 Paying $${extra.toFixed(2)} extra`;
+        } else {
+            message += `\n⚠️ This is a partial payment`;
+        }
+
+        warningDiv.textContent = message;
+        warningDiv.style.display = 'block';
+    } else {
+        warningDiv.style.display = 'none';
+    }
+}
+
+function resetObligationPaymentForm() {
+    document.getElementById('obligation_payment_uuid').value = '';
+    document.getElementById('obligation-details').style.display = 'none';
+    document.getElementById('obligation-amount-warning').style.display = 'none';
+    document.getElementById('obligation-suggestions').style.display = 'none';
+    currentObligationData = null;
+}
+
+function showObligationMessage(type, message) {
+    const config = document.getElementById('obligation-payment-config');
+    const existingMessage = config.querySelector('.obligation-payment-inline-message');
+
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'obligation-payment-inline-message';
+
+    const colors = {
+        error: { bg: '#fee2e2', text: '#991b1b', border: '#dc2626', icon: '❌' },
+        success: { bg: '#d1fae5', text: '#065f46', border: '#10b981', icon: '✅' },
+        info: { bg: '#dbeafe', text: '#1e40af', border: '#3b82f6', icon: 'ℹ️' }
+    };
+
+    const color = colors[type] || colors.info;
+
+    messageDiv.style.cssText = `
+        background: ${color.bg};
+        color: ${color.text};
+        padding: 0.75rem;
+        border-radius: 6px;
+        border-left: 4px solid ${color.border};
+        margin-top: 1rem;
+        font-size: 0.875rem;
+    `;
+    messageDiv.textContent = `${color.icon} ${message}`;
+
+    config.insertBefore(messageDiv, config.firstChild);
+}
+
+function updateObligationPaymentVisibility() {
+    const type = document.getElementById('type').value;
+    const obligationPaymentSection = document.getElementById('obligation-payment-section');
+
+    // Only show for outflows
+    if (type === 'outflow') {
+        obligationPaymentSection.style.display = 'block';
+    } else {
+        obligationPaymentSection.style.display = 'none';
+        const linkToObligation = document.getElementById('link-to-obligation');
+        if (linkToObligation.checked) {
+            linkToObligation.checked = false;
+            document.getElementById('obligation-payment-config').style.display = 'none';
+            resetObligationPaymentForm();
+        }
+    }
+}
+
 // Initialize form state
 document.addEventListener('DOMContentLoaded', function() {
     updateFormForType();
@@ -1625,12 +2229,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeInstallment();
     initializePayeeAutocomplete();
     initializeLoanPayment();
+    initializeObligationPayment();
 
     // Add listener for account changes to update installment visibility
     document.getElementById('account').addEventListener('change', updateInstallmentVisibility);
     document.getElementById('type').addEventListener('change', function() {
         updateInstallmentVisibility();
         updateLoanPaymentVisibility();
+        updateObligationPaymentVisibility();
     });
 });
 
