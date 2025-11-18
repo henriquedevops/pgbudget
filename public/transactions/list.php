@@ -384,7 +384,7 @@ try {
                                     </a>
                                 <?php endif; ?>
                                 <?php if (!empty($txn['obligation_payment_uuid'])): ?>
-                                    <a href="../obligations/payments.php?ledger=<?= urlencode($ledger_uuid) ?>&obligation=<?= urlencode($txn['obligation_uuid']) ?>"
+                                    <a href="../obligations/view.php?ledger=<?= urlencode($ledger_uuid) ?>&obligation=<?= urlencode($txn['obligation_uuid']) ?>"
                                        class="obligation-indicator"
                                        title="Bill Payment: <?= htmlspecialchars($txn['obligation_name']) ?> - <?= htmlspecialchars($txn['obligation_payee']) ?> (Due: <?= date('M j, Y', strtotime($txn['obligation_due_date'])) ?>)">
                                         📋 <?= htmlspecialchars($txn['obligation_name']) ?>
