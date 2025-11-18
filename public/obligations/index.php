@@ -20,6 +20,13 @@ if (empty($ledger_uuid)) {
     exit;
 }
 
+// Handle success message
+if (isset($_GET['success'])) {
+    $_SESSION['success'] = $_GET['success'];
+    header("Location: index.php?ledger=$ledger_uuid");
+    exit;
+}
+
 // Get filter parameters
 $type_filter = $_GET['type'] ?? 'all';
 $search_query = $_GET['search'] ?? '';
