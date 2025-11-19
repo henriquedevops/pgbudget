@@ -52,10 +52,10 @@ try {
 
     // Get existing payees
     $stmt = $db->prepare("
-        SELECT DISTINCT payee_name
+        SELECT DISTINCT name
         FROM data.payees
         WHERE user_data = ?
-        ORDER BY payee_name
+        ORDER BY name
     ");
     $stmt->execute([$_SESSION['user_id']]);
     $existing_payees = $stmt->fetchAll(PDO::FETCH_COLUMN);

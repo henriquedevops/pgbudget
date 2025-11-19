@@ -40,7 +40,7 @@ try {
 
     // Get accounts for dropdowns
     $stmt = $db->prepare("
-        SELECT uuid, name, type, subtype
+        SELECT uuid, name, type
         FROM api.accounts
         WHERE ledger_uuid = ?
         AND type IN ('asset', 'equity')
@@ -55,10 +55,10 @@ try {
 
     // Get existing payees
     $stmt = $db->prepare("
-        SELECT DISTINCT payee_name
+        SELECT DISTINCT name
         FROM data.payees
         WHERE user_data = ?
-        ORDER BY payee_name
+        ORDER BY name
     ");
     $stmt->execute([$_SESSION['user_id']]);
     $existing_payees = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -386,9 +386,6 @@ require_once '../../includes/header.php';
                         <?php foreach ($payment_accounts as $account): ?>
                             <option value="<?= htmlspecialchars($account['uuid']) ?>">
                                 <?= htmlspecialchars($account['name']) ?>
-                                <?php if ($account['subtype']): ?>
-                                    (<?= ucfirst($account['subtype']) ?>)
-                                <?php endif; ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
