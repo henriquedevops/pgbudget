@@ -64,8 +64,16 @@ try {
     }
 
 } catch (Exception $e) {
+    // Log the full error for debugging
+    error_log("Obligations API Error: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString() // Include trace in development
+    ]);
     exit;
 }
 
@@ -82,29 +90,29 @@ function createObligation($db) {
     $is_fixed_amount = ($_POST['is_fixed_amount'] ?? 'true') === 'true';
     $start_date = $_POST['start_date'] ?? '';
 
-    // Amount fields
-    $fixed_amount = $_POST['fixed_amount'] ?? null;
-    $estimated_amount = $_POST['estimated_amount'] ?? null;
-    $amount_range_min = $_POST['amount_range_min'] ?? null;
-    $amount_range_max = $_POST['amount_range_max'] ?? null;
+    // Amount fields - convert empty strings to null
+    $fixed_amount = !empty($_POST['fixed_amount']) ? $_POST['fixed_amount'] : null;
+    $estimated_amount = !empty($_POST['estimated_amount']) ? $_POST['estimated_amount'] : null;
+    $amount_range_min = !empty($_POST['amount_range_min']) ? $_POST['amount_range_min'] : null;
+    $amount_range_max = !empty($_POST['amount_range_max']) ? $_POST['amount_range_max'] : null;
 
-    // Frequency fields
-    $due_day_of_month = $_POST['due_day_of_month'] ?? null;
-    $due_day_of_week = $_POST['due_day_of_week'] ?? null;
-    $custom_frequency_days = $_POST['custom_frequency_days'] ?? null;
-    $due_months = $_POST['due_months'] ?? null;
+    // Frequency fields - convert empty strings to null
+    $due_day_of_month = !empty($_POST['due_day_of_month']) ? $_POST['due_day_of_month'] : null;
+    $due_day_of_week = !empty($_POST['due_day_of_week']) ? $_POST['due_day_of_week'] : null;
+    $custom_frequency_days = !empty($_POST['custom_frequency_days']) ? $_POST['custom_frequency_days'] : null;
+    $due_months = !empty($_POST['due_months']) ? $_POST['due_months'] : null;
 
-    // Optional fields
-    $description = $_POST['description'] ?? null;
-    $obligation_subtype = $_POST['obligation_subtype'] ?? null;
-    $default_payment_account_uuid = $_POST['default_payment_account_uuid'] ?? null;
-    $default_category_uuid = $_POST['default_category_uuid'] ?? null;
-    $account_number = $_POST['account_number'] ?? null;
-    $reminder_days_before = $_POST['reminder_days_before'] ?? 3;
-    $grace_period_days = $_POST['grace_period_days'] ?? 0;
-    $late_fee_amount = $_POST['late_fee_amount'] ?? null;
-    $notes = $_POST['notes'] ?? null;
-    $end_date = $_POST['end_date'] ?? null;
+    // Optional fields - convert empty strings to null
+    $description = !empty($_POST['description']) ? $_POST['description'] : null;
+    $obligation_subtype = !empty($_POST['obligation_subtype']) ? $_POST['obligation_subtype'] : null;
+    $default_payment_account_uuid = !empty($_POST['default_payment_account_uuid']) ? $_POST['default_payment_account_uuid'] : null;
+    $default_category_uuid = !empty($_POST['default_category_uuid']) ? $_POST['default_category_uuid'] : null;
+    $account_number = !empty($_POST['account_number']) ? $_POST['account_number'] : null;
+    $reminder_days_before = !empty($_POST['reminder_days_before']) ? $_POST['reminder_days_before'] : 3;
+    $grace_period_days = !empty($_POST['grace_period_days']) ? $_POST['grace_period_days'] : 0;
+    $late_fee_amount = !empty($_POST['late_fee_amount']) ? $_POST['late_fee_amount'] : null;
+    $notes = !empty($_POST['notes']) ? $_POST['notes'] : null;
+    $end_date = !empty($_POST['end_date']) ? $_POST['end_date'] : null;
 
     // Validate required fields
     if (empty($ledger_uuid) || empty($name) || empty($payee_name) || empty($obligation_type) || empty($frequency) || empty($start_date)) {
@@ -170,14 +178,14 @@ function createObligation($db) {
             $frequency,
             $is_fixed_amount ? 'true' : 'false',
             $start_date,
-            $fixed_amount,
-            $estimated_amount,
-            $due_day_of_month,
-            $due_day_of_week,
-            $due_months_array,
-            $custom_frequency_days,
-            $default_payment_account_uuid ?: null,
-            $default_category_uuid ?: null,
+            $fixed_amount, // null if not set
+            $estimated_amount, // null if not set
+            $due_day_of_month, // null if not set
+            $due_day_of_week, // null if not set
+            $due_months_array, // null if not set
+            $custom_frequency_days, // null if not set
+            $default_payment_account_uuid, // already null if empty
+            $default_category_uuid, // already null if empty
             $obligation_subtype,
             $description,
             $account_number,
@@ -214,8 +222,16 @@ function createObligation($db) {
 
     } catch (Exception $e) {
         $db->rollBack();
+        // Log the full error for debugging
+        error_log("Create Obligation Error: " . $e->getMessage());
+        error_log("Stack trace: " . $e->getTraceAsString());
+
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        echo json_encode([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString() // Include trace in development
+        ]);
     }
 }
 
@@ -351,8 +367,16 @@ function editPayment($db) {
 
     } catch (Exception $e) {
         $db->rollBack();
+        // Log the full error for debugging
+        error_log("Create Obligation Error: " . $e->getMessage());
+        error_log("Stack trace: " . $e->getTraceAsString());
+
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        echo json_encode([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString() // Include trace in development
+        ]);
     }
 }
 
@@ -420,8 +444,16 @@ function markPaymentAsPaid($db) {
 
     } catch (Exception $e) {
         $db->rollBack();
+        // Log the full error for debugging
+        error_log("Create Obligation Error: " . $e->getMessage());
+        error_log("Stack trace: " . $e->getTraceAsString());
+
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        echo json_encode([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString() // Include trace in development
+        ]);
     }
 }
 
