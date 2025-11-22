@@ -44,6 +44,7 @@ try {
         FROM api.accounts
         WHERE ledger_uuid = ?
         AND type IN ('asset', 'equity')
+        AND is_group = false
         ORDER BY name
     ");
     $stmt->execute([$ledger_uuid]);
