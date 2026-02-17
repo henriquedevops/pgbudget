@@ -377,6 +377,16 @@
 .cfp-legend .cell-pos { font-weight: 600; }
 .cfp-legend .cell-neg { font-weight: 600; }
 
+/* ---- Highlighted row (via ?highlight=uuid) ---- */
+.cfp-highlighted td {
+    background: #fffbeb !important;
+}
+
+.cfp-highlighted .sticky-1,
+.cfp-highlighted .sticky-2 {
+    background: #fffbeb !important;
+}
+
 /* ---- Empty state ---- */
 .empty-state {
     text-align: center;

@@ -36,6 +36,8 @@ if (!in_array($view_mode, ['monthly', 'quarterly', 'annual'])) {
     $view_mode = 'monthly';
 }
 
+$highlight_uuid = $_GET['highlight'] ?? '';
+
 try {
     $db = getDbConnection();
 
@@ -327,8 +329,13 @@ require_once '../../includes/header.php';
                 </tr>
 
                 <!-- DETAIL ROWS -->
-                <?php foreach ($rows as $row): ?>
-                <tr class="cfp-row cfp-detail" data-type="<?= $type ?>" data-group="<?= $type ?>">
+                <?php foreach ($rows as $row):
+                    $is_highlighted = ($highlight_uuid !== '' && $row['source_uuid'] === $highlight_uuid);
+                ?>
+                <tr class="cfp-row cfp-detail<?= $is_highlighted ? ' cfp-highlighted' : '' ?>"
+                    data-type="<?= $type ?>"
+                    data-group="<?= $type ?>"
+                    data-source-uuid="<?= htmlspecialchars($row['source_uuid']) ?>">
                     <td class="cfp-td cfp-td-type sticky-1">
                         <span class="cfp-type-badge cfp-badge-<?= $type ?>"><?= ucfirst(str_replace(['_', 'loan_'], [' ', 'ln '], $type)) ?></span>
                     </td>
@@ -429,6 +436,7 @@ require_once '../../includes/header.php';
         numCols:     <?= count($columns) ?>,
         colLabels:   <?= json_encode(array_column($columns, 'label')) ?>,
         currencySymbol: '$',
+        highlightUuid: '<?= htmlspecialchars($highlight_uuid) ?>',
     };
 </script>
 <script src="/pgbudget/js/cash-flow-projection.js"></script>

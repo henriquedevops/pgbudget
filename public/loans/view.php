@@ -125,6 +125,7 @@ require_once '../../includes/header.php';
             <?php if ($loan['status'] === 'active'): ?>
                 <a href="record-payment.php?ledger=<?= $ledger_uuid ?>&loan=<?= $loan_uuid ?>" class="btn btn-success">💵 Record Payment</a>
             <?php endif; ?>
+            <a href="/pgbudget/reports/cash-flow-projection.php?ledger=<?= $ledger_uuid ?>&highlight=<?= $loan_uuid ?>" class="btn btn-secondary">📊 View in Projection</a>
             <a href="edit.php?ledger=<?= $ledger_uuid ?>&loan=<?= $loan_uuid ?>" class="btn btn-secondary">Edit Loan</a>
             <a href="index.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">Back to Loans</a>
         </div>

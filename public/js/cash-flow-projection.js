@@ -148,7 +148,23 @@
     }
 
     /* ------------------------------------------------------------------
-       3. CSV Export — exports all data (unfiltered) for completeness
+       3. Highlight a specific row by source UUID (used when linking
+          from obligation/loan view pages via ?highlight=uuid)
+    ------------------------------------------------------------------ */
+
+    function initHighlight() {
+        const uuid = window.CFP && CFP.highlightUuid;
+        if (!uuid) return;
+        const first = document.querySelector('.cfp-highlighted');
+        if (first) {
+            setTimeout(function () {
+                first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 150);
+        }
+    }
+
+    /* ------------------------------------------------------------------
+       4. CSV Export — exports all data (unfiltered) for completeness
     ------------------------------------------------------------------ */
 
     function initCsvExport() {
@@ -229,6 +245,7 @@
         initCollapse();
         initFilters();
         initCsvExport();
+        initHighlight();
     });
 
 })();

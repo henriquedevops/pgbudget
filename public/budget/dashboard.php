@@ -115,6 +115,16 @@ try {
     }
     $group_subtotals = $stmt->fetchAll();
 
+    // Get 6-month cash flow projection outlook (optional — ignore errors)
+    $projection_outlook = [];
+    try {
+        $pstmt = $db->prepare("SELECT * FROM api.get_projection_summary(?, ?::date, ?)");
+        $pstmt->execute([$ledger_uuid, date('Y-m-01'), 6]);
+        $projection_outlook = $pstmt->fetchAll();
+    } catch (Exception $e) {
+        // Projection is optional
+    }
+
     // Organize grouped categories into a hierarchical structure
     $grouped_categories = [];
     foreach ($categories_by_group as $cat) {
@@ -537,6 +547,46 @@ require_once '../../includes/header.php';
         </div>
 
         <div class="budget-sidebar">
+            <!-- Cash Flow Outlook Widget -->
+            <?php if (!empty($projection_outlook)): ?>
+            <div class="cfp-widget">
+                <h3>
+                    Cash Flow Outlook
+                    <a href="../reports/cash-flow-projection.php?ledger=<?= $ledger_uuid ?>" class="cfp-widget-link">Full Report →</a>
+                </h3>
+                <?php
+                $max_abs = 1;
+                foreach ($projection_outlook as $ps) {
+                    $abs = abs((int)$ps['net_monthly_balance']);
+                    if ($abs > $max_abs) $max_abs = $abs;
+                }
+                ?>
+                <div class="cfp-widget-bars">
+                    <?php foreach ($projection_outlook as $ps):
+                        $net = (int)$ps['net_monthly_balance'];
+                        $pct = (int)round(abs($net) / $max_abs * 100);
+                        $lbl = (new DateTime($ps['month']))->format('M');
+                        $bar_class = $net >= 0 ? 'bar-pos' : 'bar-neg';
+                        $tip = $lbl . ': ' . ($net >= 0 ? '+' : '') . '$' . number_format(abs($net) / 100, 2);
+                    ?>
+                    <div class="cfp-bar-col">
+                        <div class="cfp-bar-wrap">
+                            <div class="cfp-bar <?= $bar_class ?>" style="height:<?= $pct ?>%;" title="<?= htmlspecialchars($tip) ?>"></div>
+                        </div>
+                        <div class="cfp-bar-lbl"><?= $lbl ?></div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php
+                $six_mo_net = array_sum(array_column($projection_outlook, 'net_monthly_balance'));
+                $cum_class  = $six_mo_net >= 0 ? 'positive' : 'negative';
+                ?>
+                <div class="cfp-widget-total">
+                    6-mo net: <span class="<?= $cum_class ?>"><?= ($six_mo_net >= 0 ? '+' : '') . '$' . number_format(abs($six_mo_net) / 100, 2) ?></span>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Recent Transactions -->
             <div class="recent-transactions">
                 <h3>Recent Transactions</h3>
@@ -737,6 +787,86 @@ require_once '../../includes/header.php';
         justify-content: center;
     }
 }
+
+/* Cash Flow Outlook Widget */
+.cfp-widget {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.cfp-widget h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #1e293b;
+}
+
+.cfp-widget-link {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.cfp-widget-link:hover { text-decoration: underline; }
+
+.cfp-widget-bars {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    height: 72px;
+    margin-bottom: 0.4rem;
+}
+
+.cfp-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.cfp-bar-wrap {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.cfp-bar {
+    width: 70%;
+    min-height: 3px;
+    border-radius: 2px 2px 0 0;
+}
+
+.bar-pos { background: #4ade80; }
+.bar-neg { background: #f87171; }
+
+.cfp-bar-lbl {
+    font-size: 0.62rem;
+    color: #94a3b8;
+    margin-top: 0.15rem;
+    text-align: center;
+}
+
+.cfp-widget-total {
+    font-size: 0.78rem;
+    color: #64748b;
+    text-align: right;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 0.4rem;
+}
+
+.cfp-widget-total .positive { color: #166534; font-weight: 600; }
+.cfp-widget-total .negative { color: #991b1b; font-weight: 600; }
 </style>
 
 <?php

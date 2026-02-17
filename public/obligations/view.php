@@ -107,6 +107,7 @@ require_once '../../includes/header.php';
         </div>
         <div class="page-actions">
             <button id="exportCsvBtn" class="btn btn-success">📥 Export CSV</button>
+            <a href="/pgbudget/reports/cash-flow-projection.php?ledger=<?= $ledger_uuid ?>&highlight=<?= $obligation_uuid ?>" class="btn btn-secondary">📊 View in Projection</a>
             <a href="edit.php?ledger=<?= $ledger_uuid ?>&obligation=<?= $obligation_uuid ?>" class="btn btn-primary">Edit Obligation</a>
             <a href="index.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">Back to Obligations</a>
         </div>
