@@ -237,20 +237,64 @@ function createObligation($db) {
 
 /**
  * Update an existing obligation
+ *
+ * Supports future-amount scheduling via amount_timing field:
+ *   'immediately' — update current amount now (and clear any pending future amount)
+ *   'future'      — schedule the new amount for a specific effective date
+ *   'clear'       — remove a previously scheduled future amount only
  */
 function updateObligation($db) {
     $obligation_uuid = $_POST['obligation_uuid'] ?? '';
     $name = $_POST['name'] ?? null;
     $description = $_POST['description'] ?? null;
     $payee_name = $_POST['payee_name'] ?? null;
-    $is_fixed_amount = isset($_POST['is_fixed_amount']) ? (($_POST['is_fixed_amount'] ?? 'true') === 'true') : null;
-    $fixed_amount = $_POST['fixed_amount'] ?? null;
-    $estimated_amount = $_POST['estimated_amount'] ?? null;
     $reminder_days_before = $_POST['reminder_days_before'] ?? null;
     $grace_period_days = $_POST['grace_period_days'] ?? null;
     $is_active = isset($_POST['is_active']) ? (($_POST['is_active'] ?? 'true') === 'true') : null;
     $is_paused = isset($_POST['is_paused']) ? (($_POST['is_paused'] ?? 'false') === 'true') : null;
     $notes = $_POST['notes'] ?? null;
+
+    // Amount timing logic
+    $amount_timing = $_POST['amount_timing'] ?? 'immediately';
+    $raw_fixed    = !empty($_POST['fixed_amount'])    ? $_POST['fixed_amount']    : null;
+    $raw_estimated = !empty($_POST['estimated_amount']) ? $_POST['estimated_amount'] : null;
+    $is_fixed_amount = isset($_POST['is_fixed_amount']) ? (($_POST['is_fixed_amount'] ?? 'true') === 'true') : null;
+
+    // Determine which params to pass based on timing
+    $p_fixed_amount          = null;
+    $p_estimated_amount      = null;
+    $p_future_fixed          = null;
+    $p_future_estimated      = null;
+    $p_future_effective_date = null;
+    $p_clear_future          = 'false';
+
+    if ($amount_timing === 'noop') {
+        // Amount field was not changed — don't touch any amount columns
+        // (all p_* amount vars remain null, which means COALESCE keeps existing values)
+    } elseif ($amount_timing === 'immediately') {
+        // Apply immediately: update current amount, clear any future schedule
+        $p_fixed_amount     = $raw_fixed;
+        $p_estimated_amount = $raw_estimated;
+        $p_clear_future     = 'true';
+    } elseif ($amount_timing === 'future') {
+        // Schedule for future: keep current amount, store as future amount
+        $effective_date = !empty($_POST['future_amount_effective_date'])
+            ? $_POST['future_amount_effective_date'] : null;
+        if (empty($effective_date)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Effective date is required for scheduled amount changes']);
+            exit;
+        }
+        if ($is_fixed_amount) {
+            $p_future_fixed = $raw_fixed;
+        } else {
+            $p_future_estimated = $raw_estimated;
+        }
+        $p_future_effective_date = $effective_date;
+    } elseif ($amount_timing === 'clear') {
+        // Just clear the scheduled future amount, don't change current amount
+        $p_clear_future = 'true';
+    }
 
     if (empty($obligation_uuid)) {
         http_response_code(400);
@@ -261,17 +305,21 @@ function updateObligation($db) {
     try {
         $stmt = $db->prepare("
             SELECT * FROM api.update_obligation(
-                p_obligation_uuid := ?,
-                p_name := ?,
-                p_description := ?,
-                p_payee_name := ?,
-                p_fixed_amount := ?::decimal,
-                p_estimated_amount := ?::decimal,
-                p_reminder_days_before := ?::integer,
-                p_grace_period_days := ?::integer,
-                p_is_active := ?,
-                p_is_paused := ?,
-                p_notes := ?
+                p_obligation_uuid              := ?,
+                p_name                         := ?,
+                p_description                  := ?,
+                p_payee_name                   := ?,
+                p_fixed_amount                 := ?::decimal,
+                p_estimated_amount             := ?::decimal,
+                p_reminder_days_before         := ?::integer,
+                p_grace_period_days            := ?::integer,
+                p_is_active                    := ?,
+                p_is_paused                    := ?,
+                p_notes                        := ?,
+                p_future_fixed_amount          := ?::decimal,
+                p_future_estimated_amount      := ?::decimal,
+                p_future_amount_effective_date := ?::date,
+                p_clear_future_amount          := ?::boolean
             )
         ");
 
@@ -280,13 +328,17 @@ function updateObligation($db) {
             $name,
             $description,
             $payee_name,
-            $fixed_amount,
-            $estimated_amount,
+            $p_fixed_amount,
+            $p_estimated_amount,
             $reminder_days_before,
             $grace_period_days,
             $is_active !== null ? ($is_active ? 'true' : 'false') : null,
             $is_paused !== null ? ($is_paused ? 'true' : 'false') : null,
-            $notes
+            $notes,
+            $p_future_fixed,
+            $p_future_estimated,
+            $p_future_effective_date,
+            $p_clear_future,
         ]);
 
         $result = $stmt->fetch();

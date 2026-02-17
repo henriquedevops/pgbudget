@@ -162,6 +162,8 @@ require_once '../../includes/header.php';
             <div class="form-section">
                 <h3>Amount Details</h3>
 
+                <input type="hidden" name="is_fixed_amount" value="<?= $obligation['is_fixed_amount'] ? 'true' : 'false' ?>">
+
                 <?php if ($obligation['is_fixed_amount']): ?>
                     <div class="form-group">
                         <label for="fixed_amount">Fixed Amount *</label>
@@ -172,7 +174,8 @@ require_once '../../includes/header.php';
                                min="0.01"
                                step="0.01"
                                value="<?= $obligation['fixed_amount'] ?>"
-                               placeholder="0.00">
+                               placeholder="0.00"
+                               data-original="<?= $obligation['fixed_amount'] ?>">
                         <small class="form-hint">The exact amount due each period</small>
                     </div>
                 <?php else: ?>
@@ -185,9 +188,58 @@ require_once '../../includes/header.php';
                                min="0.01"
                                step="0.01"
                                value="<?= $obligation['estimated_amount'] ?>"
-                               placeholder="0.00">
+                               placeholder="0.00"
+                               data-original="<?= $obligation['estimated_amount'] ?>">
                         <small class="form-hint">Average or expected amount</small>
                     </div>
+                <?php endif; ?>
+
+                <!-- Effective-date selector — shown when amount changes -->
+                <div id="amountTimingSection" class="amount-timing-section" style="display:none;">
+                    <div class="timing-header">When should this new amount take effect?</div>
+                    <div class="timing-options">
+                        <label class="timing-opt">
+                            <input type="radio" name="amount_timing" value="immediately" checked>
+                            <span class="timing-opt-label">
+                                <strong>Immediately</strong>
+                                <small>Update the current amount now — affects all future months</small>
+                            </span>
+                        </label>
+                        <label class="timing-opt">
+                            <input type="radio" name="amount_timing" value="future">
+                            <span class="timing-opt-label">
+                                <strong>Starting from a specific date</strong>
+                                <small>Keep the current amount until that date; projection uses new amount after</small>
+                            </span>
+                        </label>
+                    </div>
+                    <div id="futureDatePicker" class="future-date-picker" style="display:none;">
+                        <label for="future_amount_effective_date">Effective from (first of month)</label>
+                        <input type="month"
+                               id="future_amount_effective_date"
+                               name="future_amount_effective_date"
+                               min="<?= date('Y-m', strtotime('+1 month')) ?>">
+                        <small class="form-hint">The new amount will appear in the cash-flow projection from this month onward</small>
+                    </div>
+                </div>
+
+                <?php if (!empty($obligation['future_amount_effective_date'])): ?>
+                <div class="future-amount-banner" id="futureAmountBanner">
+                    <div class="future-amount-info">
+                        <span class="future-amount-icon">📅</span>
+                        <div>
+                            <strong>Scheduled amount change:</strong>
+                            <?php
+                            $future_val = $obligation['future_fixed_amount'] ?? $obligation['future_estimated_amount'];
+                            $eff_date   = date('F Y', strtotime($obligation['future_amount_effective_date']));
+                            ?>
+                            $<?= number_format((float)$future_val, 2) ?> starting <?= $eff_date ?>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-small btn-danger" id="clearFutureAmountBtn">
+                        Remove scheduled change
+                    </button>
+                </div>
                 <?php endif; ?>
 
                 <div class="form-group">
@@ -439,10 +491,193 @@ require_once '../../includes/header.php';
         width: 100%;
     }
 }
+
+/* Amount timing section */
+.amount-timing-section {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.timing-header {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #0369a1;
+    margin-bottom: 0.75rem;
+}
+
+.timing-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.timing-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    cursor: pointer;
+    padding: 0.5rem 0.65rem;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition: background 0.15s;
+}
+
+.timing-opt:hover {
+    background: #e0f2fe;
+}
+
+.timing-opt input[type="radio"] {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+.timing-opt-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.timing-opt-label strong {
+    font-size: 0.9rem;
+    color: #1e293b;
+}
+
+.timing-opt-label small {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.future-date-picker {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #bae6fd;
+}
+
+.future-date-picker label {
+    display: block;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #334155;
+    margin-bottom: 0.35rem;
+}
+
+.future-date-picker input[type="month"] {
+    padding: 0.5rem 0.65rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Scheduled future amount banner */
+.future-amount-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.future-amount-info {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.875rem;
+    color: #78350f;
+}
+
+.future-amount-icon {
+    font-size: 1.1rem;
+}
+
+.future-amount-info strong {
+    color: #92400e;
+}
 </style>
 
 <script>
-// Form submission
+/* ---- Amount timing UI -------------------------------------------- */
+(function () {
+    const amountInput = document.getElementById('fixed_amount') || document.getElementById('estimated_amount');
+    const timingSection = document.getElementById('amountTimingSection');
+    const futureDatePicker = document.getElementById('futureDatePicker');
+    const futureDateInput = document.getElementById('future_amount_effective_date');
+    const timingRadios = document.querySelectorAll('input[name="amount_timing"]');
+
+    if (!amountInput || !timingSection) return;
+
+    // Show timing section when the amount value changes from its original
+    amountInput.addEventListener('input', function () {
+        const orig = parseFloat(this.dataset.original || '0');
+        const curr = parseFloat(this.value || '0');
+        timingSection.style.display = (Math.abs(curr - orig) > 0.001) ? '' : 'none';
+        if (timingSection.style.display === 'none') {
+            // Reset to default so no spurious timing is submitted
+            document.querySelector('input[name="amount_timing"][value="immediately"]').checked = true;
+            futureDatePicker.style.display = 'none';
+            if (futureDateInput) futureDateInput.removeAttribute('required');
+        }
+    });
+
+    // Show/hide date picker based on radio selection
+    timingRadios.forEach(function (r) {
+        r.addEventListener('change', function () {
+            const isFuture = this.value === 'future';
+            futureDatePicker.style.display = isFuture ? '' : 'none';
+            if (futureDateInput) {
+                if (isFuture) {
+                    futureDateInput.setAttribute('required', '');
+                    // Default to next month
+                    if (!futureDateInput.value) {
+                        const d = new Date();
+                        d.setMonth(d.getMonth() + 1);
+                        futureDateInput.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+                    }
+                } else {
+                    futureDateInput.removeAttribute('required');
+                }
+            }
+        });
+    });
+
+    // "Remove scheduled change" button
+    const clearBtn = document.getElementById('clearFutureAmountBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', async function () {
+            if (!confirm('Remove the scheduled amount change? The current amount will remain unchanged.')) return;
+            clearBtn.disabled = true;
+            clearBtn.textContent = 'Removing…';
+            const fd = new FormData();
+            fd.append('action', 'update');
+            fd.append('obligation_uuid', '<?= $obligation_uuid ?>');
+            fd.append('amount_timing', 'clear');
+            try {
+                const res = await fetch('../api/obligations.php', { method: 'POST', body: fd });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('futureAmountBanner').remove();
+                } else {
+                    alert('Error: ' + data.error);
+                    clearBtn.disabled = false;
+                    clearBtn.textContent = 'Remove scheduled change';
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+                clearBtn.disabled = false;
+                clearBtn.textContent = 'Remove scheduled change';
+            }
+        });
+    }
+})();
+
+/* ---- Form submission --------------------------------------------- */
 document.getElementById('editObligationForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -452,6 +687,21 @@ document.getElementById('editObligationForm').addEventListener('submit', async f
     // Convert checkboxes to boolean strings
     formData.set('is_active', document.getElementById('is_active').checked ? 'true' : 'false');
     formData.set('is_paused', document.getElementById('is_paused').checked ? 'true' : 'false');
+
+    // Convert future_amount_effective_date from YYYY-MM to YYYY-MM-01
+    const futureMonthInput = document.getElementById('future_amount_effective_date');
+    if (futureMonthInput && futureMonthInput.value) {
+        formData.set('future_amount_effective_date', futureMonthInput.value + '-01');
+    }
+
+    // Ensure amount_timing is set
+    const timingSection = document.getElementById('amountTimingSection');
+    if (!timingSection || timingSection.style.display === 'none') {
+        // Amount didn't change — don't touch amounts at all
+        formData.delete('fixed_amount');
+        formData.delete('estimated_amount');
+        formData.set('amount_timing', 'noop');
+    }
 
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
