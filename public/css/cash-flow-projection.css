@@ -1,0 +1,412 @@
+/* ======================================================
+   Cash Flow Projection — Spreadsheet Styles
+   ====================================================== */
+
+.cfp-container {
+    max-width: 100%;
+    padding-bottom: 3rem;
+}
+
+/* ---- Controls ---- */
+.cfp-controls {
+    margin-bottom: 1rem;
+}
+
+.cfp-controls-form {
+    margin-bottom: 1rem;
+}
+
+.cfp-controls-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.cfp-controls-row .form-group {
+    flex: 1;
+    min-width: 120px;
+}
+
+.cfp-controls-row .form-group label {
+    display: block;
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.35rem;
+    color: #444;
+}
+
+.cfp-controls-row .form-input {
+    width: 100%;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.form-group-btn {
+    flex: 0 0 auto;
+}
+
+/* ---- Source-type filter bar ---- */
+.cfp-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 0.75rem;
+}
+
+.cfp-filter-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #555;
+    margin-right: 0.25rem;
+}
+
+.cfp-filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #cbd5e0;
+    background: #f7f9fc;
+    color: #555;
+    user-select: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.cfp-filter-chip input[type="checkbox"] {
+    display: none;
+}
+
+.cfp-filter-chip.active {
+    background: #ebf4ff;
+    color: #1a56db;
+    border-color: #93c5fd;
+}
+
+.cfp-filter-chip:hover {
+    background: #dbeafe;
+    border-color: #60a5fa;
+}
+
+/* ---- Table wrapper (horizontal + vertical scroll) ---- */
+.cfp-table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 75vh;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ---- Table base ---- */
+.cfp-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: max-content;
+    width: 100%;
+    font-size: 0.82rem;
+}
+
+/* ---- Sticky column widths ---- */
+.cfp-table .sticky-1 {
+    position: sticky;
+    left: 0;
+    min-width: 90px;
+    max-width: 90px;
+    width: 90px;
+    z-index: 2;
+    background: inherit;
+    box-shadow: 1px 0 0 #e2e8f0;
+}
+
+.cfp-table .sticky-2 {
+    position: sticky;
+    left: 90px;
+    min-width: 200px;
+    max-width: 200px;
+    width: 200px;
+    z-index: 2;
+    background: inherit;
+    box-shadow: 1px 0 0 #e2e8f0;
+}
+
+/* Increase z-index for header sticky cells so they float above body */
+.cfp-table thead .sticky-1,
+.cfp-table thead .sticky-2 {
+    z-index: 4;
+}
+
+.cfp-table tfoot .sticky-1,
+.cfp-table tfoot .sticky-2 {
+    z-index: 3;
+}
+
+/* ---- Header ---- */
+.cfp-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.cfp-th {
+    background: #1e293b;
+    color: #f1f5f9;
+    padding: 0.6rem 0.75rem;
+    text-align: right;
+    font-weight: 600;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    border-bottom: 2px solid #334155;
+    letter-spacing: 0.02em;
+}
+
+.cfp-th.cfp-th-type,
+.cfp-th.cfp-th-desc {
+    text-align: left;
+}
+
+.cfp-th.cfp-th-month {
+    min-width: 90px;
+}
+
+.cfp-th.cfp-th-total {
+    min-width: 90px;
+    border-left: 2px solid #475569;
+    background: #0f172a;
+}
+
+/* ---- Group header rows ---- */
+.cfp-group-hdr td {
+    background: #f1f5f9;
+    padding: 0;
+}
+
+.cfp-group-hdr-cell {
+    padding: 0.45rem 0.75rem !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #334155;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-top: 2px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.cfp-collapse-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-right: 0.4rem;
+    padding: 0 0.15rem;
+    transition: transform 0.15s;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.cfp-collapse-btn.collapsed {
+    transform: rotate(-90deg);
+}
+
+.cfp-group-name {
+    vertical-align: middle;
+}
+
+.cfp-group-count {
+    margin-left: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: #94a3b8;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* ---- Detail rows ---- */
+.cfp-detail {
+    background: white;
+}
+
+.cfp-detail:hover {
+    background: #f8fafc;
+}
+
+.cfp-td {
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid #f0f4f8;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.cfp-td-type {
+    background: white;
+    text-align: left;
+}
+
+.cfp-td-desc {
+    background: white;
+    text-align: left;
+    font-size: 0.8rem;
+    color: #334155;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cfp-td-amt {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+}
+
+/* ---- Amount colour coding ---- */
+.cell-pos   { color: #166534; }
+.cell-neg   { color: #991b1b; }
+.cell-zero  { color: #94a3b8; }
+
+/* ---- Total column ---- */
+.cfp-row-total {
+    border-left: 2px solid #e2e8f0;
+    font-weight: 600;
+}
+
+/* ---- Subtotal rows ---- */
+.cfp-subtotal {
+    background: #f8fafc;
+}
+
+.cfp-td-sublabel {
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: #475569;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+.cfp-subtotal-amt {
+    font-weight: 600;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* ---- Spacer rows ---- */
+.cfp-spacer td {
+    height: 6px;
+    background: #f8fafc;
+    border: none;
+}
+
+/* ---- Summary footer ---- */
+.cfp-table tfoot {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+}
+
+.cfp-summary {
+    background: #0f172a;
+}
+
+.cfp-td-summary-lbl {
+    background: #0f172a;
+    color: #94a3b8;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-top: 2px solid #1e293b;
+}
+
+.cfp-summary-amt {
+    background: #0f172a;
+    font-weight: 700;
+    font-size: 0.82rem;
+    border-top: 2px solid #1e293b;
+    border-left: none;
+}
+
+/* Override positive/negative for dark footer */
+.cfp-summary-amt.cell-pos { color: #4ade80; }
+.cfp-summary-amt.cell-neg { color: #f87171; }
+.cfp-summary-amt.cell-zero { color: #64748b; }
+
+.cfp-net-row .cfp-td-summary-lbl { background: #1e293b; }
+.cfp-net-row .cfp-summary-amt    { background: #1e293b; }
+
+/* ---- Type badges ---- */
+.cfp-type-badge {
+    display: inline-block;
+    padding: 0.2rem 0.45rem;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.cfp-badge-income        { background: #dcfce7; color: #166534; }
+.cfp-badge-deduction     { background: #fee2e2; color: #991b1b; }
+.cfp-badge-obligation    { background: #fef3c7; color: #92400e; }
+.cfp-badge-loan_amort    { background: #e0e7ff; color: #3730a3; }
+.cfp-badge-loan_interest { background: #ede9fe; color: #5b21b6; }
+.cfp-badge-installment   { background: #dbeafe; color: #1e40af; }
+.cfp-badge-recurring     { background: #f0fdf4; color: #15803d; }
+.cfp-badge-event         { background: #fce7f3; color: #9d174d; }
+
+/* ---- Legend ---- */
+.cfp-legend {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 0.75rem;
+    text-align: center;
+}
+
+.cfp-legend .cell-pos { font-weight: 600; }
+.cfp-legend .cell-neg { font-weight: 600; }
+
+/* ---- Empty state ---- */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.empty-state h3 { color: #64748b; margin-bottom: 1rem; }
+.empty-state p  { color: #94a3b8; margin-bottom: 1.5rem; }
+
+.empty-state-links {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .cfp-controls-row {
+        flex-direction: column;
+    }
+
+    .cfp-controls-row .form-group {
+        width: 100%;
+    }
+
+    .cfp-table-wrapper {
+        max-height: 60vh;
+    }
+}
