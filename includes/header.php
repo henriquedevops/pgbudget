@@ -127,6 +127,9 @@
                         <li class="nav-item">
                             <a href="/pgbudget/income-sources/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Income</a>
                         </li>
+                        <li class="nav-item">
+                            <a href="/pgbudget/projected-events/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Events</a>
+                        </li>
                     <?php endif; ?>
                     <li class="nav-item">
                         <a href="/pgbudget/settings/" class="nav-link">⚙️ Settings</a>
