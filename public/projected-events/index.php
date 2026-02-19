@@ -202,6 +202,10 @@ require_once '../../includes/header.php';
                             <td class="actions-cell">
                                 <a href="edit.php?ledger=<?= $ledger_uuid ?>&event=<?= $event['uuid'] ?>"
                                    class="btn btn-small btn-secondary">Edit</a>
+                                <?php if ($event['frequency'] !== 'one_time'): ?>
+                                <a href="occurrences.php?ledger=<?= $ledger_uuid ?>&event=<?= $event['uuid'] ?>"
+                                   class="btn btn-small btn-secondary">Manage</a>
+                                <?php endif; ?>
                                 <button class="btn btn-small btn-danger"
                                         onclick="deleteEvent('<?= $event['uuid'] ?>', '<?= htmlspecialchars(addslashes($event['name'])) ?>')">
                                     Delete

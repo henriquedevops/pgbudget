@@ -188,18 +188,19 @@ function aggregateAmounts(array $row_amounts, array $columns): array {
 }
 
 // Group rows by source_type, compute per-column amounts + row total
-$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'recurring', 'event', 'cc_payment', 'realized_event'];
+$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'recurring', 'event', 'realized_occurrence', 'cc_payment', 'realized_event'];
 $group_labels = [
-    'income'         => 'Income',
-    'deduction'      => 'Payroll Deductions',
-    'obligation'     => 'Bills & Obligations',
-    'loan_amort'     => 'Loan Amortization',
-    'loan_interest'  => 'Loan Interest',
-    'installment'    => 'Installments',
-    'recurring'      => 'Recurring Transactions',
-    'event'          => 'Projected Events',
-    'cc_payment'     => 'Credit Card Payments',
-    'realized_event' => 'Realized Events',
+    'income'              => 'Income',
+    'deduction'           => 'Payroll Deductions',
+    'obligation'          => 'Bills & Obligations',
+    'loan_amort'          => 'Loan Amortization',
+    'loan_interest'       => 'Loan Interest',
+    'installment'         => 'Installments',
+    'recurring'           => 'Recurring Transactions',
+    'event'               => 'Projected Events',
+    'realized_occurrence' => 'Realized Occurrences',
+    'cc_payment'          => 'Credit Card Payments',
+    'realized_event'      => 'Realized Events',
 ];
 
 $groups = [];
@@ -392,6 +393,8 @@ require_once '../../includes/header.php';
                     <td class="cfp-td cfp-td-type sticky-1">
                         <?php if ($type === 'realized_event'): ?>
                             <span class="cfp-type-badge cfp-badge-realized_event">Realized</span>
+                        <?php elseif ($type === 'realized_occurrence'): ?>
+                            <span class="cfp-type-badge cfp-badge-realized_occurrence">Realized ↺</span>
                         <?php else: ?>
                             <span class="cfp-type-badge cfp-badge-<?= $type ?>"><?= ucfirst(str_replace(['loan_', 'cc_', '_'], ['Ln ', 'CC ', ' '], $type)) ?></span>
                         <?php endif; ?>

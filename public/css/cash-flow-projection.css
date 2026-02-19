@@ -364,9 +364,10 @@
 .cfp-badge-loan_interest { background: #ede9fe; color: #5b21b6; }
 .cfp-badge-installment   { background: #dbeafe; color: #1e40af; }
 .cfp-badge-recurring     { background: #f0fdf4; color: #15803d; }
-.cfp-badge-event           { background: #fce7f3; color: #9d174d; }
-.cfp-badge-cc_payment      { background: #fff7ed; color: #c2410c; }
-.cfp-badge-realized_event  { background: #e2e8f0; color: #64748b; }
+.cfp-badge-event              { background: #fce7f3; color: #9d174d; }
+.cfp-badge-realized_occurrence { background: #d1fae5; color: #065f46; }
+.cfp-badge-cc_payment         { background: #fff7ed; color: #c2410c; }
+.cfp-badge-realized_event     { background: #e2e8f0; color: #64748b; }
 
 /* ---- Realized event rows ---- */
 .cfp-realized-row {
