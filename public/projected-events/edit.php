@@ -147,10 +147,45 @@ require_once '../../includes/header.php';
                     </div>
 
                     <div class="form-group">
-                        <label for="event_date">Event Date *</label>
+                        <label for="event_date" id="event-date-label">Event Date *</label>
                         <input type="date" id="event_date" name="event_date" required
                                value="<?= $event['event_date'] ?>">
+                        <small class="form-hint" id="event-date-hint"><?= ($event['frequency'] !== 'one_time') ? 'Date of the first occurrence' : 'When this event is expected to occur' ?></small>
                     </div>
+                </div>
+            </div>
+
+            <!-- Recurrence -->
+            <div class="form-section">
+                <h3>Recurrence</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="frequency">Frequency *</label>
+                        <select id="frequency" name="frequency" required onchange="updateRecurrenceUI()">
+                            <option value="one_time"   <?= $event['frequency'] === 'one_time'   ? 'selected' : '' ?>>One-time</option>
+                            <option value="monthly"    <?= $event['frequency'] === 'monthly'    ? 'selected' : '' ?>>Monthly</option>
+                            <option value="annual"     <?= $event['frequency'] === 'annual'     ? 'selected' : '' ?>>Annual</option>
+                            <option value="semiannual" <?= $event['frequency'] === 'semiannual' ? 'selected' : '' ?>>Semiannual (twice a year)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="recurrence-end-group" style="<?= $event['frequency'] !== 'one_time' ? '' : 'display:none;' ?>">
+                        <label for="recurrence_end_date">Repeat Until (Optional)</label>
+                        <input type="date" id="recurrence_end_date" name="recurrence_end_date"
+                               value="<?= htmlspecialchars($event['recurrence_end_date'] ?? '') ?>">
+                        <small class="form-hint">Leave blank to repeat indefinitely within the projection window.</small>
+                    </div>
+                </div>
+
+                <div id="recurrence-hint" style="<?= $event['frequency'] !== 'one_time' ? '' : 'display:none;' ?>">
+                    <small class="form-hint" id="recurrence-hint-text">
+                        <?php
+                        if ($event['frequency'] === 'monthly') echo 'This event will repeat every month starting from the date above.';
+                        elseif ($event['frequency'] === 'annual') echo 'This event will repeat every year in the same calendar month.';
+                        elseif ($event['frequency'] === 'semiannual') echo 'This event will repeat twice a year, 6 months apart from the first occurrence.';
+                        ?>
+                    </small>
                 </div>
             </div>
 
@@ -263,6 +298,36 @@ require_once '../../includes/header.php';
 </style>
 
 <script>
+function updateRecurrenceUI() {
+    const freq = document.getElementById('frequency').value;
+    const endGroup = document.getElementById('recurrence-end-group');
+    const hintEl   = document.getElementById('recurrence-hint');
+    const hintText = document.getElementById('recurrence-hint-text');
+    const dateLabel = document.getElementById('event-date-label');
+    const dateHint  = document.getElementById('event-date-hint');
+
+    if (freq === 'one_time') {
+        endGroup.style.display = 'none';
+        hintEl.style.display   = 'none';
+        dateLabel.textContent  = 'Event Date *';
+        dateHint.textContent   = 'When this event is expected to occur';
+    } else {
+        endGroup.style.display = '';
+        hintEl.style.display   = '';
+        dateLabel.textContent  = 'First Occurrence Date *';
+        if (freq === 'monthly') {
+            dateHint.textContent  = 'Date of the first occurrence; repeats on this day monthly';
+            hintText.textContent  = 'This event will repeat every month starting from the date above.';
+        } else if (freq === 'annual') {
+            dateHint.textContent  = 'Date of the first occurrence; repeats every year in the same month';
+            hintText.textContent  = 'This event will repeat every year in the same calendar month.';
+        } else if (freq === 'semiannual') {
+            dateHint.textContent  = 'Date of the first occurrence; repeats every 6 months';
+            hintText.textContent  = 'This event will repeat twice a year, 6 months apart from the first occurrence.';
+        }
+    }
+}
+
 function toggleTransactionLink() {
     const isRealized = document.getElementById('is_realized').checked;
     document.getElementById('transaction_link_section').style.display = isRealized ? 'block' : 'none';

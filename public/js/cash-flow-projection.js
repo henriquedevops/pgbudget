@@ -246,6 +246,9 @@
         initFilters();
         initCsvExport();
         initHighlight();
+        // Recompute balance from active chips so realized events
+        // are included/excluded based on their initial toggle state.
+        recalculateSummary();
     });
 
 })();

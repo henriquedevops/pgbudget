@@ -36,7 +36,8 @@ if (!in_array($view_mode, ['monthly', 'quarterly', 'annual'])) {
     $view_mode = 'monthly';
 }
 
-$highlight_uuid = $_GET['highlight'] ?? '';
+$highlight_uuid  = $_GET['highlight']     ?? '';
+$show_realized   = !empty($_GET['show_realized']);
 
 try {
     $db = getDbConnection();
@@ -63,6 +64,23 @@ try {
     $stmt = $db->prepare("SELECT * FROM api.get_projection_summary(?, ?::date, ?)");
     $stmt->execute([$ledger_uuid, $start_month, $months_ahead]);
     $summary_rows = $stmt->fetchAll();
+
+    // Fetch realized events if requested (displayed for reference, not counted in balance)
+    $realized_events = [];
+    if ($show_realized) {
+        $end_month_realized = (new DateTime($start_month))->modify("+{$months_ahead} months")->format('Y-m-d');
+        $stmt = $db->prepare("
+            SELECT uuid, name, event_type, direction, amount, event_date
+            FROM api.projected_events
+            WHERE ledger_uuid = ?
+              AND is_realized = true
+              AND event_date >= ?::date
+              AND event_date < ?::date
+            ORDER BY event_date, name
+        ");
+        $stmt->execute([$ledger_uuid, $start_month, $end_month_realized]);
+        $realized_events = $stmt->fetchAll();
+    }
 
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
@@ -94,6 +112,28 @@ foreach ($detail_rows as $row) {
         $all_months[] = $m;
     }
 }
+
+// Merge realized events into pivot (reference only — not counted in net balance)
+foreach ($realized_events as $e) {
+    $month         = (new DateTime($e['event_date']))->format('Y-m-01');
+    $amount_signed = $e['direction'] === 'inflow' ? (int)$e['amount'] : -(int)$e['amount'];
+    $key           = 'realized_event:' . $e['uuid'];
+    if (!isset($pivot[$key])) {
+        $pivot[$key] = [
+            'source_type' => 'realized_event',
+            'source_uuid' => $e['uuid'],
+            'category'    => 'realized',
+            'subcategory' => $e['event_type'],
+            'description' => $e['name'],
+            'amounts'     => [],
+        ];
+    }
+    $pivot[$key]['amounts'][$month] = ($pivot[$key]['amounts'][$month] ?? 0) + $amount_signed;
+    if (!in_array($month, $all_months)) {
+        $all_months[] = $month;
+    }
+}
+
 sort($all_months);
 
 // Summary keyed by month
@@ -148,16 +188,17 @@ function aggregateAmounts(array $row_amounts, array $columns): array {
 }
 
 // Group rows by source_type, compute per-column amounts + row total
-$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'recurring', 'event'];
+$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'recurring', 'event', 'realized_event'];
 $group_labels = [
-    'income'        => 'Income',
-    'deduction'     => 'Payroll Deductions',
-    'obligation'    => 'Bills & Obligations',
-    'loan_amort'    => 'Loan Amortization',
-    'loan_interest' => 'Loan Interest',
-    'installment'   => 'Installments',
-    'recurring'     => 'Recurring Transactions',
-    'event'         => 'Projected Events',
+    'income'         => 'Income',
+    'deduction'      => 'Payroll Deductions',
+    'obligation'     => 'Bills & Obligations',
+    'loan_amort'     => 'Loan Amortization',
+    'loan_interest'  => 'Loan Interest',
+    'installment'    => 'Installments',
+    'recurring'      => 'Recurring Transactions',
+    'event'          => 'Projected Events',
+    'realized_event' => 'Realized Events',
 ];
 
 $groups = [];
@@ -264,6 +305,14 @@ require_once '../../includes/header.php';
                         <option value="annual"    <?= $view_mode === 'annual'    ? 'selected' : '' ?>>Annual</option>
                     </select>
                 </div>
+                <div class="form-group cfp-check-group">
+                    <label class="cfp-realized-check-label">
+                        <input type="checkbox" name="show_realized" value="1"
+                               <?= $show_realized ? 'checked' : '' ?>
+                               onchange="this.form.submit()">
+                        Show realized events
+                    </label>
+                </div>
                 <div class="form-group form-group-btn">
                     <button type="submit" class="btn btn-primary">Refresh</button>
                 </div>
@@ -320,11 +369,14 @@ require_once '../../includes/header.php';
             ?>
 
                 <!-- GROUP HEADER -->
-                <tr class="cfp-group-hdr" data-type="<?= $type ?>">
+                <tr class="cfp-group-hdr<?= $type === 'realized_event' ? ' cfp-realized-group-hdr' : '' ?>" data-type="<?= $type ?>">
                     <td colspan="<?= 2 + count($columns) + 1 ?>" class="cfp-group-hdr-cell">
                         <button class="cfp-collapse-btn" data-group="<?= $type ?>" title="Collapse">&#9660;</button>
                         <span class="cfp-group-name"><?= htmlspecialchars($glabel) ?></span>
                         <span class="cfp-group-count"><?= count($rows) ?> item<?= count($rows) !== 1 ? 's' : '' ?></span>
+                        <?php if ($type === 'realized_event'): ?>
+                            <span class="cfp-realized-note">historical — not counted in balance</span>
+                        <?php endif; ?>
                     </td>
                 </tr>
 
@@ -332,12 +384,16 @@ require_once '../../includes/header.php';
                 <?php foreach ($rows as $row):
                     $is_highlighted = ($highlight_uuid !== '' && $row['source_uuid'] === $highlight_uuid);
                 ?>
-                <tr class="cfp-row cfp-detail<?= $is_highlighted ? ' cfp-highlighted' : '' ?>"
+                <tr class="cfp-row cfp-detail<?= $type === 'realized_event' ? ' cfp-realized-row' : '' ?><?= $is_highlighted ? ' cfp-highlighted' : '' ?>"
                     data-type="<?= $type ?>"
                     data-group="<?= $type ?>"
                     data-source-uuid="<?= htmlspecialchars($row['source_uuid']) ?>">
                     <td class="cfp-td cfp-td-type sticky-1">
-                        <span class="cfp-type-badge cfp-badge-<?= $type ?>"><?= ucfirst(str_replace(['_', 'loan_'], [' ', 'ln '], $type)) ?></span>
+                        <?php if ($type === 'realized_event'): ?>
+                            <span class="cfp-type-badge cfp-badge-realized_event">Realized</span>
+                        <?php else: ?>
+                            <span class="cfp-type-badge cfp-badge-<?= $type ?>"><?= ucfirst(str_replace(['_', 'loan_'], [' ', 'ln '], $type)) ?></span>
+                        <?php endif; ?>
                     </td>
                     <td class="cfp-td cfp-td-desc sticky-2" title="<?= htmlspecialchars($row['subcategory'] . ' · ' . $row['category']) ?>">
                         <?= htmlspecialchars($row['description']) ?>

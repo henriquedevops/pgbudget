@@ -56,6 +56,7 @@ try {
 // Compute status for each event
 function getEventStatus($event, $today) {
     if ($event['is_realized']) return 'realized';
+    if ($event['frequency'] !== 'one_time') return 'recurring';
     $event_date = new DateTime($event['event_date']);
     $event_date->setTime(0, 0, 0);
     if ($event['is_confirmed']) {
@@ -90,7 +91,7 @@ require_once '../../includes/header.php';
     <div class="page-header">
         <div class="page-title">
             <h1>Projected Events</h1>
-            <p>One-time future financial events for <?= htmlspecialchars($ledger['name']) ?></p>
+            <p>Projected financial events for <?= htmlspecialchars($ledger['name']) ?></p>
         </div>
         <div class="page-actions">
             <a href="create.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">+ New Event</a>
@@ -122,7 +123,7 @@ require_once '../../includes/header.php';
     <?php if (empty($events)): ?>
         <div class="empty-state">
             <h3>No projected events found</h3>
-            <p>Track one-time future cash flows like bonuses, tax refunds, settlements, large purchases, and other irregular events.</p>
+            <p>Track future cash flows like bonuses, tax refunds, settlements, large purchases, and other one-time or recurring events.</p>
             <p class="empty-state-hint">Projected events appear in the cash flow projection report.</p>
             <a href="create.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">Create Your First Event</a>
         </div>
@@ -148,6 +149,19 @@ require_once '../../includes/header.php';
                         <tr class="<?= $status === 'realized' ? 'realized' : '' ?>">
                             <td>
                                 <strong><?= $event_date->format('M j, Y') ?></strong>
+                                <?php if ($event['frequency'] !== 'one_time'): ?>
+                                    <?php
+                                    $freq_labels = ['monthly' => 'Monthly', 'annual' => 'Annual', 'semiannual' => 'Semiannual'];
+                                    $freq_label = $freq_labels[$event['frequency']] ?? $event['frequency'];
+                                    ?>
+                                    <br><small class="text-recurring"><?= $freq_label ?>
+                                    <?php if ($event['recurrence_end_date']): ?>
+                                        until <?= (new DateTime($event['recurrence_end_date']))->format('M Y') ?>
+                                    <?php else: ?>
+                                        (ongoing)
+                                    <?php endif; ?>
+                                    </small>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <strong><?= htmlspecialchars($event['name']) ?></strong>
@@ -176,7 +190,8 @@ require_once '../../includes/header.php';
                             <td>
                                 <span class="status-badge status-<?= $status ?>">
                                     <?= match($status) {
-                                        'realized' => 'Realized',
+                                        'realized'  => 'Realized',
+                                        'recurring' => 'Recurring',
                                         'confirmed' => 'Confirmed',
                                         'upcoming'  => 'Upcoming',
                                         'overdue'   => 'Overdue',
@@ -300,6 +315,7 @@ require_once '../../includes/header.php';
 }
 
 .status-realized  { background: #e8f5e9; color: #2e7d32; }
+.status-recurring { background: #ede9fe; color: #5b21b6; }
 .status-confirmed { background: #e3f2fd; color: #1565c0; }
 .status-upcoming  { background: #fff3e0; color: #ef6c00; }
 .status-overdue   { background: #ffebee; color: #c62828; }
@@ -307,8 +323,9 @@ require_once '../../includes/header.php';
 .amount.positive { color: #2e7d32; }
 .amount.negative { color: #d32f2f; }
 
-.text-muted   { color: #666; }
-.text-linked  { color: #1976d2; font-style: italic; }
+.text-muted     { color: #666; }
+.text-linked    { color: #1976d2; font-style: italic; }
+.text-recurring { color: #5b21b6; }
 
 .actions-cell { white-space: nowrap; }
 

@@ -364,7 +364,72 @@
 .cfp-badge-loan_interest { background: #ede9fe; color: #5b21b6; }
 .cfp-badge-installment   { background: #dbeafe; color: #1e40af; }
 .cfp-badge-recurring     { background: #f0fdf4; color: #15803d; }
-.cfp-badge-event         { background: #fce7f3; color: #9d174d; }
+.cfp-badge-event           { background: #fce7f3; color: #9d174d; }
+.cfp-badge-realized_event  { background: #e2e8f0; color: #64748b; }
+
+/* ---- Realized event rows ---- */
+.cfp-realized-row {
+    background: #fafafa;
+    opacity: 0.75;
+}
+
+.cfp-realized-row:hover {
+    background: #f1f5f9;
+    opacity: 1;
+}
+
+.cfp-realized-row .cfp-td-desc {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.cfp-realized-row .cfp-td-type {
+    background: #fafafa;
+}
+
+.cfp-realized-group-hdr td {
+    background: #f8fafc;
+    border-top-color: #cbd5e0;
+}
+
+.cfp-realized-group-hdr .cfp-group-hdr-cell {
+    color: #64748b;
+}
+
+.cfp-realized-note {
+    margin-left: 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #94a3b8;
+    text-transform: none;
+    letter-spacing: 0;
+    font-style: italic;
+}
+
+/* ---- Realized events checkbox in controls ---- */
+.cfp-check-group {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 0.15rem;
+}
+
+.cfp-realized-check-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    color: #444;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.cfp-realized-check-label input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    accent-color: #1a56db;
+}
 
 /* ---- Legend ---- */
 .cfp-legend {

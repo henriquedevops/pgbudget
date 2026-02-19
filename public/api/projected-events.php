@@ -77,6 +77,8 @@ function createProjectedEvent($db) {
     $default_category_uuid = !empty($_POST['default_category_uuid']) ? $_POST['default_category_uuid'] : null;
     $is_confirmed = isset($_POST['is_confirmed']) && $_POST['is_confirmed'] === '1';
     $notes        = !empty($_POST['notes']) ? $_POST['notes'] : null;
+    $frequency    = !empty($_POST['frequency']) ? $_POST['frequency'] : 'one_time';
+    $recurrence_end_date = !empty($_POST['recurrence_end_date']) ? $_POST['recurrence_end_date'] : null;
 
     // Convert amount to cents (bigint)
     $amount_cents = intval(round(floatval($amount) * 100));
@@ -94,7 +96,9 @@ function createProjectedEvent($db) {
                 p_currency := ?,
                 p_default_category_uuid := ?,
                 p_is_confirmed := ?::boolean,
-                p_notes := ?
+                p_notes := ?,
+                p_frequency := ?,
+                p_recurrence_end_date := ?::date
             )
         ");
 
@@ -110,6 +114,8 @@ function createProjectedEvent($db) {
             $default_category_uuid,
             $is_confirmed ? 'true' : 'false',
             $notes,
+            $frequency,
+            $recurrence_end_date,
         ]);
 
         $result = $stmt->fetch();
@@ -154,6 +160,8 @@ function updateProjectedEvent($db) {
 
     $is_confirmed = isset($_POST['is_confirmed']) ? ($_POST['is_confirmed'] === '1') : null;
     $is_realized  = isset($_POST['is_realized'])  ? ($_POST['is_realized']  === '1') : null;
+    $frequency    = !empty($_POST['frequency']) ? $_POST['frequency'] : null;
+    $recurrence_end_date = !empty($_POST['recurrence_end_date']) ? $_POST['recurrence_end_date'] : null;
 
     // Convert amount to cents if provided
     $amount_cents = null;
@@ -176,7 +184,9 @@ function updateProjectedEvent($db) {
                 p_is_confirmed := ?::boolean,
                 p_is_realized := ?::boolean,
                 p_linked_transaction_uuid := ?,
-                p_notes := ?
+                p_notes := ?,
+                p_frequency := ?,
+                p_recurrence_end_date := ?::date
             )
         ");
 
@@ -194,6 +204,8 @@ function updateProjectedEvent($db) {
             $is_realized  !== null ? ($is_realized  ? 'true' : 'false') : null,
             $linked_transaction_uuid,
             $notes,
+            $frequency,
+            $recurrence_end_date,
         ]);
 
         $result = $stmt->fetch();
