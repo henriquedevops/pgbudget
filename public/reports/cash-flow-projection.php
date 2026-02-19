@@ -36,8 +36,9 @@ if (!in_array($view_mode, ['monthly', 'quarterly', 'annual'])) {
     $view_mode = 'monthly';
 }
 
-$highlight_uuid  = $_GET['highlight']     ?? '';
-$show_realized   = !empty($_GET['show_realized']);
+$highlight_uuid  = $_GET['highlight'] ?? '';
+$today_month     = date('Y-m-01');
+$current_month   = date('Y-m-01');
 
 try {
     $db = getDbConnection();
@@ -65,22 +66,20 @@ try {
     $stmt->execute([$ledger_uuid, $start_month, $months_ahead]);
     $summary_rows = $stmt->fetchAll();
 
-    // Fetch realized events if requested (displayed for reference, not counted in balance)
-    $realized_events = [];
-    if ($show_realized) {
-        $end_month_realized = (new DateTime($start_month))->modify("+{$months_ahead} months")->format('Y-m-d');
-        $stmt = $db->prepare("
-            SELECT uuid, name, event_type, direction, amount, event_date
-            FROM api.projected_events
-            WHERE ledger_uuid = ?
-              AND is_realized = true
-              AND event_date >= ?::date
-              AND event_date < ?::date
-            ORDER BY event_date, name
-        ");
-        $stmt->execute([$ledger_uuid, $start_month, $end_month_realized]);
-        $realized_events = $stmt->fetchAll();
-    }
+    // Fetch realized one-time events (displayed for reference, not counted in balance)
+    $end_month_realized = (new DateTime($start_month))->modify("+{$months_ahead} months")->format('Y-m-d');
+    $stmt = $db->prepare("
+        SELECT uuid, name, event_type, direction, amount, event_date
+        FROM api.projected_events
+        WHERE ledger_uuid = ?
+          AND is_realized = true
+          AND frequency = 'one_time'
+          AND event_date >= ?::date
+          AND event_date < ?::date
+        ORDER BY event_date, name
+    ");
+    $stmt->execute([$ledger_uuid, $start_month, $end_month_realized]);
+    $realized_events = $stmt->fetchAll();
 
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
@@ -307,14 +306,6 @@ require_once '../../includes/header.php';
                         <option value="annual"    <?= $view_mode === 'annual'    ? 'selected' : '' ?>>Annual</option>
                     </select>
                 </div>
-                <div class="form-group cfp-check-group">
-                    <label class="cfp-realized-check-label">
-                        <input type="checkbox" name="show_realized" value="1"
-                               <?= $show_realized ? 'checked' : '' ?>
-                               onchange="this.form.submit()">
-                        Show realized events
-                    </label>
-                </div>
                 <div class="form-group form-group-btn">
                     <button type="submit" class="btn btn-primary">Refresh</button>
                 </div>
@@ -355,8 +346,12 @@ require_once '../../includes/header.php';
                 <tr>
                     <th class="cfp-th cfp-th-type sticky-1">Type</th>
                     <th class="cfp-th cfp-th-desc sticky-2">Description</th>
-                    <?php foreach ($columns as $i => $col): ?>
-                        <th class="cfp-th cfp-th-month" data-col-idx="<?= $i ?>"><?= htmlspecialchars($col['label']) ?></th>
+                    <?php foreach ($columns as $i => $col):
+                        $col_is_past    = $col['key'] < $today_month;
+                        $col_is_current = $col['key'] === $today_month;
+                        $col_cls = $col_is_current ? ' cfp-th-current' : ($col_is_past ? ' cfp-th-past' : '');
+                    ?>
+                        <th class="cfp-th cfp-th-month<?= $col_cls ?>" data-col-idx="<?= $i ?>"><?= htmlspecialchars($col['label']) ?></th>
                     <?php endforeach; ?>
                     <th class="cfp-th cfp-th-total">Total</th>
                 </tr>
@@ -370,14 +365,17 @@ require_once '../../includes/header.php';
                 $glabel  = $group_labels[$type];
             ?>
 
+                <?php $is_realized_group = in_array($type, ['realized_event', 'realized_occurrence']); ?>
                 <!-- GROUP HEADER -->
-                <tr class="cfp-group-hdr<?= $type === 'realized_event' ? ' cfp-realized-group-hdr' : '' ?>" data-type="<?= $type ?>">
+                <tr class="cfp-group-hdr<?= $is_realized_group ? ' cfp-realized-group-hdr' : '' ?>" data-type="<?= $type ?>">
                     <td colspan="<?= 2 + count($columns) + 1 ?>" class="cfp-group-hdr-cell">
                         <button class="cfp-collapse-btn" data-group="<?= $type ?>" title="Collapse">&#9660;</button>
                         <span class="cfp-group-name"><?= htmlspecialchars($glabel) ?></span>
                         <span class="cfp-group-count"><?= count($rows) ?> item<?= count($rows) !== 1 ? 's' : '' ?></span>
                         <?php if ($type === 'realized_event'): ?>
                             <span class="cfp-realized-note">historical — not counted in balance</span>
+                        <?php elseif ($type === 'realized_occurrence'): ?>
+                            <span class="cfp-realized-note">counted in balance at actual date</span>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -386,7 +384,7 @@ require_once '../../includes/header.php';
                 <?php foreach ($rows as $row):
                     $is_highlighted = ($highlight_uuid !== '' && $row['source_uuid'] === $highlight_uuid);
                 ?>
-                <tr class="cfp-row cfp-detail<?= $type === 'realized_event' ? ' cfp-realized-row' : '' ?><?= $is_highlighted ? ' cfp-highlighted' : '' ?>"
+                <tr class="cfp-row cfp-detail<?= $is_realized_group ? ' cfp-realized-row' : '' ?><?= $is_highlighted ? ' cfp-highlighted' : '' ?>"
                     data-type="<?= $type ?>"
                     data-group="<?= $type ?>"
                     data-source-uuid="<?= htmlspecialchars($row['source_uuid']) ?>">
@@ -404,8 +402,9 @@ require_once '../../includes/header.php';
                     </td>
                     <?php foreach ($columns as $i => $col):
                         $val = (int)($row['col_amounts'][$col['key']] ?? 0);
+                        $cell_cls = $col['key'] < $today_month ? ' cfp-past-cell' : ($col['key'] === $today_month ? ' cfp-current-cell' : '');
                     ?>
-                        <td class="cfp-td cfp-td-amt <?= cellClass($val) ?>"
+                        <td class="cfp-td cfp-td-amt <?= cellClass($val) . $cell_cls ?>"
                             data-col-idx="<?= $i ?>"
                             data-cents="<?= $val ?>"
                             data-source="<?= htmlspecialchars($row['source_uuid']) ?>">
