@@ -128,6 +128,19 @@ require_once '../../includes/header.php';
         </div>
     </div>
 
+    <?php if ($event['is_realized']): ?>
+    <div class="alert-warning" id="realized-warning">
+        <div class="alert-warning-body">
+            <strong>⚠ This event is marked as fully realized</strong> and will not appear in the
+            cash flow projection. All occurrences below are invisible to the projection until you
+            restore it to active status.
+        </div>
+        <button class="btn btn-primary" onclick="restoreToActive()" id="restore-btn">
+            Restore to Active
+        </button>
+    </div>
+    <?php endif; ?>
+
     <!-- Event summary card -->
     <div class="event-summary-card">
         <div class="event-summary-item">
@@ -260,6 +273,22 @@ require_once '../../includes/header.php';
 </div>
 
 <style>
+.alert-warning {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+.alert-warning-body { font-size: 0.9rem; color: #78350f; line-height: 1.5; }
+.alert-warning-body strong { display: block; margin-bottom: 0.2rem; }
+
 .event-summary-card {
     display: flex;
     flex-wrap: wrap;
@@ -461,6 +490,31 @@ function updateRowToProjected(month) {
 function formatMonthLabel(month) {
     const dt = new Date(month + 'T00:00:00');
     return dt.toLocaleString('default', { month: 'long', year: 'numeric' });
+}
+
+async function restoreToActive() {
+    const btn = document.getElementById('restore-btn');
+    btn.disabled = true;
+    btn.textContent = 'Restoring…';
+
+    const body = new FormData();
+    body.append('action',       'update');
+    body.append('event_uuid',   EVENT_UUID);
+    body.append('ledger_uuid',  LEDGER_UUID);
+    body.append('is_realized',  '0');
+
+    try {
+        const res  = await fetch('../api/projected-events.php', { method: 'POST', body });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Unknown error');
+
+        // Hide the warning banner
+        document.getElementById('realized-warning').remove();
+    } catch (err) {
+        alert('Error: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Restore to Active';
+    }
 }
 </script>
 
