@@ -188,7 +188,7 @@ function aggregateAmounts(array $row_amounts, array $columns): array {
 }
 
 // Group rows by source_type, compute per-column amounts + row total
-$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'recurring', 'event', 'realized_event'];
+$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'recurring', 'event', 'cc_payment', 'realized_event'];
 $group_labels = [
     'income'         => 'Income',
     'deduction'      => 'Payroll Deductions',
@@ -198,6 +198,7 @@ $group_labels = [
     'installment'    => 'Installments',
     'recurring'      => 'Recurring Transactions',
     'event'          => 'Projected Events',
+    'cc_payment'     => 'Credit Card Payments',
     'realized_event' => 'Realized Events',
 ];
 
@@ -392,7 +393,7 @@ require_once '../../includes/header.php';
                         <?php if ($type === 'realized_event'): ?>
                             <span class="cfp-type-badge cfp-badge-realized_event">Realized</span>
                         <?php else: ?>
-                            <span class="cfp-type-badge cfp-badge-<?= $type ?>"><?= ucfirst(str_replace(['_', 'loan_'], [' ', 'ln '], $type)) ?></span>
+                            <span class="cfp-type-badge cfp-badge-<?= $type ?>"><?= ucfirst(str_replace(['loan_', 'cc_', '_'], ['Ln ', 'CC ', ' '], $type)) ?></span>
                         <?php endif; ?>
                     </td>
                     <td class="cfp-td cfp-td-desc sticky-2" title="<?= htmlspecialchars($row['subcategory'] . ' · ' . $row['category']) ?>">
