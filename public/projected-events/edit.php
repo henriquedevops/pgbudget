@@ -356,7 +356,7 @@ document.getElementById('editEventForm').addEventListener('submit', async functi
         const result = await response.json();
 
         if (result.success) {
-            window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Event updated successfully';
+            window.location.href = '../reports/cash-flow-projection.php?ledger=<?= $ledger_uuid ?>';
         } else {
             alert('Error updating event: ' + result.error);
             submitBtn.disabled = false;
