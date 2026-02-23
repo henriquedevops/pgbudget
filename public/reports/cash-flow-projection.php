@@ -247,6 +247,18 @@ foreach ($columns as $col) {
     $col_cumulative[$col['key']] = $cumulative;
 }
 
+// Overdue: sum of unrealized projected event/recurring amounts from months before today
+// (informational only — past amounts already counted in cumulative)
+$overdue_cents = 0;
+foreach ($pivot as $row) {
+    if (!in_array($row['source_type'], ['event', 'recurring'])) continue;
+    foreach ($row['amounts'] as $month => $amount) {
+        if ($month < $today_month) {
+            $overdue_cents += $amount;
+        }
+    }
+}
+
 // -------------------------------------------------------------------
 // Helper functions
 // -------------------------------------------------------------------
@@ -444,6 +456,23 @@ require_once '../../includes/header.php';
 
             <!-- SUMMARY FOOTER -->
             <tfoot>
+                <?php if ($overdue_cents !== 0): ?>
+                <tr class="cfp-summary cfp-overdue-row">
+                    <td class="cfp-td cfp-td-summary-lbl sticky-1" colspan="2">
+                        Overdue from prev. months
+                        <span class="cfp-realized-note">informational — already counted in past balances</span>
+                    </td>
+                    <?php foreach ($columns as $col):
+                        $contains_today = in_array($today_month, $col['months']);
+                        $val = $contains_today ? $overdue_cents : 0;
+                    ?>
+                        <td class="cfp-td cfp-td-amt cfp-summary-amt <?= $val !== 0 ? cellClass($val) : '' ?>">
+                            <?= $val !== 0 ? fmtCents($val) : '—' ?>
+                        </td>
+                    <?php endforeach; ?>
+                    <td class="cfp-td cfp-td-amt cfp-summary-amt">—</td>
+                </tr>
+                <?php endif; ?>
                 <tr class="cfp-summary cfp-net-row" id="cfp-net-row">
                     <td class="cfp-td cfp-td-summary-lbl sticky-1" colspan="2">Net Monthly Balance</td>
                     <?php foreach ($columns as $i => $col):

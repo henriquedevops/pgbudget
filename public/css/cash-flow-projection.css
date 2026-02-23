@@ -345,6 +345,9 @@
 .cfp-net-row .cfp-td-summary-lbl { background: #1e293b; }
 .cfp-net-row .cfp-summary-amt    { background: #1e293b; }
 
+.cfp-overdue-row .cfp-td-summary-lbl { background: #431407; color: #fdba74; }
+.cfp-overdue-row .cfp-summary-amt    { background: #431407; }
+
 /* ---- Type badges ---- */
 .cfp-type-badge {
     display: inline-block;
