@@ -81,6 +81,18 @@ try {
     $stmt->execute([$ledger_uuid, $start_month, $end_month_realized]);
     $realized_events = $stmt->fetchAll();
 
+    // Fetch processed installments (displayed for reference, not counted in balance)
+    $stmt = $db->prepare("
+        SELECT plan_uuid, description, month, amount
+        FROM api.past_installments
+        WHERE ledger_uuid = ?
+          AND month >= ?::date
+          AND month < ?::date
+        ORDER BY month, description
+    ");
+    $stmt->execute([$ledger_uuid, $start_month, $end_month_realized]);
+    $past_installments = $stmt->fetchAll();
+
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
     header('Location: ../index.php');
@@ -130,6 +142,26 @@ foreach ($realized_events as $e) {
     $pivot[$key]['amounts'][$month] = ($pivot[$key]['amounts'][$month] ?? 0) + $amount_signed;
     if (!in_array($month, $all_months)) {
         $all_months[] = $month;
+    }
+}
+
+// Merge processed installments into pivot (reference only — not counted in net balance)
+foreach ($past_installments as $pi) {
+    $key = 'past_installment:' . $pi['plan_uuid'];
+    if (!isset($pivot[$key])) {
+        $pivot[$key] = [
+            'source_type' => 'past_installment',
+            'source_uuid' => $pi['plan_uuid'],
+            'category'    => 'installment',
+            'subcategory' => 'past',
+            'description' => $pi['description'],
+            'amounts'     => [],
+        ];
+    }
+    $m = $pi['month'];
+    $pivot[$key]['amounts'][$m] = ($pivot[$key]['amounts'][$m] ?? 0) + (int)$pi['amount'];
+    if (!in_array($m, $all_months)) {
+        $all_months[] = $m;
     }
 }
 
@@ -187,7 +219,7 @@ function aggregateAmounts(array $row_amounts, array $columns): array {
 }
 
 // Group rows by source_type, compute per-column amounts + row total
-$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'recurring', 'event', 'realized_occurrence', 'cc_payment', 'realized_event'];
+$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'past_installment', 'recurring', 'event', 'realized_occurrence', 'cc_payment', 'realized_event'];
 $group_labels = [
     'income'              => 'Income',
     'deduction'           => 'Payroll Deductions',
@@ -195,6 +227,7 @@ $group_labels = [
     'loan_amort'          => 'Loan Amortization',
     'loan_interest'       => 'Loan Interest',
     'installment'         => 'Installments',
+    'past_installment'    => 'Past Installments',
     'recurring'           => 'Recurring Transactions',
     'event'               => 'Projected Events',
     'realized_occurrence' => 'Realized Occurrences',
@@ -377,7 +410,7 @@ require_once '../../includes/header.php';
                 $glabel  = $group_labels[$type];
             ?>
 
-                <?php $is_realized_group = in_array($type, ['realized_event', 'realized_occurrence']); ?>
+                <?php $is_realized_group = in_array($type, ['realized_event', 'realized_occurrence', 'past_installment']); ?>
                 <!-- GROUP HEADER -->
                 <tr class="cfp-group-hdr<?= $is_realized_group ? ' cfp-realized-group-hdr' : '' ?>" data-type="<?= $type ?>">
                     <td colspan="<?= 2 + count($columns) + 1 ?>" class="cfp-group-hdr-cell">
@@ -388,6 +421,8 @@ require_once '../../includes/header.php';
                             <span class="cfp-realized-note">historical — not counted in balance</span>
                         <?php elseif ($type === 'realized_occurrence'): ?>
                             <span class="cfp-realized-note">counted in balance at actual date</span>
+                        <?php elseif ($type === 'past_installment'): ?>
+                            <span class="cfp-realized-note">historical — not counted in balance</span>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -405,6 +440,8 @@ require_once '../../includes/header.php';
                             <span class="cfp-type-badge cfp-badge-realized_event">Realized</span>
                         <?php elseif ($type === 'realized_occurrence'): ?>
                             <span class="cfp-type-badge cfp-badge-realized_occurrence">Realized ↺</span>
+                        <?php elseif ($type === 'past_installment'): ?>
+                            <span class="cfp-type-badge cfp-badge-past_installment">Past Inst.</span>
                         <?php else: ?>
                             <span class="cfp-type-badge cfp-badge-<?= $type ?>"><?= ucfirst(str_replace(['loan_', 'cc_', '_'], ['Ln ', 'CC ', ' '], $type)) ?></span>
                         <?php endif; ?>
