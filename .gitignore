@@ -197,3 +197,6 @@ migrations_old
 
 # Claude Code configuration (contains sensitive data)
 .claude/
+
+# Telegram bot config (contains bot token, Claude API key, and user mapping)
+config/telegram.php
