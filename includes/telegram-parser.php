@@ -39,7 +39,7 @@ Rules:
   - Portuguese month names: janeiro=01, fevereiro=02, março=03, abril=04,
     maio=05, junho=06, julho=07, agosto=08, setembro=09, outubro=10,
     novembro=11, dezembro=12.
-  - Return ONLY a JSON object, no prose, no markdown fences.
+  - Return ONLY a raw JSON object. No prose, no markdown, no code fences.
   - If any required field (name, amount_reais, event_date, direction) cannot be
     determined from the conversation, set ALL extracted fields to null and set
     "clarify" to a single short question in the same language as the user's message.
@@ -86,6 +86,11 @@ PROMPT;
 
     $body    = json_decode($response, true);
     $content = trim($body['content'][0]['text'] ?? '');
+
+    // Strip markdown code fences Claude sometimes wraps the JSON in
+    $content = preg_replace('/^```(?:json)?\s*/m', '', $content);
+    $content = preg_replace('/\s*```$/m', '', $content);
+    $content = trim($content);
 
     $parsed = json_decode($content, true);
     if (!is_array($parsed)) {

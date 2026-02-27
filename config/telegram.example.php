@@ -10,11 +10,13 @@
  *   2. Choose a random webhook secret (any long random string)
  *   3. Get a Claude API key from https://console.anthropic.com
  *   4. Fill in your Telegram chat_id (message @userinfobot to find yours)
- *   5. Register the webhook (one-time):
+ *   5. Generate self-signed cert and configure Apache (see scripts/setup-telegram-ssl.sh)
+ *   6. Register the webhook:
  *        curl "https://api.telegram.org/bot{TOKEN}/setWebhook" \
- *          -d "url=https://YOUR_DOMAIN/pgbudget/public/telegram/webhook.php" \
- *          -d "secret_token=YOUR_WEBHOOK_SECRET" \
- *          -d "allowed_updates=[\"message\"]"
+ *          -F "url=https://{SERVER_IP}/pgbudget/telegram/webhook.php" \
+ *          -F "certificate=@/etc/ssl/telegram-bot.pem" \
+ *          -F "secret_token={WEBHOOK_SECRET}" \
+ *          -F "allowed_updates=[\"message\"]"
  */
 return [
     // From @BotFather
