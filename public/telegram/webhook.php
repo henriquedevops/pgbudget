@@ -306,14 +306,12 @@ function handle_record_transaction(int $chat_id, string $text, array $data, arra
     $amount_cents = (int) round((float)$data['amount_reais'] * 100);
 
     try {
+        // Use positional params with explicit casts to resolve overload ambiguity
+        // (api.add_transaction has 3 overloads with the same first 6 parameters)
         $stmt = $db->prepare("
             SELECT api.add_transaction(
-                p_ledger_uuid  := ?,
-                p_date         := ?::date,
-                p_description  := ?,
-                p_type         := ?,
-                p_amount       := ?::bigint,
-                p_account_uuid := ?
+                ?::text, ?::date, ?::text, ?::text, ?::bigint, ?::text,
+                NULL::text, NULL::text, NULL::text
             )
         ");
         $stmt->execute([
