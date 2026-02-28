@@ -160,3 +160,52 @@ function tg_state_clear(int $chat_id): void {
     $path = _tg_state_path($chat_id);
     if (file_exists($path)) unlink($path);
 }
+
+// ---------------------------------------------------------------------------
+// Last-action tracking — for /undo (1-hour TTL)
+// ---------------------------------------------------------------------------
+
+/** Save the last bot action so /undo can reverse it. */
+function tg_action_save(int $chat_id, string $type, string $uuid, string $label): void {
+    file_put_contents(
+        sys_get_temp_dir() . '/pgbudget_tg_action_' . $chat_id . '.json',
+        json_encode(['type' => $type, 'uuid' => $uuid, 'label' => $label, 'ts' => time()])
+    );
+}
+
+/** Load the last action (null if none or expired after 1 hour). */
+function tg_action_load(int $chat_id): ?array {
+    $path = sys_get_temp_dir() . '/pgbudget_tg_action_' . $chat_id . '.json';
+    if (!file_exists($path)) return null;
+    $data = json_decode(file_get_contents($path), true);
+    if (!$data || (time() - ($data['ts'] ?? 0)) > 3600) return null;
+    return $data;
+}
+
+/** Clear the last action record. */
+function tg_action_clear(int $chat_id): void {
+    $path = sys_get_temp_dir() . '/pgbudget_tg_action_' . $chat_id . '.json';
+    if (file_exists($path)) unlink($path);
+}
+
+// ---------------------------------------------------------------------------
+// Ledger selection — persistent (no TTL), per chat_id
+// ---------------------------------------------------------------------------
+
+/** Get the active ledger UUID for a chat (falls back to config default). */
+function tg_ledger_get(int $chat_id, array $user): string {
+    $path = sys_get_temp_dir() . '/pgbudget_tg_ledger_' . $chat_id . '.json';
+    if (file_exists($path)) {
+        $data = json_decode(file_get_contents($path), true);
+        if (!empty($data['ledger_uuid'])) return $data['ledger_uuid'];
+    }
+    return $user['ledger_uuid'];
+}
+
+/** Persist the selected ledger UUID for a chat. */
+function tg_ledger_set(int $chat_id, string $ledger_uuid): void {
+    file_put_contents(
+        sys_get_temp_dir() . '/pgbudget_tg_ledger_' . $chat_id . '.json',
+        json_encode(['ledger_uuid' => $ledger_uuid, 'ts' => time()])
+    );
+}
