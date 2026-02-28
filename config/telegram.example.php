@@ -34,7 +34,22 @@ return [
     'users' => [
         // 123456789 => [
         //     'user_id'     => 'm43str0',   // app.current_user_id / RLS identity
-        //     'ledger_uuid' => 'xxxxxxxx',  // default ledger UUID
+        //     'ledger_uuid' => 'eNF2EkfD',  // default ledger UUID
         // ],
+    ],
+
+    // Default account UUID for recording transactions when no account is mentioned.
+    // Use the UUID from api.accounts (type = asset, e.g. your main checking account).
+    'default_account_uuid' => null,
+
+    // Keyword → account UUID map for account recognition in free-text messages.
+    // Claude extracts the institution keyword; we match it here.
+    // Keys are matched case-insensitively and by substring.
+    'accounts' => [
+        // 'nubank'    => 'UUID_OF_NUBANK_CHECKING',
+        // 'santander' => 'UUID_OF_SANTANDER_CHECKING',
+        // 'samsung'   => 'UUID_OF_SAMSUNG_CC',
+        // 'picpay'    => 'UUID_OF_PICPAY_CC',
+        // 'nubank_cc' => 'UUID_OF_NUBANK_CC',
     ],
 ];

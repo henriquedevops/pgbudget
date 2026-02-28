@@ -1,55 +1,85 @@
 <?php
 /**
- * Claude-based natural language parser for projected event creation.
+ * Claude-based natural language parser for pgbudget Telegram bot.
+ * Detects intent (new_event / record_transaction / mark_realized / unknown)
+ * and extracts the relevant fields in one API call.
+ *
  * Also provides file-based conversation state helpers (10-minute TTL).
  */
 
 /**
- * Parse a free-text message into projected event fields using Claude Haiku.
+ * Parse a free-text message and detect intent + extract fields using Claude Haiku.
  *
  * @param string $user_msg  Current message from the user
  * @param array  $history   Previous exchanges: [['user'=>..., 'bot'=>...], ...]
  * @param string $today     Current date as YYYY-MM-DD
  * @param array  $cfg       Config array (needs 'claude_api_key', 'claude_model')
- * @return array  Parsed fields, or ['error' => '...'] on failure,
- *                or ['clarify' => '...'] when more info is needed.
+ * @return array  {intent, new_event|null, transaction|null, realization|null}
+ *                or ['error' => '...'] on failure.
  */
-function tg_parse_event(string $user_msg, array $history, string $today, array $cfg): array {
+function tg_parse_message(string $user_msg, array $history, string $today, array $cfg): array {
     $system = <<<PROMPT
-You are a financial event extractor for a budget app. Today is {$today}.
+You are a financial assistant for a budget app. Today is {$today}.
 
-Extract from the user's message:
-  - name         (string, short description in the same language as the message)
-  - amount_reais (float, always positive)
-  - event_date   (YYYY-MM-DD)
-  - direction    ("inflow" or "outflow")
-  - frequency    ("one_time" | "monthly" | "annual" | "semiannual")
-  - recurrence_end_date (YYYY-MM-DD or null)
+Determine the user's INTENT and extract the relevant data.
 
-Rules:
-  - Infer direction from context: bills/expenses/pagamentos/despesa → outflow;
-    salary/income/recebimento/receita/salário → inflow.
-  - "todo mês" / "mensal" / "monthly" → monthly
-  - "todo ano" / "anual" / "annual" → annual
-  - "semestral" / "semiannual" / "a cada 6 meses" → semiannual
-  - Default frequency if not mentioned: one_time
-  - Relative dates: "amanhã" = tomorrow, "semana que vem" = next Monday,
-    "dia 15" = 15th of current month (or next month if that day is already past),
-    "próxima sexta" = next Friday.
-  - Portuguese month names: janeiro=01, fevereiro=02, março=03, abril=04,
-    maio=05, junho=06, julho=07, agosto=08, setembro=09, outubro=10,
-    novembro=11, dezembro=12.
-  - Return ONLY a raw JSON object. No prose, no markdown, no code fences.
-  - If any required field (name, amount_reais, event_date, direction) cannot be
-    determined from the conversation, set ALL extracted fields to null and set
-    "clarify" to a single short question in the same language as the user's message.
-  - If all required fields are present, set "clarify" to null.
+INTENTS:
+1. new_event — Adding a FUTURE or recurring planned income/expense to the budget projection.
+   Examples: "conta de luz 180 dia 10 de março", "salário 5000 dia 5 todo mês", "IPTU 1200 em julho"
 
-Output schema (strict JSON):
-{"name":string|null,"amount_reais":number|null,"event_date":"YYYY-MM-DD"|null,"direction":"inflow"|"outflow"|null,"frequency":"one_time"|"monthly"|"annual"|"semiannual"|null,"recurrence_end_date":"YYYY-MM-DD"|null,"clarify":string|null}
+2. record_transaction — Recording a financial movement that ALREADY HAPPENED or is happening today.
+   Keywords: paguei, comprei, recebi, vendi, gastei, transferi, saquei.
+   Examples: "paguei Netflix 55,90", "recebi aluguel 2000 hoje", "comprei no nubank 150"
+
+3. mark_realized — Marking a PREVIOUSLY PLANNED event in the projection as done/received.
+   Keywords: pago, já recebi, já paguei, caiu, realizei, chegou, confirmar.
+   Examples: "pago conta de luz de março", "salário caiu", "recebi o aluguel de fevereiro"
+
+4. unknown — Intent cannot be determined.
+
+EXTRACTION RULES:
+- Dates: "amanhã"=tomorrow, "hoje"=today, "dia 15"=15th of current/next month,
+  "próxima sexta"=next Friday, "semana que vem"=next Monday.
+- Portuguese months: janeiro=01, fevereiro=02, março=03, abril=04, maio=05,
+  junho=06, julho=07, agosto=08, setembro=09, outubro=10, novembro=11, dezembro=12.
+- Direction: expenses/bills/pagamentos/despesa → outflow; salary/income/receita → inflow.
+- Frequency: "todo mês"/"mensal" → monthly; "todo ano"/"anual" → annual;
+  "semestral"/"a cada 6 meses" → semiannual; default → one_time.
+- account_hint: extract institution keyword if mentioned
+  (nubank, santander, caixa, samsung, picpay, elo, inter, itau, bradesco).
+- If a required field for the intent is missing, set "clarify" to a single short
+  question in the same language as the user. Otherwise set "clarify" to null.
+
+Return ONLY a raw JSON object — no prose, no markdown, no code fences.
+
+Schema:
+{
+  "intent": "new_event"|"record_transaction"|"mark_realized"|"unknown",
+  "new_event": {
+    "name": string|null,
+    "amount_reais": number|null,
+    "event_date": "YYYY-MM-DD"|null,
+    "direction": "inflow"|"outflow"|null,
+    "frequency": "one_time"|"monthly"|"annual"|"semiannual"|null,
+    "recurrence_end_date": "YYYY-MM-DD"|null,
+    "clarify": string|null
+  }|null,
+  "transaction": {
+    "description": string|null,
+    "amount_reais": number|null,
+    "direction": "inflow"|"outflow"|null,
+    "date": "YYYY-MM-DD"|null,
+    "account_hint": string|null,
+    "clarify": string|null
+  }|null,
+  "realization": {
+    "event_name": string|null,
+    "month": "YYYY-MM-01"|null,
+    "clarify": string|null
+  }|null
+}
 PROMPT;
 
-    // Build messages array with conversation history for context
     $messages = [];
     foreach ($history as $h) {
         $messages[] = ['role' => 'user',      'content' => $h['user']];
@@ -59,7 +89,7 @@ PROMPT;
 
     $payload = [
         'model'      => $cfg['claude_model'],
-        'max_tokens' => 256,
+        'max_tokens' => 384,
         'system'     => $system,
         'messages'   => $messages,
     ];
@@ -108,22 +138,16 @@ function _tg_state_path(int $chat_id): string {
     return sys_get_temp_dir() . '/pgbudget_tg_' . $chat_id . '.json';
 }
 
-/**
- * Load the stored conversation context for a chat (empty array if none / expired).
- */
+/** Load stored conversation context (empty array if none / expired). */
 function tg_state_load(int $chat_id): array {
     $path = _tg_state_path($chat_id);
     if (!file_exists($path)) return [];
-
     $data = json_decode(file_get_contents($path), true);
-    if (!$data || (time() - ($data['ts'] ?? 0)) > 600) return [];  // 10-min TTL
-
+    if (!$data || (time() - ($data['ts'] ?? 0)) > 600) return [];
     return $data['context'] ?? [];
 }
 
-/**
- * Persist the conversation context (at most last 2 exchanges).
- */
+/** Persist conversation context (at most last 2 exchanges). */
 function tg_state_save(int $chat_id, array $context): void {
     file_put_contents(
         _tg_state_path($chat_id),
@@ -131,9 +155,7 @@ function tg_state_save(int $chat_id, array $context): void {
     );
 }
 
-/**
- * Delete stored state (call after a successful event creation or a /command).
- */
+/** Delete stored state (call after successful action or a /command). */
 function tg_state_clear(int $chat_id): void {
     $path = _tg_state_path($chat_id);
     if (file_exists($path)) unlink($path);
