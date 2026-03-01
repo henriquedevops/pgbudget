@@ -179,9 +179,11 @@ GRANT EXECUTE ON FUNCTION api.get_projected_event_occurrences(text) TO pgbudget_
 -- +goose StatementBegin
 -- Derive whether a transaction is an inflow or outflow based on account types.
 -- Rules:
---   debit account type = 'asset'                    → 'inflow'  (money deposited into asset)
---   credit account type IN ('asset', 'liability')   → 'outflow' (money leaving asset or CC charge)
---   otherwise                                        → 'unknown' (skip matching)
+--   debit account type = 'asset'  → 'inflow'  (money received into cash/checking)
+--   credit account type = 'asset' → 'outflow' (money leaving cash/checking)
+--   otherwise                      → 'unknown' (skip)
+-- NOTE: credit=liability (CC charges) is intentionally 'unknown': those are not direct
+-- cash flows and are already captured by the CC payment projection branches (Branch 8).
 CREATE OR REPLACE FUNCTION utils.derive_transaction_direction(
     p_debit_id  bigint,
     p_credit_id bigint
@@ -195,7 +197,7 @@ BEGIN
 
     IF v_debit_type = 'asset' THEN
         RETURN 'inflow';
-    ELSIF v_credit_type IN ('asset', 'liability') THEN
+    ELSIF v_credit_type = 'asset' THEN
         RETURN 'outflow';
     ELSE
         RETURN 'unknown';
@@ -727,8 +729,10 @@ BEGIN
     UNION ALL
 
     -- 8a. CREDIT CARD PAYMENTS — no limits configured, auto-pay off, or full_balance
+    --     Shows once in the current month only (not repeated indefinitely).
+    --     Disappears once the CC balance is paid.
     SELECT
-        gs.month::date, 'cc_payment'::text, a.id, a.uuid,
+        date_trunc('month', current_date)::date, 'cc_payment'::text, a.id, a.uuid,
         'liability'::text, 'cc_payment'::text, a.name || ' payment',
         -(bal.balance)::bigint
     FROM data.accounts a
@@ -740,16 +744,12 @@ BEGIN
         ON ccl.credit_card_account_id = a.id
         AND ccl.user_data = v_user_data
         AND ccl.is_active = true
-    CROSS JOIN LATERAL generate_series(
-        date_trunc('month', p_start_month::timestamp),
-        date_trunc('month', v_end_month::timestamp),
-        INTERVAL '1 month'
-    ) AS gs(month)
     WHERE l.id = v_ledger_id
       AND a.user_data = v_user_data
       AND a.type = 'liability'
       AND a.deleted_at IS NULL
       AND bal.balance > 0
+      AND date_trunc('month', current_date) BETWEEN p_start_month AND v_end_month
       AND NOT EXISTS (
           SELECT 1 FROM data.loans lo
           WHERE lo.account_id = a.id AND lo.user_data = v_user_data AND lo.status = 'active'
@@ -758,9 +758,9 @@ BEGIN
 
     UNION ALL
 
-    -- 8b. CREDIT CARD PAYMENTS — minimum auto-pay
+    -- 8b. CREDIT CARD PAYMENTS — minimum auto-pay (one upcoming payment)
     SELECT
-        gs.month::date, 'cc_payment'::text, a.id, a.uuid,
+        date_trunc('month', current_date)::date, 'cc_payment'::text, a.id, a.uuid,
         'liability'::text, 'cc_payment'::text, a.name || ' payment',
         -(GREATEST(
             (bal.balance * ccl.minimum_payment_percent / 100)::bigint,
@@ -775,16 +775,12 @@ BEGIN
     CROSS JOIN LATERAL (
         SELECT utils.get_account_balance(a.ledger_id, a.id) AS balance
     ) AS bal
-    CROSS JOIN LATERAL generate_series(
-        date_trunc('month', p_start_month::timestamp),
-        date_trunc('month', v_end_month::timestamp),
-        INTERVAL '1 month'
-    ) AS gs(month)
     WHERE l.id = v_ledger_id
       AND a.user_data = v_user_data
       AND a.type = 'liability'
       AND a.deleted_at IS NULL
       AND bal.balance > 0
+      AND date_trunc('month', current_date) BETWEEN p_start_month AND v_end_month
       AND ccl.auto_payment_enabled = true
       AND ccl.auto_payment_type = 'minimum'
       AND NOT EXISTS (
@@ -794,9 +790,9 @@ BEGIN
 
     UNION ALL
 
-    -- 8c. CREDIT CARD PAYMENTS — fixed-amount auto-pay
+    -- 8c. CREDIT CARD PAYMENTS — fixed-amount auto-pay (one upcoming payment)
     SELECT
-        gs.month::date, 'cc_payment'::text, a.id, a.uuid,
+        date_trunc('month', current_date)::date, 'cc_payment'::text, a.id, a.uuid,
         'liability'::text, 'cc_payment'::text, a.name || ' payment',
         -(ccl.auto_payment_amount * 100)::bigint
     FROM data.accounts a
@@ -808,16 +804,12 @@ BEGIN
     CROSS JOIN LATERAL (
         SELECT utils.get_account_balance(a.ledger_id, a.id) AS balance
     ) AS bal
-    CROSS JOIN LATERAL generate_series(
-        date_trunc('month', p_start_month::timestamp),
-        date_trunc('month', v_end_month::timestamp),
-        INTERVAL '1 month'
-    ) AS gs(month)
     WHERE l.id = v_ledger_id
       AND a.user_data = v_user_data
       AND a.type = 'liability'
       AND a.deleted_at IS NULL
       AND bal.balance > 0
+      AND date_trunc('month', current_date) BETWEEN p_start_month AND v_end_month
       AND ccl.auto_payment_enabled = true
       AND ccl.auto_payment_type = 'fixed_amount'
       AND COALESCE(ccl.auto_payment_amount, 0) > 0
@@ -828,8 +820,9 @@ BEGIN
 
     UNION ALL
 
-    -- 9. ACTUAL TRANSACTIONS not linked to any realized projected event.
-    --    Appear as standalone rows counted in the net balance.
+    -- 9. ACTUAL TRANSACTIONS: only real cash flows (asset account involved).
+    --    CC charges (credit=liability) are excluded — captured by CC payment branches above.
+    --    Reversed/corrected originals are excluded to avoid phantom entries.
     SELECT
         date_trunc('month', t.date)::date AS month,
         'transaction'                      AS source_type,
@@ -849,9 +842,15 @@ BEGIN
       AND t.deleted_at IS NULL
       AND date_trunc('month', t.date) BETWEEN p_start_month AND v_end_month
       AND utils.derive_transaction_direction(t.debit_account_id, t.credit_account_id) <> 'unknown'
-      -- Exclude reversal transactions (bookkeeping entries)
+      -- Exclude reversal transactions (bookkeeping entries, the reversal itself)
       AND NOT EXISTS (
           SELECT 1 FROM data.transaction_log tl WHERE tl.reversal_transaction_id = t.id
+      )
+      -- Exclude original transactions that were reversed/corrected
+      AND NOT EXISTS (
+          SELECT 1 FROM data.transaction_log tl
+          WHERE tl.original_transaction_id = t.id
+            AND tl.reversal_transaction_id IS NOT NULL
       )
       -- Exclude transactions that realized a one-time projected event
       AND NOT EXISTS (
