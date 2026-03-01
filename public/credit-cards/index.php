@@ -140,7 +140,7 @@ require_once '../../includes/header.php';
         <h1>💳 Credit Card Management</h1>
         <div class="page-actions">
             <a href="../budget/dashboard.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">← Back to Dashboard</a>
-            <a href="../accounts/add.php?ledger=<?= urlencode($ledger_uuid) ?>&type=liability" class="btn btn-primary">+ Add Credit Card</a>
+            <a href="../accounts/create.php?ledger=<?= urlencode($ledger_uuid) ?>&type=liability" class="btn btn-primary">+ Add Credit Card</a>
         </div>
     </div>
 
@@ -247,7 +247,7 @@ require_once '../../includes/header.php';
                 <div style="font-size: 4rem; margin-bottom: 1rem;">💳</div>
                 <h3>No Credit Cards Yet</h3>
                 <p>Add your first credit card to start managing limits, tracking statements, and scheduling payments.</p>
-                <a href="../accounts/add.php?ledger=<?= urlencode($ledger_uuid) ?>&type=liability" class="btn btn-primary" style="margin-top: 1rem;">
+                <a href="../accounts/create.php?ledger=<?= urlencode($ledger_uuid) ?>&type=liability" class="btn btn-primary" style="margin-top: 1rem;">
                     + Add Your First Credit Card
                 </a>
             </div>
