@@ -219,7 +219,7 @@ function aggregateAmounts(array $row_amounts, array $columns): array {
 }
 
 // Group rows by source_type, compute per-column amounts + row total
-$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'past_installment', 'recurring', 'event', 'realized_occurrence', 'cc_payment', 'transaction', 'realized_event'];
+$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'past_installment', 'recurring', 'event', 'realized_occurrence', 'transaction', 'realized_event'];
 $group_labels = [
     'income'              => 'Income',
     'deduction'           => 'Payroll Deductions',
@@ -231,7 +231,6 @@ $group_labels = [
     'recurring'           => 'Recurring Transactions',
     'event'               => 'Projected Events',
     'realized_occurrence' => 'Realized Occurrences',
-    'cc_payment'          => 'Credit Card Payments',
     'transaction'         => 'Actual Transactions',
     'realized_event'      => 'Realized Events',
 ];
@@ -500,7 +499,7 @@ require_once '../../includes/header.php';
                 <tr class="cfp-summary cfp-overdue-row">
                     <td class="cfp-td cfp-td-summary-lbl sticky-1" colspan="2">
                         Overdue from prev. months
-                        <span class="cfp-realized-note">informational — already counted in past balances</span>
+                        <div class="cfp-realized-note cfp-realized-note-block">informational — already counted in past balances</div>
                     </td>
                     <?php foreach ($columns as $col):
                         $contains_today = in_array($today_month, $col['months']);

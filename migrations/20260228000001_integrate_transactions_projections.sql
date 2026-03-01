@@ -179,11 +179,11 @@ GRANT EXECUTE ON FUNCTION api.get_projected_event_occurrences(text) TO pgbudget_
 -- +goose StatementBegin
 -- Derive whether a transaction is an inflow or outflow based on account types.
 -- Rules:
---   debit account type = 'asset'  → 'inflow'  (money received into cash/checking)
---   credit account type = 'asset' → 'outflow' (money leaving cash/checking)
---   otherwise                      → 'unknown' (skip)
--- NOTE: credit=liability (CC charges) is intentionally 'unknown': those are not direct
--- cash flows and are already captured by the CC payment projection branches (Branch 8).
+--   debit=asset                          → 'inflow'  (salary/payment received into checking)
+--   credit=asset AND debit≠liability     → 'outflow' (expense paid from checking)
+--   credit=liability                     → 'outflow' (CC charge — accrual: expense when incurred)
+--   debit=liability, credit=asset        → 'unknown' (CC bill payment — balance sheet move, skip)
+--   otherwise                            → 'unknown'
 CREATE OR REPLACE FUNCTION utils.derive_transaction_direction(
     p_debit_id  bigint,
     p_credit_id bigint
@@ -197,7 +197,9 @@ BEGIN
 
     IF v_debit_type = 'asset' THEN
         RETURN 'inflow';
-    ELSIF v_credit_type = 'asset' THEN
+    ELSIF v_credit_type = 'asset' AND v_debit_type <> 'liability' THEN
+        RETURN 'outflow';
+    ELSIF v_credit_type = 'liability' THEN
         RETURN 'outflow';
     ELSE
         RETURN 'unknown';
@@ -728,101 +730,10 @@ BEGIN
 
     UNION ALL
 
-    -- 8a. CREDIT CARD PAYMENTS — no limits configured, auto-pay off, or full_balance
-    --     Shows once in the current month only (not repeated indefinitely).
-    --     Disappears once the CC balance is paid.
-    SELECT
-        date_trunc('month', current_date)::date, 'cc_payment'::text, a.id, a.uuid,
-        'liability'::text, 'cc_payment'::text, a.name || ' payment',
-        -(bal.balance)::bigint
-    FROM data.accounts a
-    JOIN data.ledgers l ON l.id = a.ledger_id
-    CROSS JOIN LATERAL (
-        SELECT utils.get_account_balance(a.ledger_id, a.id) AS balance
-    ) AS bal
-    LEFT JOIN data.credit_card_limits ccl
-        ON ccl.credit_card_account_id = a.id
-        AND ccl.user_data = v_user_data
-        AND ccl.is_active = true
-    WHERE l.id = v_ledger_id
-      AND a.user_data = v_user_data
-      AND a.type = 'liability'
-      AND a.deleted_at IS NULL
-      AND bal.balance > 0
-      AND date_trunc('month', current_date) BETWEEN p_start_month AND v_end_month
-      AND NOT EXISTS (
-          SELECT 1 FROM data.loans lo
-          WHERE lo.account_id = a.id AND lo.user_data = v_user_data AND lo.status = 'active'
-      )
-      AND (ccl.id IS NULL OR NOT ccl.auto_payment_enabled OR ccl.auto_payment_type = 'full_balance')
-
-    UNION ALL
-
-    -- 8b. CREDIT CARD PAYMENTS — minimum auto-pay (one upcoming payment)
-    SELECT
-        date_trunc('month', current_date)::date, 'cc_payment'::text, a.id, a.uuid,
-        'liability'::text, 'cc_payment'::text, a.name || ' payment',
-        -(GREATEST(
-            (bal.balance * ccl.minimum_payment_percent / 100)::bigint,
-            (ccl.minimum_payment_flat * 100)::bigint
-        ))::bigint
-    FROM data.accounts a
-    JOIN data.ledgers l ON l.id = a.ledger_id
-    JOIN data.credit_card_limits ccl
-        ON ccl.credit_card_account_id = a.id
-        AND ccl.user_data = v_user_data
-        AND ccl.is_active = true
-    CROSS JOIN LATERAL (
-        SELECT utils.get_account_balance(a.ledger_id, a.id) AS balance
-    ) AS bal
-    WHERE l.id = v_ledger_id
-      AND a.user_data = v_user_data
-      AND a.type = 'liability'
-      AND a.deleted_at IS NULL
-      AND bal.balance > 0
-      AND date_trunc('month', current_date) BETWEEN p_start_month AND v_end_month
-      AND ccl.auto_payment_enabled = true
-      AND ccl.auto_payment_type = 'minimum'
-      AND NOT EXISTS (
-          SELECT 1 FROM data.loans lo
-          WHERE lo.account_id = a.id AND lo.user_data = v_user_data AND lo.status = 'active'
-      )
-
-    UNION ALL
-
-    -- 8c. CREDIT CARD PAYMENTS — fixed-amount auto-pay (one upcoming payment)
-    SELECT
-        date_trunc('month', current_date)::date, 'cc_payment'::text, a.id, a.uuid,
-        'liability'::text, 'cc_payment'::text, a.name || ' payment',
-        -(ccl.auto_payment_amount * 100)::bigint
-    FROM data.accounts a
-    JOIN data.ledgers l ON l.id = a.ledger_id
-    JOIN data.credit_card_limits ccl
-        ON ccl.credit_card_account_id = a.id
-        AND ccl.user_data = v_user_data
-        AND ccl.is_active = true
-    CROSS JOIN LATERAL (
-        SELECT utils.get_account_balance(a.ledger_id, a.id) AS balance
-    ) AS bal
-    WHERE l.id = v_ledger_id
-      AND a.user_data = v_user_data
-      AND a.type = 'liability'
-      AND a.deleted_at IS NULL
-      AND bal.balance > 0
-      AND date_trunc('month', current_date) BETWEEN p_start_month AND v_end_month
-      AND ccl.auto_payment_enabled = true
-      AND ccl.auto_payment_type = 'fixed_amount'
-      AND COALESCE(ccl.auto_payment_amount, 0) > 0
-      AND NOT EXISTS (
-          SELECT 1 FROM data.loans lo
-          WHERE lo.account_id = a.id AND lo.user_data = v_user_data AND lo.status = 'active'
-      )
-
-    UNION ALL
-
-    -- 9. ACTUAL TRANSACTIONS: only real cash flows (asset account involved).
-    --    CC charges (credit=liability) are excluded — captured by CC payment branches above.
-    --    Reversed/corrected originals are excluded to avoid phantom entries.
+    -- 8. ACTUAL TRANSACTIONS: real cash flows + CC charges (accrual).
+    --    Includes: inflows to asset, outflows from asset, CC charges (credit=liability).
+    --    Excludes: CC bill payments (debit=liability → unknown), reversals, corrected
+    --              originals, and transactions already matched to projected events.
     SELECT
         date_trunc('month', t.date)::date AS month,
         'transaction'                      AS source_type,
