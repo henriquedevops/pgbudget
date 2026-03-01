@@ -194,6 +194,32 @@ function handle_undo(int $chat_id, PDO $db, array $cfg): void {
         } elseif ($action['type'] === 'transaction') {
             $stmt = $db->prepare("SELECT api.delete_transaction(?)");
             $stmt->execute([$action['uuid']]);
+
+            // If the transaction had auto-matched a projected event, unrealize it too
+            if (!empty($action['matched_event_uuid'])) {
+                $event_uuid = $action['matched_event_uuid'];
+                try {
+                    // Determine if one-time or recurring
+                    $stmt2 = $db->prepare("SELECT frequency FROM api.projected_events WHERE uuid = ?");
+                    $stmt2->execute([$event_uuid]);
+                    $event = $stmt2->fetch();
+                    if ($event) {
+                        if ($event['frequency'] === 'one_time') {
+                            $db->prepare(
+                                "UPDATE data.projected_events
+                                 SET is_realized = false, linked_transaction_id = NULL
+                                 WHERE uuid = ?"
+                            )->execute([$event_uuid]);
+                        } else {
+                            $db->prepare(
+                                "SELECT api.unrealize_projected_event_occurrence(?, date_trunc('month', now())::date)"
+                            )->execute([$event_uuid]);
+                        }
+                    }
+                } catch (Exception $e2) {
+                    error_log('pgbudget Telegram /undo matched event: ' . $e2->getMessage());
+                }
+            }
         } elseif ($action['type'] === 'event_unrealize') {
             $stmt = $db->prepare("SELECT * FROM api.update_projected_event(p_event_uuid := ?, p_is_realized := false::boolean)");
             $stmt->execute([$action['uuid']]);
@@ -399,16 +425,43 @@ function handle_record_transaction(int $chat_id, string $text, array $data, arra
         $tx_uuid = $stmt->fetchColumn();
 
         tg_state_clear($chat_id);
+
+        // Check if the trigger auto-matched this transaction to a projected event
+        $match_uuid = '';
+        $match_name = '';
+        try {
+            $stmt2 = $db->prepare(
+                "SELECT metadata->>'matched_event_uuid' AS e_uuid,
+                        metadata->>'matched_event_name'  AS e_name
+                 FROM data.transactions WHERE uuid = ?"
+            );
+            $stmt2->execute([$tx_uuid]);
+            $match = $stmt2->fetch();
+            if (!empty($match['e_uuid'])) {
+                $match_uuid = $match['e_uuid'];
+                $match_name = $match['e_name'];
+            }
+        } catch (Exception $e) {
+            // Non-fatal — proceed without match info
+            error_log('pgbudget Telegram match metadata: ' . $e->getMessage());
+        }
+
         tg_action_save($chat_id, 'transaction', $tx_uuid,
-                       "{$data['description']} " . fmt_brl($amount_cents));
+                       "{$data['description']} " . fmt_brl($amount_cents),
+                       $match_uuid);
 
         $dir_label    = $data['direction'] === 'inflow' ? 'entrada 📈' : 'saída 📉';
         $account_name = account_name_from_uuid($account_uuid, $cfg);
         $reply = "✅ *Transação registrada:* {$data['description']}\n"
                . fmt_brl($amount_cents) . " · {$dir_label} · "
                . (new DateTime($data['date']))->format('d/m/Y')
-               . " · conta: *{$account_name}*"
-               . "\n\n_/undo se a conta estiver errada._";
+               . " · conta: *{$account_name}*";
+        if ($match_uuid !== '') {
+            $reply .= "\n✓ _Correspondeu ao evento planejado «{$match_name}» e marcou como realizado._";
+        } else {
+            $reply .= "\n_Nenhum evento correspondente; aparecerá como transação na projeção._";
+        }
+        $reply .= "\n\n_/undo se a conta estiver errada._";
         tg_send($chat_id, $reply, $cfg);
 
     } catch (Exception $e) {

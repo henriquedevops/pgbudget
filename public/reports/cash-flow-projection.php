@@ -219,7 +219,7 @@ function aggregateAmounts(array $row_amounts, array $columns): array {
 }
 
 // Group rows by source_type, compute per-column amounts + row total
-$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'past_installment', 'recurring', 'event', 'realized_occurrence', 'cc_payment', 'realized_event'];
+$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'past_installment', 'recurring', 'event', 'realized_occurrence', 'cc_payment', 'transaction', 'realized_event'];
 $group_labels = [
     'income'              => 'Income',
     'deduction'           => 'Payroll Deductions',
@@ -232,6 +232,7 @@ $group_labels = [
     'event'               => 'Projected Events',
     'realized_occurrence' => 'Realized Occurrences',
     'cc_payment'          => 'Credit Card Payments',
+    'transaction'         => 'Actual Transactions',
     'realized_event'      => 'Realized Events',
 ];
 
@@ -442,6 +443,8 @@ require_once '../../includes/header.php';
                             <span class="cfp-type-badge cfp-badge-realized_occurrence">Realized ↺</span>
                         <?php elseif ($type === 'past_installment'): ?>
                             <span class="cfp-type-badge cfp-badge-past_installment">Past Inst.</span>
+                        <?php elseif ($type === 'transaction'): ?>
+                            <span class="cfp-type-badge cfp-badge-transaction">Actual</span>
                         <?php else: ?>
                             <span class="cfp-type-badge cfp-badge-<?= $type ?>"><?= ucfirst(str_replace(['loan_', 'cc_', '_'], ['Ln ', 'CC ', ' '], $type)) ?></span>
                         <?php endif; ?>

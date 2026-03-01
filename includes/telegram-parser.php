@@ -166,10 +166,14 @@ function tg_state_clear(int $chat_id): void {
 // ---------------------------------------------------------------------------
 
 /** Save the last bot action so /undo can reverse it. */
-function tg_action_save(int $chat_id, string $type, string $uuid, string $label): void {
+function tg_action_save(int $chat_id, string $type, string $uuid, string $label, string $matched_event_uuid = ''): void {
+    $data = ['type' => $type, 'uuid' => $uuid, 'label' => $label, 'ts' => time()];
+    if ($matched_event_uuid !== '') {
+        $data['matched_event_uuid'] = $matched_event_uuid;
+    }
     file_put_contents(
         sys_get_temp_dir() . '/pgbudget_tg_action_' . $chat_id . '.json',
-        json_encode(['type' => $type, 'uuid' => $uuid, 'label' => $label, 'ts' => time()])
+        json_encode($data)
     );
 }
 
