@@ -47,6 +47,39 @@ try {
     $stmt->execute([$ledger_uuid]);
     $events = $stmt->fetchAll();
 
+    // Load active installment plans with next scheduled payment
+    $stmt = $db->prepare("
+        SELECT
+            ip.uuid, ip.description, ip.purchase_date, ip.purchase_amount,
+            ip.number_of_installments, ip.completed_installments, ip.status,
+            cc.name  AS credit_card_name,
+            cc.uuid  AS credit_card_uuid,
+            next_pay.due_date     AS next_due_date,
+            next_pay.amount       AS next_amount,
+            remaining.total_remaining,
+            remaining.remaining_count
+        FROM data.installment_plans ip
+        JOIN data.ledgers l    ON l.id = ip.ledger_id AND l.uuid = ?
+        JOIN data.accounts cc  ON cc.id = ip.credit_card_account_id
+        LEFT JOIN LATERAL (
+            SELECT isch.due_date, isch.scheduled_amount AS amount
+            FROM data.installment_schedules isch
+            WHERE isch.installment_plan_id = ip.id AND isch.status = 'scheduled'
+            ORDER BY isch.installment_number
+            LIMIT 1
+        ) next_pay ON true
+        LEFT JOIN LATERAL (
+            SELECT SUM(isch.scheduled_amount) AS total_remaining,
+                   COUNT(*)                   AS remaining_count
+            FROM data.installment_schedules isch
+            WHERE isch.installment_plan_id = ip.id AND isch.status = 'scheduled'
+        ) remaining ON true
+        WHERE ip.status = 'active'
+        ORDER BY next_pay.due_date ASC NULLS LAST, ip.created_at DESC
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $installment_plans = $stmt->fetchAll();
+
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
     header('Location: ../index.php');
@@ -217,9 +250,92 @@ require_once '../../includes/header.php';
             </table>
         </div>
     <?php endif; ?>
+
+    <?php if (!empty($installment_plans)): ?>
+    <div class="section-header" style="margin-top:2rem;">
+        <h2>Active Installment Plans</h2>
+    </div>
+    <div class="events-table-container">
+        <table class="table events-table">
+            <thead>
+                <tr>
+                    <th>Purchase</th>
+                    <th>Credit Card</th>
+                    <th>Progress</th>
+                    <th>Next Payment</th>
+                    <th>Remaining Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($installment_plans as $plan): ?>
+                <tr>
+                    <td>
+                        <strong><?= htmlspecialchars($plan['description']) ?></strong>
+                        <br><small class="text-muted"><?= (new DateTime($plan['purchase_date']))->format('M j, Y') ?>
+                        &mdash; <?= formatCurrency($plan['purchase_amount']) ?></small>
+                    </td>
+                    <td><?= htmlspecialchars($plan['credit_card_name']) ?></td>
+                    <td>
+                        <?php
+                            $total = (int)$plan['number_of_installments'];
+                            $done  = (int)$plan['completed_installments'];
+                            $pct   = $total > 0 ? round($done / $total * 100) : 0;
+                        ?>
+                        <div class="installment-progress">
+                            <div class="progress-bar-wrap">
+                                <div class="progress-bar-fill" style="width:<?= $pct ?>%"></div>
+                            </div>
+                            <small><?= $done ?>/<?= $total ?> paid</small>
+                        </div>
+                    </td>
+                    <td>
+                        <?php if ($plan['next_due_date']): ?>
+                            <strong><?= (new DateTime($plan['next_due_date']))->format('M j, Y') ?></strong>
+                            <br><small><?= formatCurrency($plan['next_amount']) ?></small>
+                        <?php else: ?>
+                            <span class="text-muted">—</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php if ($plan['remaining_count'] > 0): ?>
+                            <span class="amount negative">-<?= formatCurrency($plan['total_remaining']) ?></span>
+                            <br><small class="text-muted"><?= $plan['remaining_count'] ?> installments</small>
+                        <?php else: ?>
+                            <span class="text-muted">—</span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="actions-cell">
+                        <a href="../installments/view.php?ledger=<?= $ledger_uuid ?>&plan=<?= $plan['uuid'] ?>"
+                           class="btn btn-small btn-secondary">View</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
 </div>
 
 <style>
+.section-header { margin-bottom: 1rem; }
+.section-header h2 { font-size: 1.25rem; font-weight: 600; color: #333; }
+
+.installment-progress { display: flex; flex-direction: column; gap: 0.25rem; }
+.progress-bar-wrap {
+    background: #e0e0e0;
+    border-radius: 4px;
+    height: 6px;
+    width: 120px;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    background: #1976d2;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
 .event-summary-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

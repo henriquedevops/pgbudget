@@ -137,6 +137,7 @@ require_once '../../includes/header.php';
             <?php if ($plan['status'] === 'active' && $scheduled_count > 0): ?>
                 <a href="edit.php?ledger=<?= $ledger_uuid ?>&plan=<?= $plan_uuid ?>" class="btn btn-secondary">✏️ Edit</a>
             <?php endif; ?>
+            <a href="../projected-events/index.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">Projected Events</a>
             <a href="index.php?ledger=<?= $ledger_uuid ?>" class="btn btn-secondary">Back to Plans</a>
         </div>
     </div>

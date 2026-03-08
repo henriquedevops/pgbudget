@@ -47,6 +47,26 @@ try {
     $stmt->execute([$event_uuid]);
     $occurrences_raw = $stmt->fetchAll();
 
+    // Load accounts for payment selection: checking (asset) + credit cards (liability with billing config)
+    // For inflow events only show asset accounts; outflow events also show CCs.
+    $stmt = $db->prepare("
+        SELECT a.uuid, a.name, a.type
+        FROM data.accounts a
+        JOIN data.ledgers l ON l.id = a.ledger_id AND l.uuid = ?
+        LEFT JOIN data.credit_card_limits ccl
+               ON ccl.credit_card_account_id = a.id
+              AND ccl.user_data = a.user_data
+              AND ccl.is_active = true
+        WHERE a.user_data = utils.get_user()
+          AND a.deleted_at IS NULL
+          AND a.type IN ('asset', 'liability')
+          AND (a.type = 'asset' OR ccl.id IS NOT NULL)
+        ORDER BY a.type DESC, a.name
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $payment_accounts = $stmt->fetchAll();
+    $event_direction  = $event['direction'];
+
     // Index by scheduled_month string
     $occurrences = [];
     foreach ($occurrences_raw as $occ) {
@@ -249,6 +269,29 @@ require_once '../../includes/header.php';
                                            placeholder="<?= number_format($event['amount'] / 100, 2, '.', '') ?>"
                                            min="0.01" step="0.01">
                                 </div>
+                                <div class="form-field">
+                                    <label>Account <small>(optional — records a transaction)</small></label>
+                                    <select id="account-<?= str_replace('-', '', $month_key) ?>" class="realized-account-select">
+                                        <option value="">— mark only, no transaction —</option>
+                                        <?php
+                                        $asset_accounts = array_filter($payment_accounts, fn($a) => $a['type'] === 'asset');
+                                        $cc_accounts    = array_filter($payment_accounts, fn($a) => $a['type'] === 'liability');
+                                        if (!empty($asset_accounts)): ?>
+                                        <optgroup label="Checking / Savings">
+                                            <?php foreach ($asset_accounts as $a): ?>
+                                            <option value="<?= $a['uuid'] ?>"><?= htmlspecialchars($a['name']) ?></option>
+                                            <?php endforeach; ?>
+                                        </optgroup>
+                                        <?php endif; ?>
+                                        <?php if ($event_direction === 'outflow' && !empty($cc_accounts)): ?>
+                                        <optgroup label="Credit Cards">
+                                            <?php foreach ($cc_accounts as $a): ?>
+                                            <option value="<?= $a['uuid'] ?>"><?= htmlspecialchars($a['name']) ?></option>
+                                            <?php endforeach; ?>
+                                        </optgroup>
+                                        <?php endif; ?>
+                                    </select>
+                                </div>
                             </div>
                             <div class="form-btns">
                                 <button class="btn btn-sm btn-primary"
@@ -353,6 +396,15 @@ require_once '../../includes/header.php';
     font-size: 0.9rem;
 }
 .form-field input:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 2px rgba(0,102,204,0.12); }
+.realized-account-select {
+    padding: 0.45rem 0.65rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: white;
+    min-width: 220px;
+}
+.realized-account-select:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 2px rgba(0,102,204,0.12); }
 .form-btns { display: flex; gap: 0.5rem; align-items: flex-end; }
 .req { color: #dc2626; }
 .no-rows { padding: 2rem; text-align: center; color: #999; }
@@ -384,8 +436,9 @@ function hideRealizeForm(month) {
 
 async function submitRealize(eventUuid, month, btn) {
     const key          = monthKey(month);
-    const realizedDate = document.getElementById('date-'   + key).value;
-    const amountRaw    = document.getElementById('amount-' + key).value;
+    const realizedDate = document.getElementById('date-'    + key).value;
+    const amountRaw    = document.getElementById('amount-'  + key).value;
+    const accountUuid  = document.getElementById('account-' + key).value;
 
     if (!realizedDate) {
         alert('Please enter the actual date.');
@@ -400,7 +453,9 @@ async function submitRealize(eventUuid, month, btn) {
     body.append('event_uuid',       eventUuid);
     body.append('scheduled_month',  month);
     body.append('realized_date',    realizedDate);
+    body.append('ledger_uuid',      LEDGER_UUID);
     if (amountRaw.trim()) body.append('realized_amount', amountRaw);
+    if (accountUuid)      body.append('account_uuid',    accountUuid);
 
     try {
         const res  = await fetch(API_URL, { method: 'POST', body });

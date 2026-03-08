@@ -79,18 +79,62 @@ function realizeOccurrence($db) {
     if (!empty($_POST['realized_amount'])) {
         $realized_amount = intval(round(floatval($_POST['realized_amount']) * 100));
     }
-    $notes = !empty($_POST['notes']) ? $_POST['notes'] : null;
+    $notes        = !empty($_POST['notes'])        ? $_POST['notes']        : null;
+    $account_uuid = !empty($_POST['account_uuid']) ? $_POST['account_uuid'] : null;
+    $ledger_uuid  = !empty($_POST['ledger_uuid'])  ? $_POST['ledger_uuid']  : null;
+
+    // If an account was selected, create a transaction and link it to the occurrence.
+    $tx_uuid = null;
+    if ($account_uuid && $ledger_uuid) {
+        $stmt_ev = $db->prepare("SELECT * FROM api.get_projected_event(?)");
+        $stmt_ev->execute([$event_uuid]);
+        $ev = $stmt_ev->fetch(PDO::FETCH_ASSOC);
+
+        if ($ev) {
+            $tx_amount = $realized_amount !== null ? $realized_amount : (int)$ev['amount'];
+            $stmt_tx = $db->prepare("
+                SELECT api.add_transaction(
+                    ?::text, ?::date, ?::text, ?::text, ?::bigint, ?::text,
+                    NULL::text, NULL::text, NULL::text
+                )
+            ");
+            $stmt_tx->execute([
+                $ledger_uuid, $realized_date, $ev['name'],
+                $ev['direction'], $tx_amount, $account_uuid
+            ]);
+            $tx_uuid = $stmt_tx->fetchColumn();
+
+            // If the auto-match trigger realized this transaction in a different month
+            // than our intended scheduled_month, remove the incorrect occurrence.
+            if ($tx_uuid) {
+                $db->prepare("
+                    DELETE FROM data.projected_event_occurrences
+                    WHERE projected_event_id = (
+                              SELECT id FROM data.projected_events
+                              WHERE uuid = ? AND user_data = utils.get_user()
+                          )
+                      AND transaction_id = (
+                              SELECT id FROM data.transactions
+                              WHERE uuid = ? AND user_data = utils.get_user()
+                          )
+                      AND scheduled_month <> ?::date
+                      AND user_data = utils.get_user()
+                ")->execute([$event_uuid, $tx_uuid, $scheduled_month]);
+            }
+        }
+    }
 
     $stmt = $db->prepare("
         SELECT * FROM api.realize_projected_event_occurrence(
-            p_event_uuid      := ?,
-            p_scheduled_month := ?::date,
-            p_realized_date   := ?::date,
-            p_realized_amount := ?::bigint,
-            p_notes           := ?
+            p_event_uuid       := ?,
+            p_scheduled_month  := ?::date,
+            p_realized_date    := ?::date,
+            p_realized_amount  := ?::bigint,
+            p_notes            := ?,
+            p_transaction_uuid := ?
         )
     ");
-    $stmt->execute([$event_uuid, $scheduled_month, $realized_date, $realized_amount, $notes]);
+    $stmt->execute([$event_uuid, $scheduled_month, $realized_date, $realized_amount, $notes, $tx_uuid]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$result) {

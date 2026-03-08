@@ -55,28 +55,69 @@ try {
         exit;
     }
 
-    // Get all statements for this credit card
+    // Get billing cycle config
     $stmt = $db->prepare("
-        SELECT
-            st.uuid,
-            st.statement_period_start,
-            st.statement_period_end,
-            st.previous_balance,
-            st.purchases_amount,
-            st.payments_amount,
-            st.interest_charged,
-            st.fees_charged,
-            st.ending_balance,
-            st.minimum_payment_due,
-            st.due_date,
-            st.is_current,
-            st.created_at
-        FROM data.credit_card_statements st
-        WHERE st.credit_card_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
-        ORDER BY st.statement_period_end DESC
+        SELECT statement_day_of_month, due_date_offset_days
+        FROM data.credit_card_limits
+        WHERE credit_card_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
+          AND user_data = utils.get_user() AND is_active = true
     ");
     $stmt->execute([$card_uuid]);
-    $statements = $stmt->fetchAll();
+    $billing = $stmt->fetch();
+
+    // Build virtual statements from transactions grouped by billing period
+    $statements = [];
+    $tx_by_period = [];
+    if ($billing) {
+        $stmt_day = (int)$billing['statement_day_of_month'];
+        $due_offset = (int)$billing['due_date_offset_days'];
+
+        $stmt = $db->prepare("
+            WITH periods AS (
+                SELECT
+                    utils.calculate_next_statement_date(t.date, ?) AS closing_date,
+                    SUM(t.amount)  AS purchases_cents,
+                    COUNT(*)       AS transaction_count
+                FROM data.transactions t
+                WHERE t.credit_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
+                  AND t.user_data = utils.get_user()
+                GROUP BY closing_date
+            ),
+            ordered AS (
+                SELECT *,
+                    LAG(closing_date) OVER (ORDER BY closing_date) AS prev_closing
+                FROM periods
+            )
+            SELECT
+                closing_date,
+                COALESCE(prev_closing + INTERVAL '1 day',
+                         closing_date - INTERVAL '2 months') AS period_start,
+                closing_date AS period_end,
+                (closing_date + (? || ' days')::interval)::date AS due_date,
+                purchases_cents,
+                transaction_count,
+                closing_date = utils.calculate_next_statement_date(CURRENT_DATE, ?) AS is_current
+            FROM ordered
+            ORDER BY closing_date DESC
+        ");
+        $stmt->execute([$stmt_day, $card_uuid, $due_offset, $stmt_day]);
+        $statements = $stmt->fetchAll();
+
+        // Fetch transactions with their period closing date for grouping
+        $stmt = $db->prepare("
+            SELECT
+                utils.calculate_next_statement_date(t.date, ?) AS closing_date,
+                t.date, t.description, t.amount
+            FROM data.transactions t
+            WHERE t.credit_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
+              AND t.user_data = utils.get_user()
+            ORDER BY closing_date, t.date DESC
+        ");
+        $stmt->execute([$stmt_day, $card_uuid]);
+        foreach ($stmt->fetchAll() as $tx) {
+            $tx_by_period[$tx['closing_date']][] = $tx;
+        }
+    }
 
     // Get scheduled payments for this card
     $stmt = $db->prepare("
@@ -159,20 +200,30 @@ require_once '../../includes/header.php';
 
         <?php if (empty($statements)): ?>
             <div class="empty-state">
-                <p>No statements generated yet for this card.</p>
-                <p>Statements are automatically generated based on your billing cycle settings.</p>
-                <a href="settings.php?ledger=<?= urlencode($ledger_uuid) ?>&card=<?= urlencode($card_uuid) ?>" class="btn btn-primary">
-                    Configure Billing Settings
-                </a>
+                <p>No transactions found for this card.</p>
+                <?php if (!$billing): ?>
+                    <p>Configure billing cycle settings to see statements.</p>
+                    <a href="settings.php?ledger=<?= urlencode($ledger_uuid) ?>&card=<?= urlencode($card_uuid) ?>" class="btn btn-primary">
+                        Configure Billing Settings
+                    </a>
+                <?php endif; ?>
             </div>
         <?php else: ?>
             <div class="statements-list">
                 <?php foreach ($statements as $statement): ?>
+                    <?php
+                    $today   = new DateTime();
+                    $dueDate = new DateTime($statement['due_date']);
+                    $diff    = $today->diff($dueDate);
+                    $isPastDue = $dueDate < $today;
+                    $daysUntilDue = (int)$diff->days;
+                    $txs = $tx_by_period[$statement['closing_date']] ?? [];
+                    ?>
                     <div class="statement-card <?= $statement['is_current'] === 't' ? 'current-statement' : '' ?>">
                         <div class="statement-header">
                             <div class="statement-period">
-                                <?= date('M j, Y', strtotime($statement['statement_period_start'])) ?> -
-                                <?= date('M j, Y', strtotime($statement['statement_period_end'])) ?>
+                                <?= date('M j, Y', strtotime($statement['period_start'])) ?> –
+                                <?= date('M j, Y', strtotime($statement['period_end'])) ?>
                             </div>
                             <div class="statement-badges">
                                 <?php if ($statement['is_current'] === 't'): ?>
@@ -185,73 +236,42 @@ require_once '../../includes/header.php';
 
                         <div class="statement-summary">
                             <div class="statement-summary-item">
-                                <span class="summary-label">Previous Balance</span>
-                                <span class="summary-value amount"><?= formatCurrency($statement['previous_balance']) ?></span>
-                            </div>
-                            <div class="statement-summary-item">
                                 <span class="summary-label">Purchases</span>
-                                <span class="summary-value negative"><?= formatCurrency($statement['purchases_amount']) ?></span>
+                                <span class="summary-value negative"><?= formatCurrency($statement['purchases_cents']) ?></span>
                             </div>
                             <div class="statement-summary-item">
-                                <span class="summary-label">Payments</span>
-                                <span class="summary-value positive"><?= formatCurrency($statement['payments_amount']) ?></span>
+                                <span class="summary-label"># Transactions</span>
+                                <span class="summary-value"><?= $statement['transaction_count'] ?></span>
                             </div>
-                            <?php if (floatval($statement['interest_charged']) > 0): ?>
-                                <div class="statement-summary-item">
-                                    <span class="summary-label">Interest Charged</span>
-                                    <span class="summary-value negative"><?= formatCurrency($statement['interest_charged']) ?></span>
-                                </div>
-                            <?php endif; ?>
-                            <?php if (floatval($statement['fees_charged']) > 0): ?>
-                                <div class="statement-summary-item">
-                                    <span class="summary-label">Fees Charged</span>
-                                    <span class="summary-value negative"><?= formatCurrency($statement['fees_charged']) ?></span>
-                                </div>
-                            <?php endif; ?>
                             <div class="statement-summary-item">
-                                <span class="summary-label">Ending Balance</span>
-                                <span class="summary-value amount negative"><?= formatCurrency($statement['ending_balance']) ?></span>
+                                <span class="summary-label">Payment Due</span>
+                                <span class="summary-value"><?= date('M j, Y', strtotime($statement['due_date'])) ?></span>
+                            </div>
+                            <div class="statement-summary-item">
+                                <span class="summary-label">Status</span>
+                                <span class="summary-value">
+                                    <?php if ($isPastDue): ?>
+                                        <span style="color:#e53e3e;">⚠️ Past Due</span>
+                                    <?php elseif ($daysUntilDue <= 7): ?>
+                                        <span style="color:#dd6b20;">Due in <?= $daysUntilDue ?> day<?= $daysUntilDue !== 1 ? 's' : '' ?></span>
+                                    <?php else: ?>
+                                        <span style="color:#48bb78;">Due in <?= $daysUntilDue ?> days</span>
+                                    <?php endif; ?>
+                                </span>
                             </div>
                         </div>
 
+                        <?php if (!empty($txs)): ?>
                         <div class="statement-detail-section">
-                            <h4>Payment Information</h4>
-                            <div class="transaction-summary-row">
-                                <span>Minimum Payment Due:</span>
-                                <strong><?= formatCurrency($statement['minimum_payment_due']) ?></strong>
-                            </div>
-                            <div class="transaction-summary-row">
-                                <span>Payment Due Date:</span>
-                                <strong><?= date('F j, Y', strtotime($statement['due_date'])) ?></strong>
-                            </div>
-                            <?php
-                            $today = new DateTime();
-                            $dueDate = new DateTime($statement['due_date']);
-                            $daysUntilDue = $today->diff($dueDate)->days;
-                            $isPastDue = $dueDate < $today;
-                            ?>
-                            <div class="transaction-summary-row">
-                                <span>Status:</span>
-                                <?php if ($isPastDue): ?>
-                                    <strong style="color: #e53e3e;">⚠️ Past Due</strong>
-                                <?php elseif ($daysUntilDue <= 7): ?>
-                                    <strong style="color: #dd6b20;">Due in <?= $daysUntilDue ?> day<?= $daysUntilDue > 1 ? 's' : '' ?></strong>
-                                <?php else: ?>
-                                    <strong style="color: #48bb78;">Due in <?= $daysUntilDue ?> days</strong>
-                                <?php endif; ?>
-                            </div>
+                            <h4>Transactions</h4>
+                            <?php foreach ($txs as $tx): ?>
+                                <div class="transaction-summary-row">
+                                    <span><?= date('M j', strtotime($tx['date'])) ?> — <?= htmlspecialchars($tx['description']) ?></span>
+                                    <strong><?= formatCurrency($tx['amount']) ?></strong>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-
-                        <div class="statement-actions">
-                            <button type="button" class="btn btn-primary btn-small"
-                                    onclick="openSchedulePaymentModal('<?= htmlspecialchars($card_uuid) ?>', '<?= htmlspecialchars($card['name']) ?>')">
-                                💵 Schedule Payment
-                            </button>
-                            <a href="../transactions/list.php?ledger=<?= urlencode($ledger_uuid) ?>&account=<?= urlencode($card_uuid) ?>&start=<?= $statement['statement_period_start'] ?>&end=<?= $statement['statement_period_end'] ?>"
-                               class="btn btn-secondary btn-small">
-                                📊 View Transactions
-                            </a>
-                        </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
