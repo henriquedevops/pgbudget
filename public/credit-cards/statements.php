@@ -73,14 +73,29 @@ try {
         $due_offset = (int)$billing['due_date_offset_days'];
 
         $stmt = $db->prepare("
-            WITH periods AS (
+            WITH all_items AS (
                 SELECT
                     utils.calculate_next_statement_date(t.date, ?) AS closing_date,
-                    SUM(t.amount)  AS purchases_cents,
-                    COUNT(*)       AS transaction_count
+                    t.amount AS amount_cents
                 FROM data.transactions t
                 WHERE t.credit_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
                   AND t.user_data = utils.get_user()
+                UNION ALL
+                SELECT
+                    (isch.due_date - (? || ' days')::interval)::date AS closing_date,
+                    isch.scheduled_amount::bigint AS amount_cents
+                FROM data.installment_schedules isch
+                JOIN data.installment_plans ip ON ip.id = isch.installment_plan_id
+                WHERE ip.credit_card_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
+                  AND ip.user_data = utils.get_user()
+                  AND isch.status = 'scheduled'
+            ),
+            periods AS (
+                SELECT
+                    closing_date,
+                    SUM(amount_cents) AS purchases_cents,
+                    COUNT(*)          AS transaction_count
+                FROM all_items
                 GROUP BY closing_date
             ),
             ordered AS (
@@ -100,20 +115,33 @@ try {
             FROM ordered
             ORDER BY closing_date DESC
         ");
-        $stmt->execute([$stmt_day, $card_uuid, $due_offset, $stmt_day]);
+        $stmt->execute([$stmt_day, $card_uuid, $due_offset, $card_uuid, $due_offset, $stmt_day]);
         $statements = $stmt->fetchAll();
 
         // Fetch transactions with their period closing date for grouping
         $stmt = $db->prepare("
             SELECT
                 utils.calculate_next_statement_date(t.date, ?) AS closing_date,
-                t.date, t.description, t.amount
+                t.date, t.description, t.amount,
+                'transaction' AS row_type
             FROM data.transactions t
             WHERE t.credit_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
               AND t.user_data = utils.get_user()
-            ORDER BY closing_date, t.date DESC
+            UNION ALL
+            SELECT
+                (isch.due_date - (? || ' days')::interval)::date AS closing_date,
+                isch.due_date AS date,
+                ip.description || ' (' || isch.installment_number || '/' || ip.number_of_installments || ')' AS description,
+                isch.scheduled_amount::bigint AS amount,
+                'installment' AS row_type
+            FROM data.installment_schedules isch
+            JOIN data.installment_plans ip ON ip.id = isch.installment_plan_id
+            WHERE ip.credit_card_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
+              AND ip.user_data = utils.get_user()
+              AND isch.status = 'scheduled'
+            ORDER BY closing_date, date DESC
         ");
-        $stmt->execute([$stmt_day, $card_uuid]);
+        $stmt->execute([$stmt_day, $card_uuid, $due_offset, $card_uuid]);
         foreach ($stmt->fetchAll() as $tx) {
             $tx_by_period[$tx['closing_date']][] = $tx;
         }
@@ -265,8 +293,13 @@ require_once '../../includes/header.php';
                         <div class="statement-detail-section">
                             <h4>Transactions</h4>
                             <?php foreach ($txs as $tx): ?>
-                                <div class="transaction-summary-row">
-                                    <span><?= date('M j', strtotime($tx['date'])) ?> — <?= htmlspecialchars($tx['description']) ?></span>
+                                <div class="transaction-summary-row <?= $tx['row_type'] === 'installment' ? 'installment-row' : '' ?>">
+                                    <span>
+                                        <?php if ($tx['row_type'] === 'installment'): ?>
+                                            <em style="color:#888;font-size:.8em;">installment</em>
+                                        <?php endif; ?>
+                                        <?= date('M j', strtotime($tx['date'])) ?> — <?= htmlspecialchars($tx['description']) ?>
+                                    </span>
                                     <strong><?= formatCurrency($tx['amount']) ?></strong>
                                 </div>
                             <?php endforeach; ?>

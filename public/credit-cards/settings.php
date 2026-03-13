@@ -95,25 +95,35 @@ try {
         $auto_payment_amount = !empty($_POST['auto_payment_amount']) ? parseCurrency($_POST['auto_payment_amount']) : null;
         $auto_payment_date = !empty($_POST['auto_payment_date']) ? intval($_POST['auto_payment_date']) : null;
 
-        // API call to set/update credit card limit
+        // Upsert credit card limit settings
         $stmt = $db->prepare("
-            SELECT api.set_credit_card_limit(
-                p_account_uuid := ?,
-                p_credit_limit := ?,
-                p_annual_percentage_rate := ?,
-                p_warning_threshold_percent := ?,
-                p_interest_type := ?,
-                p_compounding_frequency := ?,
-                p_statement_day_of_month := ?,
-                p_due_date_offset_days := ?,
-                p_grace_period_days := ?,
-                p_minimum_payment_percent := ?,
-                p_minimum_payment_flat := ?,
-                p_auto_payment_enabled := ?,
-                p_auto_payment_type := ?,
-                p_auto_payment_amount := ?,
-                p_auto_payment_date := ?
-            ) as uuid
+            INSERT INTO data.credit_card_limits (
+                credit_card_account_id,
+                credit_limit, annual_percentage_rate, warning_threshold_percent,
+                interest_type, compounding_frequency,
+                statement_day_of_month, due_date_offset_days, grace_period_days,
+                minimum_payment_percent, minimum_payment_flat,
+                auto_payment_enabled, auto_payment_type, auto_payment_amount, auto_payment_date
+            )
+            VALUES (
+                (SELECT id FROM data.accounts WHERE uuid = ? AND user_data = utils.get_user()),
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
+            ON CONFLICT (credit_card_account_id, user_data) DO UPDATE SET
+                credit_limit             = EXCLUDED.credit_limit,
+                annual_percentage_rate   = EXCLUDED.annual_percentage_rate,
+                warning_threshold_percent = EXCLUDED.warning_threshold_percent,
+                interest_type            = EXCLUDED.interest_type,
+                compounding_frequency    = EXCLUDED.compounding_frequency,
+                statement_day_of_month   = EXCLUDED.statement_day_of_month,
+                due_date_offset_days     = EXCLUDED.due_date_offset_days,
+                grace_period_days        = EXCLUDED.grace_period_days,
+                minimum_payment_percent  = EXCLUDED.minimum_payment_percent,
+                minimum_payment_flat     = EXCLUDED.minimum_payment_flat,
+                auto_payment_enabled     = EXCLUDED.auto_payment_enabled,
+                auto_payment_type        = EXCLUDED.auto_payment_type,
+                auto_payment_amount      = EXCLUDED.auto_payment_amount,
+                auto_payment_date        = EXCLUDED.auto_payment_date
         ");
 
         $stmt->execute([

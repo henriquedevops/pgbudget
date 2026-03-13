@@ -46,7 +46,7 @@ EXTRACTION RULES:
 - Frequency: "todo mês"/"mensal" → monthly; "todo ano"/"anual" → annual;
   "semestral"/"a cada 6 meses" → semiannual; default → one_time.
 - account_hint: extract institution keyword if mentioned
-  (nubank, santander, caixa, samsung, picpay, elo, inter, itau, bradesco).
+  (nubank, santander, caixa, samsung, picpay, elo, mercado pago, inter, itau, bradesco).
 - If a required field for the intent is missing, set "clarify" to a single short
   question in the same language as the user. Otherwise set "clarify" to null.
 
