@@ -36,6 +36,11 @@ if (!in_array($view_mode, ['monthly', 'quarterly', 'annual'])) {
     $view_mode = 'monthly';
 }
 
+$group_mode = $_GET['group_mode'] ?? 'detail';
+if (!in_array($group_mode, ['detail', 'category'])) {
+    $group_mode = 'detail';
+}
+
 $highlight_uuid  = $_GET['highlight'] ?? '';
 $today_month     = date('Y-m-01');
 $current_month   = date('Y-m-01');
@@ -166,6 +171,30 @@ foreach ($past_installments as $pi) {
 }
 
 sort($all_months);
+
+// Category mode: collapse pivot to one row per (source_type, subcategory)
+if ($group_mode === 'category') {
+    $cat_pivot = [];
+    foreach ($pivot as $row) {
+        $sub     = $row['subcategory'] ?: $row['source_type'];
+        $cat_key = $row['source_type'] . ':' . $sub;
+        if (!isset($cat_pivot[$cat_key])) {
+            $cat_pivot[$cat_key] = [
+                'source_type' => $row['source_type'],
+                'source_uuid' => $cat_key,
+                'category'    => $row['category'],
+                'subcategory' => $sub,
+                'description' => ucwords(str_replace('_', ' ', $sub)),
+                'amounts'     => [],
+            ];
+        }
+        foreach ($row['amounts'] as $month => $amount) {
+            $cat_pivot[$cat_key]['amounts'][$month] =
+                ($cat_pivot[$cat_key]['amounts'][$month] ?? 0) + $amount;
+        }
+    }
+    $pivot = array_values($cat_pivot);
+}
 
 // Summary keyed by month
 $summary_by_month = [];
@@ -349,6 +378,13 @@ require_once '../../includes/header.php';
                         <option value="monthly"   <?= $view_mode === 'monthly'   ? 'selected' : '' ?>>Monthly</option>
                         <option value="quarterly" <?= $view_mode === 'quarterly' ? 'selected' : '' ?>>Quarterly</option>
                         <option value="annual"    <?= $view_mode === 'annual'    ? 'selected' : '' ?>>Annual</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Grouping</label>
+                    <select name="group_mode" class="form-input">
+                        <option value="detail"   <?= $group_mode === 'detail'   ? 'selected' : '' ?>>Detail</option>
+                        <option value="category" <?= $group_mode === 'category' ? 'selected' : '' ?>>By Category</option>
                     </select>
                 </div>
                 <div class="form-group form-group-btn">
