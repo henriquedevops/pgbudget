@@ -36,7 +36,9 @@ if (!$update || !isset($update['message'])) exit;
 $msg     = $update['message'];
 $chat_id = (int)($msg['chat']['id'] ?? 0);
 $text    = trim($msg['text'] ?? '');
-if ($chat_id === 0 || $text === '') exit;
+$photo   = $msg['photo'] ?? null;   // Array of photo sizes, largest last
+$voice   = $msg['voice']  ?? $msg['audio'] ?? null;  // Voice memo or audio file
+if ($chat_id === 0 || ($text === '' && $photo === null && $voice === null)) exit;
 
 if (!isset($cfg['users'][$chat_id])) exit;
 $user = $cfg['users'][$chat_id];
@@ -54,7 +56,11 @@ try {
 $ledger_uuid = tg_ledger_get($chat_id, $user);
 
 // Route
-if ($text === '/start') {
+if ($voice !== null) {
+    handle_voice($chat_id, $voice, $user, $ledger_uuid, $db, $cfg);
+} elseif ($photo !== null) {
+    handle_photo($chat_id, $msg, $user, $ledger_uuid, $db, $cfg);
+} elseif ($text === '/start') {
     tg_state_clear($chat_id);
     handle_start($chat_id, $cfg);
 } elseif ($text === '/help') {
@@ -78,7 +84,7 @@ if ($text === '/start') {
 } elseif (str_starts_with($text, '/')) {
     tg_state_clear($chat_id);
     tg_send($chat_id, "Comando não reconhecido. Use /help para ver os comandos disponíveis.", $cfg);
-} else {
+} elseif ($text !== '') {
     handle_free_text($chat_id, $text, $user, $ledger_uuid, $db, $cfg);
 }
 
@@ -527,6 +533,86 @@ function handle_mark_realized(int $chat_id, string $text, array $data, array $hi
         error_log('pgbudget Telegram mark_realized: ' . $e->getMessage());
         tg_send($chat_id, "Erro ao marcar evento como realizado. Tente novamente.", $cfg);
     }
+}
+
+// ---------------------------------------------------------------------------
+// Voice / audio handler
+// ---------------------------------------------------------------------------
+
+function handle_voice(int $chat_id, array $audio_obj, array $user, string $ledger_uuid, PDO $db, array $cfg): void {
+    if (empty($cfg['openai_api_key'])) {
+        tg_send($chat_id, "Áudio não suportado: adicione `openai_api_key` em config/telegram.php.", $cfg);
+        return;
+    }
+
+    // Download the audio from Telegram
+    $resp = tg_api('getFile', ['file_id' => $audio_obj['file_id']], $cfg);
+    if (empty($resp['result']['file_path'])) {
+        tg_send($chat_id, "Não consegui acessar o áudio. Tente novamente.", $cfg);
+        return;
+    }
+
+    $file_url  = 'https://api.telegram.org/file/bot' . $cfg['bot_token'] . '/' . $resp['result']['file_path'];
+    $tmp_path  = tempnam(sys_get_temp_dir(), 'pgbudget_audio_') . '.ogg';
+    $audio_data = @file_get_contents($file_url);
+    if ($audio_data === false || $audio_data === '') {
+        tg_send($chat_id, "Não consegui baixar o áudio. Tente novamente.", $cfg);
+        return;
+    }
+    file_put_contents($tmp_path, $audio_data);
+
+    // Transcribe with Whisper
+    $transcript = tg_transcribe_audio($tmp_path, $cfg);
+    @unlink($tmp_path);
+
+    if ($transcript === null) {
+        tg_send($chat_id, "Não consegui transcrever o áudio. Tente enviar como texto.", $cfg);
+        return;
+    }
+
+    // Echo transcription so the user can confirm what was heard
+    tg_send($chat_id, "🎤 _Ouvi:_ \"{$transcript}\"", $cfg);
+
+    // Feed the transcription through the normal free-text pipeline
+    $history = tg_state_load($chat_id);
+    handle_free_text($chat_id, $transcript, $user, $ledger_uuid, $db, $cfg);
+}
+
+// ---------------------------------------------------------------------------
+// Photo / receipt handler
+// ---------------------------------------------------------------------------
+
+function handle_photo(int $chat_id, array $msg, array $user, string $ledger_uuid, PDO $db, array $cfg): void {
+    // Use the highest-resolution photo (last element in the array)
+    $largest = end($msg['photo']);
+    $file_id = $largest['file_id'];
+    $caption = trim($msg['caption'] ?? '');
+
+    // Ask Telegram for the download path
+    $resp = tg_api('getFile', ['file_id' => $file_id], $cfg);
+    if (empty($resp['result']['file_path'])) {
+        tg_send($chat_id, "Não consegui acessar a imagem. Tente novamente.", $cfg);
+        return;
+    }
+
+    $file_url   = 'https://api.telegram.org/file/bot' . $cfg['bot_token'] . '/' . $resp['result']['file_path'];
+    $image_data = @file_get_contents($file_url);
+    if ($image_data === false || $image_data === '') {
+        tg_send($chat_id, "Não consegui baixar a imagem. Tente novamente.", $cfg);
+        return;
+    }
+
+    $today  = date('Y-m-d');
+    $parsed = tg_parse_receipt_image(base64_encode($image_data), 'image/jpeg', $caption ?: null, $today, $cfg);
+
+    if (isset($parsed['error'])) {
+        error_log('pgbudget Telegram receipt parse error: ' . $parsed['error']);
+        tg_send($chat_id, "Não consegui interpretar o recibo. Tente enviar os dados como texto.", $cfg);
+        return;
+    }
+
+    $history = tg_state_load($chat_id);
+    handle_record_transaction($chat_id, $caption ?: '[recibo]', $parsed['transaction'] ?? [], $history, $ledger_uuid, $db, $cfg);
 }
 
 // ---------------------------------------------------------------------------

@@ -130,6 +130,145 @@ PROMPT;
     return $parsed;
 }
 
+/**
+ * Extract transaction data from a receipt image using Claude vision.
+ *
+ * @param string      $image_b64  Base64-encoded image bytes
+ * @param string      $media_type MIME type (e.g. 'image/jpeg')
+ * @param string|null $caption    Optional caption the user sent with the photo
+ * @param string      $today      Current date as YYYY-MM-DD
+ * @param array       $cfg        Config array (needs 'claude_api_key', 'claude_model')
+ * @return array  {transaction: {...}} or ['error' => '...'] on failure
+ */
+function tg_parse_receipt_image(string $image_b64, string $media_type, ?string $caption, string $today, array $cfg): array {
+    $system = <<<PROMPT
+You are a financial assistant analyzing a receipt image for a budget app. Today is {$today}.
+
+Extract transaction data from the receipt.
+
+RULES:
+- description: merchant or store name — keep it short and clear.
+- amount_reais: the TOTAL amount paid (decimal number, no currency symbol).
+  Use the grand total, not subtotals or partial amounts.
+- date: date printed on the receipt as YYYY-MM-DD; if absent or illegible use today ({$today}).
+- direction: "outflow" for a purchase/payment; "inflow" for a refund or credit receipt.
+- account_hint: payment method shown on the receipt — extract any of:
+  (pix, débito, crédito, nubank, santander, caixa, samsung, picpay, elo, mercado pago, inter, itaú, bradesco).
+  Return null if no payment method is visible.
+- clarify: if this is not a receipt or the total cannot be read, set to a short question in Portuguese.
+  Otherwise null.
+
+Return ONLY a raw JSON object — no prose, no markdown, no code fences.
+
+Schema:
+{
+  "transaction": {
+    "description":   string|null,
+    "amount_reais":  number|null,
+    "direction":     "inflow"|"outflow"|null,
+    "date":          "YYYY-MM-DD"|null,
+    "account_hint":  string|null,
+    "clarify":       string|null
+  }
+}
+PROMPT;
+
+    $content = [
+        [
+            'type'   => 'image',
+            'source' => [
+                'type'       => 'base64',
+                'media_type' => $media_type,
+                'data'       => $image_b64,
+            ],
+        ],
+        [
+            'type' => 'text',
+            'text' => $caption
+                ? 'Legenda do usuário: ' . $caption . "\nExtraia os dados de transação deste recibo."
+                : 'Extraia os dados de transação deste recibo.',
+        ],
+    ];
+
+    $payload = [
+        'model'      => $cfg['claude_model'],
+        'max_tokens' => 256,
+        'system'     => $system,
+        'messages'   => [['role' => 'user', 'content' => $content]],
+    ];
+
+    $ch = curl_init('https://api.anthropic.com/v1/messages');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($payload),
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'x-api-key: ' . $cfg['claude_api_key'],
+            'anthropic-version: 2023-06-01',
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 30,
+    ]);
+    $response  = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if (!$response || $http_code !== 200) {
+        return ['error' => 'Claude API error (HTTP ' . $http_code . '): ' . $response];
+    }
+
+    $body    = json_decode($response, true);
+    $raw     = trim($body['content'][0]['text'] ?? '');
+    $raw     = preg_replace('/^```(?:json)?\s*/m', '', $raw);
+    $raw     = preg_replace('/\s*```$/m', '',         $raw);
+    $parsed  = json_decode(trim($raw), true);
+
+    if (!is_array($parsed)) {
+        return ['error' => 'Could not parse Claude response: ' . $raw];
+    }
+
+    return $parsed;
+}
+
+/**
+ * Transcribe a voice/audio file using OpenAI Whisper.
+ *
+ * @param string $file_path  Local filesystem path to the audio file (ogg, mp3, etc.)
+ * @param array  $cfg        Config array (needs 'openai_api_key')
+ * @return string|null       Transcribed text, or null on failure
+ */
+function tg_transcribe_audio(string $file_path, array $cfg): ?string {
+    if (empty($cfg['openai_api_key'])) return null;
+
+    $curl_file = new CURLFile($file_path, 'audio/ogg', basename($file_path));
+
+    $ch = curl_init('https://api.openai.com/v1/audio/transcriptions');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => [
+            'file'            => $curl_file,
+            'model'           => 'whisper-1',
+            'response_format' => 'text',
+            // No 'language' param → Whisper auto-detects (PT and EN both work)
+        ],
+        CURLOPT_HTTPHEADER     => [
+            'Authorization: Bearer ' . $cfg['openai_api_key'],
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 30,
+    ]);
+    $response  = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if (!$response || $http_code !== 200) {
+        error_log('pgbudget Telegram Whisper error (HTTP ' . $http_code . '): ' . $response);
+        return null;
+    }
+
+    return trim($response) ?: null;
+}
+
 // ---------------------------------------------------------------------------
 // Conversation state — file-based, per chat_id, 10-minute TTL
 // ---------------------------------------------------------------------------

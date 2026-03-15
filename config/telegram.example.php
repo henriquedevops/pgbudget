@@ -29,6 +29,11 @@ return [
     'claude_api_key' => 'REPLACE_WITH_CLAUDE_API_KEY',
     'claude_model'   => 'claude-haiku-4-5-20251001',
 
+    // OpenAI API key — used only for voice/audio transcription (Whisper).
+    // Get one at https://platform.openai.com/api-keys
+    // Leave null to disable voice support.
+    'openai_api_key' => null,
+
     // Map Telegram chat_id (integer) → pgbudget user context
     // Get your chat_id by messaging @userinfobot on Telegram
     'users' => [
