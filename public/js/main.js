@@ -1,6 +1,18 @@
 // Main JavaScript functionality for PgBudget
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Prevent double-submission: disable submit button and show "Saving…" on submit
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function() {
+            const btn = form.querySelector('[type="submit"]:not([data-no-loading])');
+            if (btn && !btn.disabled) {
+                btn.disabled = true;
+                btn.dataset.originalText = btn.innerHTML;
+                btn.innerHTML = 'Saving\u2026';
+            }
+        });
+    });
+
     // Auto-hide alerts after 5 seconds
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {

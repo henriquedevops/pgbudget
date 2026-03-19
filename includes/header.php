@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="PGBudget - Open-source zero-sum budgeting application with double-entry accounting">
     <meta name="theme-color" content="#3182ce">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PGBudget">
@@ -65,7 +66,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
-            <a href="/pgbudget/" class="nav-logo">💰 PgBudget</a>
+            <a href="/pgbudget/" class="nav-logo"><span aria-hidden="true">💰</span> PgBudget</a>
 
             <?php if (isset($_SESSION['user_id'])): ?>
             <!-- Undo/Redo Controls -->
@@ -107,22 +108,22 @@
                             <a href="/pgbudget/accounts/list.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Accounts</a>
                         </li>
                         <li class="nav-item">
-                            <a href="/pgbudget/categories/manage.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">📊 Categories</a>
+                            <a href="/pgbudget/categories/manage.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">📊</span> Categories</a>
                         </li>
                         <li class="nav-item">
                             <a href="/pgbudget/transactions/add.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Add Transaction</a>
                         </li>
                         <li class="nav-item">
-                            <a href="/pgbudget/credit-cards/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💳 Credit Cards</a>
+                            <a href="/pgbudget/credit-cards/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">💳</span> Credit Cards</a>
                         </li>
                         <li class="nav-item">
-                            <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">💰 Loans</a>
+                            <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">💰</span> Loans</a>
                         </li>
                         <li class="nav-item">
-                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">📅 Installments</a>
+                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">📅</span> Installments</a>
                         </li>
                         <li class="nav-item">
-                            <a href="/pgbudget/obligations/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">📋 Bills</a>
+                            <a href="/pgbudget/obligations/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">📋</span> Bills</a>
                         </li>
                         <li class="nav-item">
                             <a href="/pgbudget/income-sources/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Income</a>
@@ -138,7 +139,7 @@
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <a href="/pgbudget/settings/" class="nav-link">⚙️ Settings</a>
+                        <a href="/pgbudget/settings/" class="nav-link"><span aria-hidden="true">⚙️</span> Settings</a>
                     </li>
                     <li class="nav-item">
                         <span class="nav-user">Hello, <?= htmlspecialchars($_SESSION['user_id']) ?>!</span>
