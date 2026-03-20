@@ -303,7 +303,7 @@ try {
             <div class="empty-state">
                 <h3>No budget categories yet</h3>
                 <p>Get started by creating your first category or category group.</p>
-                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+                <div class="d-flex justify-center gap-4 mt-4">
                     <a href="create.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-primary">Create Category</a>
                     <a href="create-group.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-primary">Create Group</a>
                 </div>

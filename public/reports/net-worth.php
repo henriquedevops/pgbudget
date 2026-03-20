@@ -117,7 +117,7 @@ require_once '../../includes/header.php';
                        class="btn btn-small btn-success">📥 Export CSV</a>
                 </div>
             </div>
-            <div class="chart-container" style="height: 500px;">
+            <div class="chart-container">
                 <canvas id="netWorthChart"></canvas>
             </div>
         </div>
@@ -129,7 +129,7 @@ require_once '../../includes/header.php';
             <div class="chart-header">
                 <h3>Assets vs Liabilities</h3>
             </div>
-            <div class="chart-container" style="height: 400px;">
+            <div class="chart-container-sm">
                 <canvas id="assetsLiabilitiesChart"></canvas>
             </div>
         </div>

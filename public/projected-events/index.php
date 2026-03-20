@@ -253,7 +253,7 @@ require_once '../../includes/header.php';
     <?php endif; ?>
 
     <?php if (!empty($installment_plans)): ?>
-    <div class="section-header" style="margin-top:2rem;">
+    <div class="section-header mt-8">
         <h2>Active Installment Plans</h2>
     </div>
     <div class="events-table-container">

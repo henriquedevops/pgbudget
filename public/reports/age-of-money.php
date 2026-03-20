@@ -119,9 +119,9 @@ if (!$ledger) {
         <!-- Time Period Selection -->
         <div class="card" id="trend-controls" style="display: none;">
             <div class="card-body">
-                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <div class="d-flex align-center flex-wrap gap-4">
                     <label for="days-select"><strong>Show Trend:</strong></label>
-                    <select id="days-select" class="form-control" style="max-width: 200px;">
+                    <select id="days-select" class="form-control max-w-sm">
                         <option value="30">Last 30 days</option>
                         <option value="60">Last 60 days</option>
                         <option value="90" selected>Last 90 days</option>

@@ -49,7 +49,7 @@ $showOnboardingSuccess = isset($_GET['onboarding_complete']);
 ?>
 
 <?php if ($showOnboardingSuccess): ?>
-<div class="alert alert-success" style="margin: 2rem auto; max-width: 800px;">
+<div class="alert alert-success max-w-content mt-8">
     <h3>🎉 Welcome to PGBudget!</h3>
     <p>Your budget is all set up and ready to go. Start by adding some income or recording your first transaction!</p>
 </div>

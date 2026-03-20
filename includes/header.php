@@ -16,15 +16,9 @@
     <link rel="manifest" href="/pgbudget/manifest.json">
 
     <!-- Stylesheets -->
-    <?php $cv = '20260319'; ?>
-    <link rel="stylesheet" href="/pgbudget/css/style.css?v=<?= $cv ?>">
-    <link rel="stylesheet" href="/pgbudget/css/mobile.css?v=<?= $cv ?>">
-    <link rel="stylesheet" href="/pgbudget/css/keyboard-shortcuts.css?v=<?= $cv ?>">
-    <link rel="stylesheet" href="/pgbudget/css/undo.css?v=<?= $cv ?>">
-    <link rel="stylesheet" href="/pgbudget/css/delete-ledger.css?v=<?= $cv ?>">
-    <link rel="stylesheet" href="/pgbudget/css/tooltips.css?v=<?= $cv ?>">
-    <link rel="stylesheet" href="/pgbudget/css/help-sidebar.css?v=<?= $cv ?>">
-    <link rel="stylesheet" href="/pgbudget/css/modals.css?v=<?= $cv ?>">
+    <?php $cv = '20260319b'; ?>
+    <link rel="stylesheet" href="/pgbudget/css/core.css?v=<?= $cv ?>">
+    <link rel="stylesheet" href="/pgbudget/css/components.css?v=<?= $cv ?>">
 
     <!-- Tooltip Library (Tippy.js) -->
     <script src="https://unpkg.com/@popperjs/core@2"></script>

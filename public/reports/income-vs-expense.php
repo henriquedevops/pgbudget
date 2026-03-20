@@ -117,7 +117,7 @@ require_once '../../includes/header.php';
                        class="btn btn-small btn-success">📥 Export CSV</a>
                 </div>
             </div>
-            <div class="chart-container" style="height: 500px;">
+            <div class="chart-container">
                 <canvas id="incomeExpenseChart"></canvas>
             </div>
         </div>
