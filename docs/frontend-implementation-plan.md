@@ -10,7 +10,7 @@
 |---|---|---|---|
 | 1 | Quick wins — consistency & mobile basics | 1–2h each | ✅ Complete |
 | 2 | Navigation & UX flows | Half-day each | ✅ Complete |
-| 3 | CSS architecture consolidation | 1–2 days | ⏳ Pending |
+| 3 | CSS architecture consolidation | 1–2 days | ✅ Complete |
 | 4 | Component quality & accessibility | 1–2 days | ⏳ Pending |
 | 5 | Mobile-native polish | 1–2 days | ⏳ Pending |
 
@@ -50,10 +50,10 @@
 
 | # | Task | File(s) | Done |
 |---|---|---|---|
-| 3.1 | Merge `style.css` + `mobile.css` + `modals.css` → `core.css` | `core.css`, `header.php` | ⬜ |
-| 3.2 | Merge component CSS (undo, bulk-ops, help-sidebar, tooltips) → `components.css` | `components.css`, `header.php` | ⬜ |
-| 3.3 | Move page-specific CSS to load only on relevant pages | Per-page `<link>` tags | ⬜ |
-| 3.4 | Remove inline `style=""` attributes — replace with utility classes | All PHP templates | ⬜ |
+| 3.1 | Merge `style.css` + `mobile.css` + `modals.css` → `core.css` | `core.css`, `header.php` | ✅ |
+| 3.2 | Merge component CSS (undo, bulk-ops, help-sidebar, tooltips) → `components.css` | `components.css`, `header.php` | ✅ |
+| 3.3 | Move page-specific CSS to load only on relevant pages | Per-page `<link>` tags | ✅ |
+| 3.4 | Remove inline `style=""` attributes — replace with utility classes | All PHP templates | ✅ |
 
 ---
 
