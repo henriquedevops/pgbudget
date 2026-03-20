@@ -231,28 +231,28 @@ PROMPT;
 }
 
 /**
- * Transcribe a voice/audio file using OpenAI Whisper.
+ * Transcribe a voice/audio file using Groq Whisper.
  *
  * @param string $file_path  Local filesystem path to the audio file (ogg, mp3, etc.)
- * @param array  $cfg        Config array (needs 'openai_api_key')
+ * @param array  $cfg        Config array (needs 'groq_api_key')
  * @return string|null       Transcribed text, or null on failure
  */
 function tg_transcribe_audio(string $file_path, array $cfg): ?string {
-    if (empty($cfg['openai_api_key'])) return null;
+    if (empty($cfg['groq_api_key'])) return null;
 
     $curl_file = new CURLFile($file_path, 'audio/ogg', basename($file_path));
 
-    $ch = curl_init('https://api.openai.com/v1/audio/transcriptions');
+    $ch = curl_init('https://api.groq.com/openai/v1/audio/transcriptions');
     curl_setopt_array($ch, [
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => [
             'file'            => $curl_file,
-            'model'           => 'whisper-1',
+            'model'           => 'whisper-large-v3-turbo',
             'response_format' => 'text',
             // No 'language' param → Whisper auto-detects (PT and EN both work)
         ],
         CURLOPT_HTTPHEADER     => [
-            'Authorization: Bearer ' . $cfg['openai_api_key'],
+            'Authorization: Bearer ' . $cfg['groq_api_key'],
         ],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 30,

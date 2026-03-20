@@ -540,8 +540,8 @@ function handle_mark_realized(int $chat_id, string $text, array $data, array $hi
 // ---------------------------------------------------------------------------
 
 function handle_voice(int $chat_id, array $audio_obj, array $user, string $ledger_uuid, PDO $db, array $cfg): void {
-    if (empty($cfg['openai_api_key'])) {
-        tg_send($chat_id, "Áudio não suportado: adicione `openai_api_key` em config/telegram.php.", $cfg);
+    if (empty($cfg['groq_api_key'])) {
+        tg_send($chat_id, "Áudio não suportado: adicione `groq_api_key` em config/telegram.php.", $cfg);
         return;
     }
 

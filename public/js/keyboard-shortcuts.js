@@ -301,9 +301,13 @@ class KeyboardShortcuts {
             const selected = this.selectableItems[this.selectedIndex];
             const deleteBtn = selected.querySelector('.btn-delete, [data-action="delete"]');
             if (deleteBtn) {
-                if (confirm('Delete this transaction?')) {
-                    deleteBtn.click();
-                }
+                ConfirmModal.show({
+                    title:        'Delete Transaction?',
+                    message:      'This action cannot be undone.',
+                    confirmText:  'Delete',
+                    confirmClass: 'btn-danger',
+                    onConfirm:    () => deleteBtn.click()
+                });
             }
         }
     }

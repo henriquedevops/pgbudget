@@ -31,26 +31,63 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('blur', formatCurrencyInput);
     });
 
-    // Confirm delete actions
-    const deleteButtons = document.querySelectorAll('.btn-danger, [data-confirm]');
-    deleteButtons.forEach(button => {
+    // Confirm delete actions via styled modal
+    document.querySelectorAll('[data-confirm]').forEach(function(button) {
         button.addEventListener('click', function(e) {
+            e.preventDefault();
             const message = this.dataset.confirm || 'Are you sure you want to delete this item?';
-            if (!confirm(message)) {
-                e.preventDefault();
-            }
+            const title   = this.dataset.confirmTitle || 'Confirm Action';
+            const self    = this;
+            ConfirmModal.show({
+                title:        title,
+                message:      message,
+                confirmText:  self.dataset.confirmText  || 'Delete',
+                confirmClass: self.dataset.confirmClass || 'btn-danger',
+                onConfirm: function() {
+                    // If it's a link, follow it; if a button inside a form, submit; else click
+                    if (self.tagName === 'A') {
+                        window.location.href = self.href;
+                    } else if (self.form) {
+                        self.removeEventListener('click', arguments.callee);
+                        self.form.submit();
+                    } else {
+                        self.dataset.confirmed = '1';
+                        self.click();
+                    }
+                }
+            });
         });
     });
 
-    // Mobile menu toggle (if needed)
-    const navToggle = document.querySelector('.nav-toggle');
+    // Mobile hamburger toggle
+    const mobileToggle = document.querySelector('.mobile-menu-toggle');
     const navMenu = document.querySelector('.nav-menu');
-
-    if (navToggle && navMenu) {
-        navToggle.addEventListener('click', function() {
-            navMenu.classList.toggle('active');
+    if (mobileToggle && navMenu) {
+        mobileToggle.addEventListener('click', function() {
+            const isOpen = navMenu.classList.toggle('active');
+            mobileToggle.setAttribute('aria-expanded', isOpen);
+        });
+        // Close on outside click
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.navbar')) {
+                navMenu.classList.remove('active');
+                mobileToggle.setAttribute('aria-expanded', 'false');
+            }
         });
     }
+
+    // Nav dropdown toggles (mobile accordion)
+    document.querySelectorAll('.nav-dropdown-toggle').forEach(function(toggle) {
+        toggle.addEventListener('click', function(e) {
+            // Only act as accordion on mobile (where position is static)
+            if (window.innerWidth <= 768) {
+                e.stopPropagation();
+                const dropdown = this.closest('.nav-dropdown');
+                const isOpen = dropdown.classList.toggle('open');
+                this.setAttribute('aria-expanded', isOpen);
+            }
+        });
+    });
 
     // Add error styling for form validation
     const style = document.createElement('style');

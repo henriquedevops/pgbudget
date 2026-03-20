@@ -102,42 +102,47 @@
                     <li class="nav-item">
                         <a href="/pgbudget/" class="nav-link">Dashboard</a>
                     </li>
+
                     <?php if (isset($_GET['ledger']) || isset($ledger_uuid)): ?>
                         <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
+
                         <li class="nav-item">
                             <a href="/pgbudget/accounts/list.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Accounts</a>
                         </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/categories/manage.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">📊</span> Categories</a>
+
+                        <!-- Finances dropdown -->
+                        <li class="nav-item nav-dropdown">
+                            <button class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+                                Finances <span class="caret" aria-hidden="true">▾</span>
+                            </button>
+                            <ul class="nav-dropdown-menu" role="menu">
+                                <li><a href="/pgbudget/categories/manage.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Categories</a></li>
+                                <li><a href="/pgbudget/credit-cards/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Credit Cards</a></li>
+                                <li><a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Loans</a></li>
+                                <li><a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Installments</a></li>
+                                <li><a href="/pgbudget/obligations/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Bills</a></li>
+                                <li><a href="/pgbudget/income-sources/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Income Sources</a></li>
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/transactions/add.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Add Transaction</a>
+
+                        <!-- Reports dropdown -->
+                        <li class="nav-item nav-dropdown">
+                            <button class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+                                Reports <span class="caret" aria-hidden="true">▾</span>
+                            </button>
+                            <ul class="nav-dropdown-menu" role="menu">
+                                <li><a href="/pgbudget/reports/cash-flow-projection.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Cash Flow</a></li>
+                                <li><a href="/pgbudget/reports/what-if-projection.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">What-If</a></li>
+                                <li><a href="/pgbudget/projected-events/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Projected Events</a></li>
+                            </ul>
                         </li>
+
                         <li class="nav-item">
-                            <a href="/pgbudget/credit-cards/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">💳</span> Credit Cards</a>
+                            <a href="#" class="nav-link nav-quick-add" data-ledger="<?= htmlspecialchars($current_ledger) ?>" onclick="QuickAddModal.open();return false;">+ Add</a>
                         </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">💰</span> Loans</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">📅</span> Installments</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/obligations/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link"><span aria-hidden="true">📋</span> Bills</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/income-sources/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Income</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/projected-events/?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Events</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/reports/cash-flow-projection.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Projection</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pgbudget/reports/what-if-projection.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">What-If</a>
-                        </li>
+
                     <?php endif; ?>
+
                     <li class="nav-item">
                         <a href="/pgbudget/settings/" class="nav-link"><span aria-hidden="true">⚙️</span> Settings</a>
                     </li>

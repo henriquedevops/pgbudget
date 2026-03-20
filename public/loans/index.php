@@ -66,6 +66,7 @@ require_once '../../includes/header.php';
 
     <?php if (empty($loans)): ?>
         <div class="empty-state">
+            <span class="empty-state-icon" aria-hidden="true">🏠</span>
             <h3>No loans found</h3>
             <p>Track your mortgages, auto loans, student loans, and other debts with detailed payment schedules.</p>
             <a href="create.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">Create Your First Loan</a>

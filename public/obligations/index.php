@@ -177,6 +177,7 @@ require_once '../../includes/header.php';
 
     <?php if (empty($all_obligations)): ?>
         <div class="empty-state">
+            <span class="empty-state-icon" aria-hidden="true">🔔</span>
             <h3>No obligations found</h3>
             <p>Track your recurring bills and obligations like utilities, rent, subscriptions, insurance, and more.</p>
             <p class="empty-state-hint">Never miss a payment with automatic reminders and payment tracking.</p>

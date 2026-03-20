@@ -5,9 +5,7 @@
 $google_cfg = [
     'client_id'     => $_ENV['GOOGLE_CLIENT_ID']     ?? '',
     'client_secret' => $_ENV['GOOGLE_CLIENT_SECRET'] ?? '',
-    'redirect_uri'  => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
-                       . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')
-                       . '/pgbudget/auth/google-callback.php',
+    'redirect_uri'  => $_ENV['GOOGLE_REDIRECT_URI'] ?? 'http://localhost/pgbudget/auth/google-callback.php',
     'auth_url'      => 'https://accounts.google.com/o/oauth2/v2/auth',
     'token_url'     => 'https://oauth2.googleapis.com/token',
     'userinfo_url'  => 'https://www.googleapis.com/oauth2/v3/userinfo',

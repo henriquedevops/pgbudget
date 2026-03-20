@@ -846,6 +846,198 @@ body {
 }
 
 /* =====================================================
+   Confirm modal
+   ===================================================== */
+.confirm-modal-box {
+    max-width: 420px;
+    width: 100%;
+    padding: 2rem;
+}
+
+.confirm-modal-title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.75rem;
+}
+
+.confirm-modal-message {
+    color: var(--gray-500);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    margin-bottom: 1.75rem;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* =====================================================
+   Nav dropdowns
+   ===================================================== */
+.nav-dropdown {
+    position: relative;
+}
+
+.nav-dropdown-toggle {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    transition: color 0.2s;
+    white-space: nowrap;
+}
+
+.nav-dropdown-toggle:hover,
+.nav-dropdown:focus-within .nav-dropdown-toggle {
+    color: #bee3f8;
+}
+
+.nav-dropdown-toggle .caret {
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.nav-dropdown:hover .caret,
+.nav-dropdown:focus-within .caret {
+    transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a4a82;
+    border-radius: var(--radius-md);
+    min-width: 190px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: var(--z-dropdown);
+    padding: 0.4rem 0;
+    list-style: none;
+}
+
+/* small arrow above menu */
+.nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top: 0;
+    border-bottom-color: #1a4a82;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
+    display: block;
+}
+
+.nav-dropdown-menu li a {
+    display: block;
+    padding: 0.6rem 1.1rem;
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.nav-dropdown-menu li a:hover {
+    background: rgba(255,255,255,0.12);
+    color: white;
+}
+
+/* =====================================================
+   Setup checklist widget
+   ===================================================== */
+.setup-checklist {
+    background: var(--color-primary-bg);
+    border: 1px solid #bee3f8;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.setup-checklist-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--color-primary);
+    text-align: left;
+}
+
+.setup-checklist-caret {
+    transition: transform 0.2s;
+}
+
+.setup-checklist.open .setup-checklist-caret {
+    transform: rotate(180deg);
+}
+
+.setup-checklist-body {
+    display: none;
+    padding: 0 1.5rem 1.25rem;
+}
+
+.setup-checklist.open .setup-checklist-body {
+    display: block;
+}
+
+.setup-checklist-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.setup-checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: var(--text-sm);
+    color: var(--gray-700);
+}
+
+.setup-checklist-item.done {
+    color: var(--gray-400);
+    text-decoration: line-through;
+}
+
+.setup-checklist-check {
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.setup-checklist-item a {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.setup-checklist-item a:hover { text-decoration: underline; }
+
+/* =====================================================
    Empty state component
    ===================================================== */
 .empty-state {

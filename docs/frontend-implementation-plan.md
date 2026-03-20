@@ -9,7 +9,7 @@
 | Phase | Scope | Effort | Status |
 |---|---|---|---|
 | 1 | Quick wins — consistency & mobile basics | 1–2h each | ✅ Complete |
-| 2 | Navigation & UX flows | Half-day each | ⏳ Pending |
+| 2 | Navigation & UX flows | Half-day each | ✅ Complete |
 | 3 | CSS architecture consolidation | 1–2 days | ⏳ Pending |
 | 4 | Component quality & accessibility | 1–2 days | ⏳ Pending |
 | 5 | Mobile-native polish | 1–2 days | ⏳ Pending |
@@ -38,11 +38,11 @@
 
 | # | Task | File(s) | Done |
 |---|---|---|---|
-| 2.1 | Collapse top nav into grouped dropdowns (max 5–6 top-level items) | `header.php`, `style.css` | ⬜ |
-| 2.2 | Mobile `+` FAB opens quick-add modal (not page navigate) | `header.php`, `footer.php` | ⬜ |
-| 2.3 | Replace all `confirm()` dialogs with styled confirmation modal | `includes/confirm-modal.php`, JS files | ⬜ |
-| 2.4 | Add empty state components to all list/table pages | Per-page PHP templates | ⬜ |
-| 2.5 | Dashboard setup checklist widget for incomplete onboarding | `budget/dashboard.php` | ⬜ |
+| 2.1 | Collapse top nav into grouped dropdowns (max 5–6 top-level items) | `header.php`, `style.css` | ✅ |
+| 2.2 | Mobile `+` FAB opens quick-add modal (not page navigate) | `header.php`, `footer.php` | ✅ |
+| 2.3 | Replace all `confirm()` dialogs with styled confirmation modal | `includes/confirm-modal.php`, JS files | ✅ |
+| 2.4 | Add empty state components to all list/table pages | Per-page PHP templates | ✅ |
+| 2.5 | Dashboard setup checklist widget for incomplete onboarding | `budget/dashboard.php` | ✅ |
 
 ---
 

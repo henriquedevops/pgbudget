@@ -335,6 +335,7 @@ try {
 
     <?php if (empty($transactions)): ?>
         <div class="empty-state">
+            <span class="empty-state-icon" aria-hidden="true">📋</span>
             <h3>No transactions found</h3>
             <?php if (!empty($search) || !empty($account_filter) || !empty($category_filter) || !empty($type_filter) || !empty($date_from) || !empty($date_to) || !empty($amount_min) || !empty($amount_max)): ?>
                 <p>No transactions match your current filters. Try adjusting your search criteria.</p>

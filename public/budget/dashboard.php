@@ -115,6 +115,16 @@ try {
     }
     $group_subtotals = $stmt->fetchAll();
 
+    // Setup checklist: check if ledger has at least one transaction
+    $stmt = $db->prepare("
+        SELECT COUNT(*) AS cnt
+        FROM data.transactions t
+        JOIN data.accounts a ON t.credit_account_id = a.id
+        WHERE a.ledger_uuid = ?
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $has_transactions = (int)$stmt->fetchColumn() > 0;
+
     // Get 6-month cash flow projection outlook (optional — ignore errors)
     $projection_outlook = [];
     try {
@@ -164,6 +174,11 @@ try {
             }
         }
     }
+
+    // Setup checklist state
+    $has_accounts    = !empty($ledger_accounts);
+    $has_categories  = !empty($grouped_categories);
+    $setup_complete  = $has_accounts && $has_categories && $has_transactions;
 
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Database error: ' . $e->getMessage();
@@ -254,6 +269,44 @@ require_once '../../includes/header.php';
                 <span class="summary-amount"><?= formatCurrency($total_activity) ?></span>
             </div>
         </div>
+    <?php endif; ?>
+
+    <!-- Setup Checklist (shown until all steps complete) -->
+    <?php if (!$setup_complete): ?>
+    <div class="setup-checklist" id="setup-checklist">
+        <button type="button" class="setup-checklist-header" onclick="this.closest('.setup-checklist').classList.toggle('open')" aria-expanded="false">
+            <span><span aria-hidden="true">🚀</span> Get started with your budget</span>
+            <span class="setup-checklist-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="setup-checklist-body">
+            <ul class="setup-checklist-items">
+                <li class="setup-checklist-item <?= $has_accounts ? 'done' : '' ?>">
+                    <span class="setup-checklist-check" aria-hidden="true"><?= $has_accounts ? '✅' : '⬜' ?></span>
+                    <?php if ($has_accounts): ?>
+                        <span>Add your bank accounts</span>
+                    <?php else: ?>
+                        <a href="../accounts/create.php?ledger=<?= urlencode($ledger_uuid) ?>">Add your bank accounts</a>
+                    <?php endif; ?>
+                </li>
+                <li class="setup-checklist-item <?= $has_categories ? 'done' : '' ?>">
+                    <span class="setup-checklist-check" aria-hidden="true"><?= $has_categories ? '✅' : '⬜' ?></span>
+                    <?php if ($has_categories): ?>
+                        <span>Create budget categories</span>
+                    <?php else: ?>
+                        <a href="../categories/manage.php?ledger=<?= urlencode($ledger_uuid) ?>">Create budget categories</a>
+                    <?php endif; ?>
+                </li>
+                <li class="setup-checklist-item <?= $has_transactions ? 'done' : '' ?>">
+                    <span class="setup-checklist-check" aria-hidden="true"><?= $has_transactions ? '✅' : '⬜' ?></span>
+                    <?php if ($has_transactions): ?>
+                        <span>Record your first transaction</span>
+                    <?php else: ?>
+                        <a href="../transactions/add.php?ledger=<?= urlencode($ledger_uuid) ?>">Record your first transaction</a>
+                    <?php endif; ?>
+                </li>
+            </ul>
+        </div>
+    </div>
     <?php endif; ?>
 
     <!-- Overspending Warning Banner -->

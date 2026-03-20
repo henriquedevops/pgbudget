@@ -155,6 +155,7 @@ require_once '../../includes/header.php';
 
     <?php if (empty($events)): ?>
         <div class="empty-state">
+            <span class="empty-state-icon" aria-hidden="true">📅</span>
             <h3>No projected events found</h3>
             <p>Track future cash flows like bonuses, tax refunds, settlements, large purchases, and other one-time or recurring events.</p>
             <p class="empty-state-hint">Projected events appear in the cash flow projection report.</p>

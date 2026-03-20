@@ -143,11 +143,13 @@ class BulkOperations {
 
     showDeleteConfirmation() {
         const count = this.selectedTransactions.size;
-        const message = `Are you sure you want to delete ${count} transaction${count > 1 ? 's' : ''}? This action cannot be undone.`;
-
-        if (confirm(message)) {
-            this.performBulkDelete();
-        }
+        ConfirmModal.show({
+            title:        `Delete ${count} Transaction${count > 1 ? 's' : ''}?`,
+            message:      `This will permanently remove ${count} transaction${count > 1 ? 's' : ''}. This action cannot be undone.`,
+            confirmText:  'Delete',
+            confirmClass: 'btn-danger',
+            onConfirm:    () => this.performBulkDelete()
+        });
     }
 
     showEditDateModal() {

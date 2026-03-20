@@ -124,6 +124,7 @@ require_once '../../includes/header.php';
     <div class="accounts-section">
         <?php if (empty($accounts)): ?>
             <div class="empty-state">
+                <span class="empty-state-icon" aria-hidden="true">🏦</span>
                 <h3>No accounts found</h3>
                 <p>Create your first account to get started with budget tracking.</p>
                 <a href="create.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary">Create Account</a>
