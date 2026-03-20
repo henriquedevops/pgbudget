@@ -115,16 +115,6 @@ try {
     }
     $group_subtotals = $stmt->fetchAll();
 
-    // Setup checklist: check if ledger has at least one transaction
-    $stmt = $db->prepare("
-        SELECT COUNT(*) AS cnt
-        FROM data.transactions t
-        JOIN data.accounts a ON t.credit_account_id = a.id
-        WHERE a.ledger_uuid = ?
-    ");
-    $stmt->execute([$ledger_uuid]);
-    $has_transactions = (int)$stmt->fetchColumn() > 0;
-
     // Get 6-month cash flow projection outlook (optional — ignore errors)
     $projection_outlook = [];
     try {
@@ -178,6 +168,7 @@ try {
     // Setup checklist state
     $has_accounts    = !empty($ledger_accounts);
     $has_categories  = !empty($grouped_categories);
+    $has_transactions = !empty($recent_transactions);
     $setup_complete  = $has_accounts && $has_categories && $has_transactions;
 
 } catch (PDOException $e) {

@@ -12,11 +12,13 @@
     z-index: var(--z-modal);
     padding: 20px;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.25s ease-out;
 }
 
 .modal-overlay.show {
     opacity: 1;
+    pointer-events: auto;
 }
 
 /* Modal Container */
