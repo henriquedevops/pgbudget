@@ -53,17 +53,18 @@
     ?>
 
     <!-- Core JavaScript -->
-    <script src="/pgbudget/js/confirm-modal.js"></script>
-    <script src="/pgbudget/js/main.js"></script>
-    <script src="/pgbudget/js/mobile-gestures.js"></script>
-    <script src="/pgbudget/js/keyboard-shortcuts.js"></script>
-    <script src="/pgbudget/js/undo-manager.js"></script>
-    <script src="/pgbudget/js/delete-ledger.js"></script>
+    <?php $jv = '20260319'; ?>
+    <script src="/pgbudget/js/confirm-modal.js?v=<?= $jv ?>"></script>
+    <script src="/pgbudget/js/main.js?v=<?= $jv ?>"></script>
+    <script src="/pgbudget/js/mobile-gestures.js?v=<?= $jv ?>"></script>
+    <script src="/pgbudget/js/keyboard-shortcuts.js?v=<?= $jv ?>"></script>
+    <script src="/pgbudget/js/undo-manager.js?v=<?= $jv ?>"></script>
+    <script src="/pgbudget/js/delete-ledger.js?v=<?= $jv ?>"></script>
 
     <?php
     if (isset($_SESSION['user_id'])) {
-        echo '<script src="/pgbudget/js/quick-add-modal.js"></script>';
-        echo '<script src="/pgbudget/js/transfer-modal.js"></script>';
+        echo "<script src=\"/pgbudget/js/quick-add-modal.js?v={$jv}\"></script>";
+        echo "<script src=\"/pgbudget/js/transfer-modal.js?v={$jv}\"></script>";
     }
     ?>
 
