@@ -3,25 +3,21 @@
  * Phase 6.5: Offline support and caching
  */
 
-const CACHE_VERSION = 'pgbudget-v1.0.0';
+const CACHE_VERSION = 'pgbudget-v1.0.2';
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 const DATA_CACHE_NAME = `${CACHE_VERSION}-data`;
 
-// Files to cache immediately on install
+// Only cache truly static assets — never PHP pages (they redirect based on auth state)
 const STATIC_CACHE_FILES = [
-    '/pgbudget/',
-    '/pgbudget/index.php',
     '/pgbudget/css/style.css',
     '/pgbudget/css/mobile.css',
+    '/pgbudget/css/modals.css',
     '/pgbudget/css/bulk-operations.css',
+    '/pgbudget/js/main.js',
+    '/pgbudget/js/confirm-modal.js',
     '/pgbudget/js/mobile-gestures.js',
     '/pgbudget/js/bulk-operations.js',
     '/pgbudget/manifest.json',
-    // Add commonly used pages
-    '/pgbudget/auth/login.php',
-    '/pgbudget/budget/dashboard.php',
-    '/pgbudget/transactions/list.php',
-    '/pgbudget/transactions/add.php'
 ];
 
 // API endpoints to cache dynamically
@@ -81,6 +77,11 @@ self.addEventListener('fetch', (event) => {
 
     // Skip cross-origin requests
     if (url.origin !== location.origin) {
+        return;
+    }
+
+    // Never intercept navigation requests (PHP pages redirect based on auth — let browser handle)
+    if (request.mode === 'navigate') {
         return;
     }
 
@@ -152,8 +153,8 @@ async function handleStaticRequest(request) {
     try {
         const networkResponse = await fetch(request);
 
-        // Cache successful responses
-        if (networkResponse.ok) {
+        // Cache successful, non-redirected responses only
+        if (networkResponse.ok && !networkResponse.redirected) {
             const cache = await caches.open(CACHE_NAME);
             cache.put(request, networkResponse.clone());
         }
