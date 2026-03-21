@@ -10,7 +10,7 @@ require_once '../../includes/auth.php';
 requireAuth();
 
 $ledger_uuid = $_GET['ledger'] ?? '';
-$selected_period = $_GET['period'] ?? null; // YYYYMM format
+$selected_period = $_GET['period'] ?? date('Ym'); // YYYYMM format; default to current month
 
 if (empty($ledger_uuid)) {
     $_SESSION['error'] = 'No budget specified.';
