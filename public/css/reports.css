@@ -263,3 +263,53 @@
 .report-loading {
     padding: 2rem 0;
 }
+
+/* =====================================================
+   Mobile: report tables → stacked cards (≤ 640px)
+   ===================================================== */
+@media (max-width: 640px) {
+    /* Hide table headers, show data as labeled rows */
+    .report-table thead {
+        display: none;
+    }
+
+    .report-table,
+    .report-table tbody,
+    .report-table tr,
+    .report-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .report-table tr {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--radius-md);
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .report-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.35rem 0;
+        border: none;
+        font-size: var(--text-sm);
+        border-bottom: 1px solid #f7fafc;
+    }
+
+    .report-table td:last-child {
+        border-bottom: none;
+    }
+
+    /* Use data-label attribute for column name on mobile */
+    .report-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--gray-600);
+        flex-shrink: 0;
+        margin-right: 0.5rem;
+    }
+}

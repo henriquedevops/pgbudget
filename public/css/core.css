@@ -83,6 +83,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Navigation */
@@ -1916,3 +1917,32 @@ body {
 }
 .chart-container { height: 500px; }
 .chart-container-sm { height: 400px; }
+
+/* =====================================================
+   Page-entry animation
+   ===================================================== */
+@keyframes page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container,
+.main-content > .container,
+.page-content {
+    animation: page-enter 0.25s ease-out both;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .container,
+    .main-content > .container,
+    .page-content {
+        animation: none;
+    }
+}

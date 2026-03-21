@@ -16,7 +16,7 @@
     <link rel="manifest" href="/pgbudget/manifest.json">
 
     <!-- Stylesheets -->
-    <?php $cv = '20260321'; ?>
+    <?php $cv = '20260321b'; ?>
     <link rel="stylesheet" href="/pgbudget/css/core.css?v=<?= $cv ?>">
     <link rel="stylesheet" href="/pgbudget/css/components.css?v=<?= $cv ?>">
 

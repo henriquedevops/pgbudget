@@ -387,3 +387,86 @@ document.addEventListener('DOMContentLoaded', () => {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { MobileGestures, TouchGestureUtils, HapticFeedback };
 }
+
+// Swipe-to-delete for transaction rows
+(function() {
+    if (!('ontouchstart' in window)) return;
+
+    const SWIPE_THRESHOLD = 80; // px to reveal action
+
+    function initSwipeRows() {
+        document.querySelectorAll('.transactions-table tbody tr[data-uuid], tr.transaction-row[data-uuid]').forEach(function(row) {
+            if (row.dataset.swipeInit) return;
+            row.dataset.swipeInit = '1';
+
+            let startX = 0, startY = 0, currentX = 0, revealed = false;
+
+            row.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                currentX = 0;
+            }, { passive: true });
+
+            row.addEventListener('touchmove', function(e) {
+                const dx = e.touches[0].clientX - startX;
+                const dy = e.touches[0].clientY - startY;
+                if (Math.abs(dy) > Math.abs(dx)) return; // vertical scroll
+                currentX = Math.min(0, dx); // only left swipe
+                row.style.transform = 'translateX(' + Math.max(currentX, -SWIPE_THRESHOLD - 20) + 'px)';
+                row.style.transition = 'none';
+            }, { passive: true });
+
+            row.addEventListener('touchend', function() {
+                row.style.transition = 'transform 0.2s ease';
+                if (currentX < -SWIPE_THRESHOLD) {
+                    row.style.transform = 'translateX(-' + SWIPE_THRESHOLD + 'px)';
+                    revealed = true;
+                    showDeleteHint(row);
+                } else {
+                    row.style.transform = '';
+                    revealed = false;
+                    hideDeleteHint(row);
+                }
+            });
+        });
+    }
+
+    function showDeleteHint(row) {
+        if (row.querySelector('.swipe-delete-btn')) return;
+        const btn = document.createElement('button');
+        btn.className = 'swipe-delete-btn';
+        btn.setAttribute('aria-label', 'Delete');
+        btn.innerHTML = '<i data-lucide="trash-2" aria-hidden="true"></i>';
+        btn.style.cssText = 'position:absolute;right:0;top:0;height:100%;width:' + 80 + 'px;background:#e53e3e;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+        row.style.position = 'relative';
+        row.appendChild(btn);
+        if (window.lucide) lucide.createIcons({ nodes: [btn] });
+
+        btn.addEventListener('click', function() {
+            // Look for existing delete button/link in the row
+            const deleteBtn = row.querySelector('[data-action="delete"], .btn-delete, a[href*="delete"], button[onclick*="delete"], button[onclick*="Delete"]');
+            if (deleteBtn) {
+                deleteBtn.click();
+            } else {
+                // Reset swipe
+                row.style.transform = '';
+                btn.remove();
+            }
+        });
+    }
+
+    function hideDeleteHint(row) {
+        const btn = row.querySelector('.swipe-delete-btn');
+        if (btn) btn.remove();
+    }
+
+    // Init on load and after any dynamic content changes
+    document.addEventListener('DOMContentLoaded', initSwipeRows);
+    document.addEventListener('htmx:afterSettle', initSwipeRows);
+    // Re-init after table updates
+    const observer = new MutationObserver(function() { initSwipeRows(); });
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.querySelector('.transactions-table tbody');
+        if (table) observer.observe(table, { childList: true });
+    });
+})();
