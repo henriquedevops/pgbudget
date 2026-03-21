@@ -17,6 +17,22 @@
     let allCategories = [];
 
     /**
+     * Safely escape text for inclusion in HTML.
+     * This prevents DOM text from being reinterpreted as HTML.
+     */
+    function escapeHtml(str) {
+        if (typeof str !== 'string') {
+            return str;
+        }
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    /**
      * Initialize move money functionality
      */
     function init() {
@@ -177,7 +193,7 @@
                                         <option value="${cat.uuid}"
                                                 data-balance="${cat.balance}"
                                                 ${sourceUuid === cat.uuid ? 'selected' : ''}>
-                                            ${cat.name} (Available: ${formatCurrency(cat.balance)})
+                                            ${escapeHtml(cat.name)} (Available: ${formatCurrency(cat.balance)})
                                         </option>
                                     `).join('')}
                                 </select>
@@ -190,7 +206,7 @@
                                     <option value="">Choose destination...</option>
                                     ${allCategories.map(cat => `
                                         <option value="${cat.uuid}" ${sourceUuid === cat.uuid ? 'disabled' : ''}>
-                                            ${cat.name}
+                                            ${escapeHtml(cat.name)}
                                         </option>
                                     `).join('')}
                                 </select>
