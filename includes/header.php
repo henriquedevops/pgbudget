@@ -16,7 +16,7 @@
     <link rel="manifest" href="/pgbudget/manifest.json">
 
     <!-- Stylesheets -->
-    <?php $cv = '20260319b'; ?>
+    <?php $cv = '20260321'; ?>
     <link rel="stylesheet" href="/pgbudget/css/core.css?v=<?= $cv ?>">
     <link rel="stylesheet" href="/pgbudget/css/components.css?v=<?= $cv ?>">
 
@@ -24,6 +24,9 @@
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <script src="https://unpkg.com/tippy.js@6"></script>
     <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/pgbudget/images/icon-192x192.png">
@@ -51,6 +54,7 @@
                     }, 5000);
                 }
             });
+            lucide.createIcons();
         });
     </script>
 </head>
@@ -60,19 +64,19 @@
 
     <nav class="navbar">
         <div class="nav-container">
-            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
-            <a href="/pgbudget/" class="nav-logo"><span aria-hidden="true">💰</span> PgBudget</a>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false"><i data-lucide="menu" aria-hidden="true"></i></button>
+            <a href="/pgbudget/" class="nav-logo"><i data-lucide="piggy-bank" aria-hidden="true"></i> PgBudget</a>
 
             <?php if (isset($_SESSION['user_id'])): ?>
             <!-- Undo/Redo Controls -->
             <div class="undo-redo-controls">
                 <button id="undo-btn" class="undo-btn" onclick="window.undoManager?.undo()" disabled title="Nothing to undo">
-                    <span class="icon">↩️</span>
+                    <i data-lucide="undo-2" aria-hidden="true"></i>
                     <span class="label">Undo</span>
                     <span id="undo-count" class="undo-count" style="display: none;">0</span>
                 </button>
                 <button id="redo-btn" class="redo-btn" onclick="window.undoManager?.redo()" disabled title="Nothing to redo">
-                    <span class="icon">↪️</span>
+                    <i data-lucide="redo-2" aria-hidden="true"></i>
                     <span class="label">Redo</span>
                 </button>
             </div>
@@ -88,7 +92,7 @@
                                class="nav-search-input"
                                placeholder="Search..."
                                title="Press / to focus (Ctrl+K)">
-                        <button type="submit" class="nav-search-btn" title="Search">🔍</button>
+                        <button type="submit" class="nav-search-btn" title="Search"><i data-lucide="search" aria-hidden="true"></i></button>
                     </form>
                 </div>
             <?php endif; ?>
@@ -133,13 +137,13 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link nav-quick-add" data-ledger="<?= htmlspecialchars($current_ledger) ?>" onclick="QuickAddModal.open();return false;">+ Add</a>
+                            <a href="#" class="nav-link nav-quick-add" data-ledger="<?= htmlspecialchars($current_ledger) ?>" onclick="QuickAddModal.open();return false;"><i data-lucide="plus" aria-hidden="true"></i> Add</a>
                         </li>
 
                     <?php endif; ?>
 
                     <li class="nav-item">
-                        <a href="/pgbudget/settings/" class="nav-link"><span aria-hidden="true">⚙️</span> Settings</a>
+                        <a href="/pgbudget/settings/" class="nav-link"><i data-lucide="settings" aria-hidden="true"></i> Settings</a>
                     </li>
                     <li class="nav-item">
                         <span class="nav-user">Hello, <?= htmlspecialchars($_SESSION['user_id']) ?>!</span>

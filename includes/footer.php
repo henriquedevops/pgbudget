@@ -53,7 +53,7 @@
     ?>
 
     <!-- Core JavaScript -->
-    <?php $jv = '20260319b'; ?>
+    <?php $jv = '20260321'; ?>
     <script src="/pgbudget/js/confirm-modal.js?v=<?= $jv ?>"></script>
     <script src="/pgbudget/js/main.js?v=<?= $jv ?>"></script>
     <script src="/pgbudget/js/mobile-gestures.js?v=<?= $jv ?>"></script>

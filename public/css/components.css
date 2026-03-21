@@ -77,7 +77,7 @@
     font-size: 14px;
     font-weight: 500;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    z-index: 10002;
+    z-index: var(--z-toast);
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.3s, transform 0.3s;
@@ -286,7 +286,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    z-index: 10001;
+    z-index: var(--z-toast);
     transition: transform 0.3s;
 }
 
@@ -486,7 +486,7 @@
     box-shadow: -2px 0 8px rgba(0,0,0,0.1);
     padding: 1.5rem;
     transition: right 0.3s ease-in-out;
-    z-index: 1001;
+    z-index: var(--z-sidebar);
 }
 
 .help-sidebar.active {
@@ -728,7 +728,7 @@
     padding: 20px 24px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    z-index: 10003;
+    z-index: var(--z-dialog);
     display: flex;
     align-items: center;
     gap: 15px;
@@ -882,7 +882,7 @@
     outline-offset: 2px;
     background-color: #ebf8ff !important;
     position: relative;
-    z-index: 10;
+    z-index: var(--z-table-sticky);
 }
 
 .keyboard-selected::before {
@@ -914,7 +914,7 @@
     font-size: 14px;
     font-weight: 500;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    z-index: 10001;
+    z-index: var(--z-toast);
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.3s, transform 0.3s;
@@ -1101,7 +1101,7 @@ kbd {
     border-radius: 6px;
     font-size: 14px;
     font-weight: 500;
-    z-index: 10000;
+    z-index: var(--z-tooltip);
     opacity: 0;
     transition: opacity 0.3s;
     pointer-events: none;

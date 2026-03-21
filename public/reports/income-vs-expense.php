@@ -83,8 +83,33 @@ require_once '../../includes/header.php';
         </form>
     </div>
 
+    <!-- Skeleton loading state (shown while JS fetches data) -->
+    <div id="report-skeleton" class="report-loading">
+        <div class="skeleton-card">
+            <div class="skeleton skeleton-text w-33" style="height:1.5rem; margin-bottom:1rem;"></div>
+            <div class="skeleton-row">
+                <span class="skeleton skeleton-text" style="flex:1;"></span>
+                <span class="skeleton skeleton-text" style="flex:1;"></span>
+                <span class="skeleton skeleton-text" style="flex:1;"></span>
+            </div>
+            <div class="skeleton-row">
+                <span class="skeleton skeleton-text" style="flex:1;"></span>
+                <span class="skeleton skeleton-text" style="flex:1;"></span>
+                <span class="skeleton skeleton-text" style="flex:1;"></span>
+            </div>
+            <div class="skeleton-row">
+                <span class="skeleton skeleton-text" style="flex:1;"></span>
+                <span class="skeleton skeleton-text" style="flex:1;"></span>
+                <span class="skeleton skeleton-text" style="flex:1;"></span>
+            </div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton" style="height:300px; border-radius: var(--radius-md,6px);"></div>
+        </div>
+    </div>
+
     <!-- Summary Cards -->
-    <div id="summary-cards" class="summary-cards">
+    <div id="summary-cards" class="summary-cards" style="display:none;">
         <div class="summary-card income-card">
             <div class="summary-label">Total Income</div>
             <div class="summary-value" id="total-income">Loading...</div>
@@ -108,7 +133,7 @@ require_once '../../includes/header.php';
     </div>
 
     <!-- Chart Section -->
-    <div class="charts-section">
+    <div class="charts-section" id="charts-section" style="display:none;">
         <div class="chart-card">
             <div class="chart-header">
                 <h3>Monthly Income vs Expense</h3>
@@ -124,7 +149,7 @@ require_once '../../includes/header.php';
     </div>
 
     <!-- Trend Insights -->
-    <div class="insights-card">
+    <div class="insights-card" id="insights-card" style="display:none;">
         <h3>💡 Insights</h3>
         <div id="insights-content">
             <p class="loading-text">Analyzing your data...</p>
@@ -195,6 +220,16 @@ const IncomeExpenseReport = {
         } else if (summary.net_total < 0) {
             netCard.style.background = 'linear-gradient(135deg, #fc8181 0%, #f56565 100%)';
         }
+
+        // Hide skeleton, show real content
+        const skeleton = document.getElementById('report-skeleton');
+        if (skeleton) skeleton.style.display = 'none';
+        const summaryCards = document.getElementById('summary-cards');
+        if (summaryCards) summaryCards.style.display = '';
+        const chartsSection = document.getElementById('charts-section');
+        if (chartsSection) chartsSection.style.display = '';
+        const insightsCard = document.getElementById('insights-card');
+        if (insightsCard) insightsCard.style.display = '';
     },
 
     renderChart() {

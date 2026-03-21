@@ -12,13 +12,18 @@
     --radius-lg:   12px;
     --radius-pill: 9999px;
 
-    /* ---- Z-Index Scale ---- */
-    --z-dropdown: 100;
-    --z-sticky:   200;
-    --z-overlay:  300;
-    --z-modal:    400;
-    --z-toast:    500;
-    --z-tooltip:  600;
+    /* ---- Z-index scale ---- */
+    --z-table-sticky:  2;    /* sticky table columns */
+    --z-table-head:    4;    /* sticky thead (above sticky cols) */
+    --z-dropdown:    100;    /* nav/select dropdowns */
+    --z-sticky:      200;    /* sticky filter bars */
+    --z-navbar:      300;    /* top navigation */
+    --z-sidebar:     400;    /* slide-in sidebars */
+    --z-overlay:     500;    /* modal backdrop */
+    --z-modal:       600;    /* modal dialogs */
+    --z-toast:       700;    /* toast / undo bar */
+    --z-tooltip:     800;    /* tooltips & popovers */
+    --z-dialog:      900;    /* critical confirmation dialogs */
 
     /* ---- Type Scale ---- */
     --text-xs:   0.75rem;    /* 12px */
@@ -815,6 +820,28 @@ body {
 .text-danger { color: var(--danger-500); }
 .text-success { color: var(--success-700); }
 
+/* ---- Focus rings (accessibility) ---- */
+:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+/* Remove default focus outline only when focus-visible is supported */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Lucide icon sizing in nav */
+.navbar i[data-lucide],
+.undo-redo-controls i[data-lucide] {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+.nav-logo i[data-lucide] { width: 20px; height: 20px; }
+
 .w-full  { width: 100%; }
 .sr-only {
     position: absolute;
@@ -1268,7 +1295,7 @@ body {
     background: white;
     border-top: 1px solid #e2e8f0;
     padding: 8px 0;
-    z-index: 1000;
+    z-index: var(--z-navbar);
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     padding-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -1589,7 +1616,7 @@ body {
     .budget-totals {
         position: sticky;
         top: 60px;
-        z-index: 100;
+        z-index: var(--z-sticky);
         background: white;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
@@ -1609,7 +1636,7 @@ body {
         background: white;
         padding: 16px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        z-index: 999;
+        z-index: var(--z-dropdown);
     }
 
     .mobile-search-overlay.active {

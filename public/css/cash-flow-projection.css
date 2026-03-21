@@ -124,7 +124,7 @@
     min-width: 90px;
     max-width: 90px;
     width: 90px;
-    z-index: 2;
+    z-index: var(--z-table-sticky);
     background: inherit;
     box-shadow: 1px 0 0 #e2e8f0;
 }
@@ -135,7 +135,7 @@
     min-width: 200px;
     max-width: 200px;
     width: 200px;
-    z-index: 2;
+    z-index: var(--z-table-sticky);
     background: inherit;
     box-shadow: 1px 0 0 #e2e8f0;
 }
@@ -143,19 +143,19 @@
 /* Increase z-index for header sticky cells so they float above body */
 .cfp-table thead .sticky-1,
 .cfp-table thead .sticky-2 {
-    z-index: 4;
+    z-index: var(--z-table-head);
 }
 
 .cfp-table tfoot .sticky-1,
 .cfp-table tfoot .sticky-2 {
-    z-index: 3;
+    z-index: var(--z-table-sticky);
 }
 
 /* ---- Header ---- */
 .cfp-table thead {
     position: sticky;
     top: 0;
-    z-index: 5;
+    z-index: var(--z-table-head);
 }
 
 .cfp-th {
@@ -310,7 +310,7 @@
 .cfp-table tfoot {
     position: sticky;
     bottom: 0;
-    z-index: 3;
+    z-index: var(--z-table-sticky);
 }
 
 .cfp-summary {

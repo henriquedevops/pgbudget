@@ -1,3 +1,4 @@
+(function() {
 // Main JavaScript functionality for PgBudget
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -165,3 +166,8 @@ function validateRequired(form) {
 
     return isValid;
 }
+
+// Expose globals needed by inline scripts and other modules
+window.formatCurrency = formatCurrency;
+
+})();

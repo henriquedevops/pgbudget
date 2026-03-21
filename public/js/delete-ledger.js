@@ -1,3 +1,4 @@
+(function() {
 /**
  * Delete Ledger Functionality
  * Handles confirmation and deletion of budget ledgers
@@ -309,3 +310,5 @@ document.addEventListener('DOMContentLoaded', () => {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = DeleteLedgerManager;
 }
+
+})();
