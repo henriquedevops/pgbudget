@@ -11,8 +11,8 @@
 | 1 | Quick wins — consistency & mobile basics | 1–2h each | ✅ Complete |
 | 2 | Navigation & UX flows | Half-day each | ✅ Complete |
 | 3 | CSS architecture consolidation | 1–2 days | ✅ Complete |
-| 4 | Component quality & accessibility | 1–2 days | ⏳ Pending |
-| 5 | Mobile-native polish | 1–2 days | ⏳ Pending |
+| 4 | Component quality & accessibility | 1–2 days | ✅ Complete |
+| 5 | Mobile-native polish | 1–2 days | ✅ Complete |
 
 ---
 
@@ -61,11 +61,11 @@
 
 | # | Task | File(s) | Done |
 |---|---|---|---|
-| 4.1 | Replace emoji icons with Lucide SVG icons in navigation | `header.php`, `style.css` | ⬜ |
-| 4.2 | Wrap JS files in IIFE / migrate to ES modules | `public/js/*.js` | ⬜ |
-| 4.3 | Define z-index scale in CSS variables, replace all hardcoded values | All CSS files | ⬜ |
-| 4.4 | Add visible focus rings to all interactive elements | `style.css` | ⬜ |
-| 4.5 | Add skeleton/shimmer loading states to report pages | `reports.css`, report PHP pages | ⬜ |
+| 4.1 | Replace emoji icons with Lucide SVG icons in navigation | `header.php`, `style.css` | ✅ |
+| 4.2 | Wrap JS files in IIFE / migrate to ES modules | `public/js/*.js` | ✅ |
+| 4.3 | Define z-index scale in CSS variables, replace all hardcoded values | All CSS files | ✅ |
+| 4.4 | Add visible focus rings to all interactive elements | `style.css` | ✅ |
+| 4.5 | Add skeleton/shimmer loading states to report pages | `reports.css`, report PHP pages | ✅ |
 
 ---
 
@@ -73,10 +73,10 @@
 
 | # | Task | File(s) | Done |
 |---|---|---|---|
-| 5.1 | Page-entry animation (fade + slide-up) | `style.css` | ⬜ |
-| 5.2 | Swipe-to-delete / swipe-to-edit on transaction rows | `mobile-gestures.js` | ⬜ |
-| 5.3 | Redesign report tables as stacked cards on mobile | `reports.css`, report pages | ⬜ |
-| 5.4 | `safe-area-inset` padding for iPhone notch on bottom nav | `mobile.css` | ⬜ |
+| 5.1 | Page-entry animation (fade + slide-up) | `style.css` | ✅ |
+| 5.2 | Swipe-to-delete / swipe-to-edit on transaction rows | `mobile-gestures.js` | ✅ |
+| 5.3 | Redesign report tables as stacked cards on mobile | `reports.css`, report pages | ✅ |
+| 5.4 | `safe-area-inset` padding for iPhone notch on bottom nav | `mobile.css` | ✅ |
 
 ---
 
