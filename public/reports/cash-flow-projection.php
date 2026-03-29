@@ -178,7 +178,8 @@ sort($all_months);
 $merged_pivot = [];
 foreach ($pivot as $row) {
     $base_desc = preg_replace('/ \[due [A-Za-z]+ \d+\]$/', '', $row['description']);
-    $base_desc = preg_replace('/ \([A-Za-z]+ \d{4}\)$/', '', $base_desc); // strip (Feb 2026) from realized_occurrences
+    $base_desc = preg_replace('/ \([A-Za-z]+ \d{4}\)$/', '', $base_desc);  // strip (Feb 2026) from realized_occurrences
+    $base_desc = preg_replace('/ - Parcela \d+\/\d+$/', '', $base_desc);    // strip installment suffix e.g. "- Parcela 3/12"
     $merge_key = $row['source_type'] . ':' . $base_desc;
     if (!isset($merged_pivot[$merge_key])) {
         $merged_pivot[$merge_key] = $row;
