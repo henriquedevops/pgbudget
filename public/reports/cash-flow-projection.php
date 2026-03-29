@@ -190,6 +190,29 @@ foreach ($pivot as $row) {
 }
 $pivot = $merged_pivot;
 
+// Cross-source deduplication: projected rows (event, recurring, realized_occurrence)
+// that share a description + month + exact amount with an actual 'transaction' row
+// are duplicates — the transaction takes precedence, so drop those months from the
+// projected row. Remove the projected row entirely if all its months were deduplicated.
+$projected_source_types = ['event', 'recurring', 'realized_event', 'realized_occurrence'];
+foreach ($projected_source_types as $proj_type) {
+    foreach ($pivot as $key => &$proj_row) {
+        if ($proj_row['source_type'] !== $proj_type) continue;
+        $trans_key = 'transaction:' . $proj_row['description'];
+        if (!isset($pivot[$trans_key])) continue;
+        $trans_amounts = $pivot[$trans_key]['amounts'];
+        foreach ($proj_row['amounts'] as $m => $proj_amt) {
+            if (isset($trans_amounts[$m]) && $trans_amounts[$m] === $proj_amt) {
+                unset($proj_row['amounts'][$m]);
+            }
+        }
+        if (empty($proj_row['amounts'])) {
+            unset($pivot[$key]);
+        }
+    }
+    unset($proj_row);
+}
+
 // Category mode: collapse pivot to one row per (source_type, subcategory)
 if ($group_mode === 'category') {
     $cat_pivot = [];
