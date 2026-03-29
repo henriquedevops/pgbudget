@@ -260,7 +260,7 @@ require_once '../../includes/header.php';
                                                         <div class="loan-detail-item">
                                                             <span class="loan-detail-label">Loan Balance:</span>
                                                             <span class="loan-detail-value amount negative">
-                                                                <?= formatCurrency($account['loan']['current_balance']) ?>
+                                                                <?= formatLoanAmount($account['loan']['current_balance']) ?>
                                                             </span>
                                                         </div>
                                                         <div class="loan-detail-item">
@@ -270,7 +270,7 @@ require_once '../../includes/header.php';
                                                             </span>
                                                         </div>
                                                         <?php
-                                                        $balance_diff = abs($account['loan']['current_balance'] - abs($account['current_balance']));
+                                                        $balance_diff = abs($account['loan']['current_balance'] - abs($account['current_balance']) / 100);
                                                         $is_matched = $balance_diff < 0.01; // Within 1 cent
                                                         ?>
                                                         <div class="loan-detail-item">
@@ -279,7 +279,7 @@ require_once '../../includes/header.php';
                                                                 <?php if ($is_matched): ?>
                                                                     <span class="match-status matched">✓ Matched</span>
                                                                 <?php else: ?>
-                                                                    <span class="match-status unmatched">⚠ Difference: <?= formatCurrency($balance_diff) ?></span>
+                                                                    <span class="match-status unmatched">⚠ Difference: <?= formatLoanAmount($balance_diff) ?></span>
                                                                 <?php endif; ?>
                                                             </span>
                                                         </div>
@@ -289,7 +289,7 @@ require_once '../../includes/header.php';
                                                         </div>
                                                         <div class="loan-detail-item">
                                                             <span class="loan-detail-label">Monthly Payment:</span>
-                                                            <span class="loan-detail-value"><?= formatCurrency($account['loan']['payment_amount']) ?></span>
+                                                            <span class="loan-detail-value"><?= formatLoanAmount($account['loan']['payment_amount']) ?></span>
                                                         </div>
                                                         <div class="loan-detail-item">
                                                             <span class="loan-detail-label">Remaining Months:</span>
