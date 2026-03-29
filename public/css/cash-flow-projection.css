@@ -372,6 +372,7 @@
 .cfp-badge-realized_occurrence { background: #d1fae5; color: #065f46; }
 .cfp-badge-cc_payment         { background: #fff7ed; color: #c2410c; }
 .cfp-badge-transaction        { background: #dcfce7; color: #166534; }
+.cfp-badge-reconciliation     { background: #fef9c3; color: #713f12; }
 .cfp-badge-realized_event     { background: #e2e8f0; color: #64748b; }
 
 /* ---- Realized event rows ---- */

@@ -46,14 +46,10 @@ try {
     }
     $budget_status = $stmt->fetchAll();
 
-    // Get budget totals (with optional period)
-    if ($selected_period) {
-        $stmt = $db->prepare("SELECT * FROM api.get_budget_totals(?, ?)");
-        $stmt->execute([$ledger_uuid, $selected_period]);
-    } else {
-        $stmt = $db->prepare("SELECT * FROM api.get_budget_totals(?)");
-        $stmt->execute([$ledger_uuid]);
-    }
+    // Get budget totals — always for the current/selected month so "Income this month" is accurate
+    $totals_period = $selected_period ?: date('Ym');
+    $stmt = $db->prepare("SELECT * FROM api.get_budget_totals(?, ?)");
+    $stmt->execute([$ledger_uuid, $totals_period]);
     $budget_totals = $stmt->fetch();
 
     // Get overspent categories

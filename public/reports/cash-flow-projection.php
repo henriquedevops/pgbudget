@@ -248,7 +248,7 @@ function aggregateAmounts(array $row_amounts, array $columns): array {
 }
 
 // Group rows by source_type, compute per-column amounts + row total
-$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'past_installment', 'recurring', 'event', 'realized_occurrence', 'transaction', 'realized_event'];
+$group_order = ['income', 'deduction', 'obligation', 'loan_amort', 'loan_interest', 'installment', 'past_installment', 'recurring', 'event', 'realized_occurrence', 'transaction', 'reconciliation', 'realized_event'];
 $group_labels = [
     'income'              => 'Income',
     'deduction'           => 'Payroll Deductions',
@@ -261,6 +261,7 @@ $group_labels = [
     'event'               => 'Projected Events',
     'realized_occurrence' => 'Realized Occurrences',
     'transaction'         => 'Actual Transactions',
+    'reconciliation'      => 'Reconciliation Adjustments',
     'realized_event'      => 'Realized Events',
 ];
 

@@ -58,6 +58,18 @@ try {
     $stmt->execute([$ledger_uuid]);
     $categories = $stmt->fetchAll();
 
+    // Get asset accounts for income account dropdown
+    $stmt = $db->prepare("
+        SELECT uuid, name
+        FROM api.accounts
+        WHERE ledger_uuid = ?
+        AND type = 'asset'
+        AND is_group = false
+        ORDER BY name
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $asset_accounts = $stmt->fetchAll();
+
     // Parse occurrence_months from PG array format {1,6,12} to PHP array
     $occurrence_months = [];
     if (!empty($source['occurrence_months'])) {
@@ -125,6 +137,20 @@ require_once '../../includes/header.php';
                     <label for="employer_name">Employer / Source Name (Optional)</label>
                     <input type="text" id="employer_name" name="employer_name" maxlength="255"
                            value="<?= htmlspecialchars($source['employer_name'] ?? '') ?>">
+                </div>
+
+                <div class="form-group">
+                    <label for="account_uuid">Receiving Account (Optional)</label>
+                    <select id="account_uuid" name="account_uuid">
+                        <option value="">— None —</option>
+                        <?php foreach ($asset_accounts as $acct): ?>
+                            <option value="<?= htmlspecialchars($acct['uuid']) ?>"
+                                <?= ($source['account_uuid'] ?? '') === $acct['uuid'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($acct['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small class="form-hint">Bank or salary account where this income lands</small>
                 </div>
 
                 <div class="form-group">

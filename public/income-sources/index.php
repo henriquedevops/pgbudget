@@ -198,6 +198,7 @@ require_once '../../includes/header.php';
                                 <tr>
                                     <th>Name</th>
                                     <th>Type</th>
+                                    <th>Account</th>
                                     <th>Amount</th>
                                     <th>Frequency</th>
                                     <th>Months</th>
@@ -218,6 +219,13 @@ require_once '../../includes/header.php';
                                             <span class="income-type-badge type-<?= $source['income_type'] ?>">
                                                 <?= ucfirst($source['income_type']) ?>
                                             </span>
+                                        </td>
+                                        <td>
+                                            <?php if ($source['account_name']): ?>
+                                                <span class="account-link"><?= htmlspecialchars($source['account_name']) ?></span>
+                                            <?php else: ?>
+                                                <span class="text-muted">—</span>
+                                            <?php endif; ?>
                                         </td>
                                         <td><span class="amount"><?= formatCurrency($source['amount']) ?></span></td>
                                         <td><?= ucfirst(str_replace('_', ' ', $source['frequency'])) ?></td>
@@ -465,6 +473,16 @@ require_once '../../includes/header.php';
 .actions-cell { white-space: nowrap; }
 
 .text-muted { color: #666; }
+
+.account-link {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background: #e8f0fe;
+    color: #1a56a4;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
 
 .empty-state {
     text-align: center;

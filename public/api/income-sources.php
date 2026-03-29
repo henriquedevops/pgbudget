@@ -90,6 +90,7 @@ function createIncomeSource($db) {
     $employer_name = !empty($_POST['employer_name']) ? $_POST['employer_name'] : null;
     $group_tag = !empty($_POST['group_tag']) ? $_POST['group_tag'] : null;
     $notes = !empty($_POST['notes']) ? $_POST['notes'] : null;
+    $account_uuid = !empty($_POST['account_uuid']) ? $_POST['account_uuid'] : null;
 
     // Validate required fields
     if (empty($ledger_uuid) || empty($name) || empty($amount) || empty($start_date)) {
@@ -125,7 +126,8 @@ function createIncomeSource($db) {
                 p_default_category_uuid := ?,
                 p_employer_name := ?,
                 p_group_tag := ?,
-                p_notes := ?
+                p_notes := ?,
+                p_account_uuid := ?
             )
         ");
 
@@ -145,7 +147,8 @@ function createIncomeSource($db) {
             $default_category_uuid,
             $employer_name,
             $group_tag,
-            $notes
+            $notes,
+            $account_uuid
         ]);
 
         $result = $stmt->fetch();
@@ -195,6 +198,8 @@ function updateIncomeSource($db) {
     $group_tag = !empty($_POST['group_tag']) ? $_POST['group_tag'] : null;
     $is_active = isset($_POST['is_active']) ? (($_POST['is_active']) === 'true') : null;
     $notes = !empty($_POST['notes']) ? $_POST['notes'] : null;
+    // 'clear' sentinel clears the link; any uuid sets it; absent/null leaves it unchanged
+    $account_uuid = isset($_POST['account_uuid']) ? ($_POST['account_uuid'] === '' ? 'NULL' : $_POST['account_uuid']) : null;
 
     if (empty($income_uuid)) {
         http_response_code(400);
@@ -233,7 +238,8 @@ function updateIncomeSource($db) {
                 p_employer_name := ?,
                 p_group_tag := ?,
                 p_is_active := ?::boolean,
-                p_notes := ?
+                p_notes := ?,
+                p_account_uuid := ?
             )
         ");
 
@@ -254,7 +260,8 @@ function updateIncomeSource($db) {
             $employer_name,
             $group_tag,
             $is_active !== null ? ($is_active ? 'true' : 'false') : null,
-            $notes
+            $notes,
+            $account_uuid
         ]);
 
         $result = $stmt->fetch();
