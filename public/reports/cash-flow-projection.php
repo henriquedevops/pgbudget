@@ -172,6 +172,20 @@ foreach ($past_installments as $pi) {
 
 sort($all_months);
 
+// Detail mode: merge rows that share the same source_type + description into one row
+$merged_pivot = [];
+foreach ($pivot as $row) {
+    $merge_key = $row['source_type'] . ':' . $row['description'];
+    if (!isset($merged_pivot[$merge_key])) {
+        $merged_pivot[$merge_key] = $row;
+    } else {
+        foreach ($row['amounts'] as $m => $amt) {
+            $merged_pivot[$merge_key]['amounts'][$m] = ($merged_pivot[$merge_key]['amounts'][$m] ?? 0) + $amt;
+        }
+    }
+}
+$pivot = $merged_pivot;
+
 // Category mode: collapse pivot to one row per (source_type, subcategory)
 if ($group_mode === 'category') {
     $cat_pivot = [];
