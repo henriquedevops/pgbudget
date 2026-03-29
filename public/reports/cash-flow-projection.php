@@ -172,12 +172,16 @@ foreach ($past_installments as $pi) {
 
 sort($all_months);
 
-// Detail mode: merge rows that share the same source_type + description into one row
+// Detail mode: merge rows that share the same source_type + base description.
+// Strip CC billing suffix "[due Mon DD]" so e.g. "Shop", "Shop [due Feb 23]",
+// and "Shop [due Mar 23]" all collapse into a single "Shop" row.
 $merged_pivot = [];
 foreach ($pivot as $row) {
-    $merge_key = $row['source_type'] . ':' . $row['description'];
+    $base_desc = preg_replace('/ \[due [A-Za-z]+ \d+\]$/', '', $row['description']);
+    $merge_key = $row['source_type'] . ':' . $base_desc;
     if (!isset($merged_pivot[$merge_key])) {
         $merged_pivot[$merge_key] = $row;
+        $merged_pivot[$merge_key]['description'] = $base_desc;
     } else {
         foreach ($row['amounts'] as $m => $amt) {
             $merged_pivot[$merge_key]['amounts'][$m] = ($merged_pivot[$merge_key]['amounts'][$m] ?? 0) + $amt;
