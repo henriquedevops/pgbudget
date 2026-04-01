@@ -170,7 +170,7 @@ class BulkOperations {
         const transactionUuids = Array.from(this.selectedTransactions);
 
         try {
-            const response = await fetch('/api/bulk-operations.php', {
+            const response = await fetch('/pgbudget/api/bulk-operations.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -201,7 +201,7 @@ class BulkOperations {
         const transactionUuids = Array.from(this.selectedTransactions);
 
         try {
-            const response = await fetch('/api/bulk-operations.php', {
+            const response = await fetch('/pgbudget/api/bulk-operations.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -231,7 +231,7 @@ class BulkOperations {
         const transactionUuids = Array.from(this.selectedTransactions);
 
         try {
-            const response = await fetch('/api/bulk-operations.php', {
+            const response = await fetch('/pgbudget/api/bulk-operations.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -262,7 +262,7 @@ class BulkOperations {
         const transactionUuids = Array.from(this.selectedTransactions);
 
         try {
-            const response = await fetch('/api/bulk-operations.php', {
+            const response = await fetch('/pgbudget/api/bulk-operations.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

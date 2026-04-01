@@ -114,16 +114,20 @@ foreach ($detail_rows as $row) {
     $key = $row['source_type'] . ':' . $row['source_uuid'];
     if (!isset($pivot[$key])) {
         $pivot[$key] = [
-            'source_type' => $row['source_type'],
-            'source_uuid' => $row['source_uuid'],
-            'category'    => $row['category'],
-            'subcategory' => $row['subcategory'],
-            'description' => $row['description'],
-            'amounts'     => [],
+            'source_type'      => $row['source_type'],
+            'source_uuid'      => $row['source_uuid'],
+            'category'         => $row['category'],
+            'subcategory'      => $row['subcategory'],
+            'description'      => $row['description'],
+            'amounts'          => [],
+            'txn_uuid_by_month'=> [],
         ];
     }
     $m = $row['month'];
     $pivot[$key]['amounts'][$m] = ($pivot[$key]['amounts'][$m] ?? 0) + (int)$row['amount'];
+    if ($row['source_type'] === 'transaction') {
+        $pivot[$key]['txn_uuid_by_month'][$m] = $row['source_uuid'];
+    }
     if (!in_array($m, $all_months)) {
         $all_months[] = $m;
     }
@@ -188,6 +192,9 @@ foreach ($pivot as $row) {
         foreach ($row['amounts'] as $m => $amt) {
             $merged_pivot[$merge_key]['amounts'][$m] = ($merged_pivot[$merge_key]['amounts'][$m] ?? 0) + $amt;
         }
+        foreach ($row['txn_uuid_by_month'] ?? [] as $m => $uuid) {
+            $merged_pivot[$merge_key]['txn_uuid_by_month'][$m] = $uuid;
+        }
     }
 }
 $pivot = $merged_pivot;
@@ -204,7 +211,12 @@ foreach ($projected_source_types as $proj_type) {
         if (!isset($pivot[$trans_key])) continue;
         $trans_amounts = $pivot[$trans_key]['amounts'];
         foreach ($proj_row['amounts'] as $m => $proj_amt) {
-            if (isset($trans_amounts[$m]) && $trans_amounts[$m] === $proj_amt) {
+            // For realized_occurrence rows, the transaction is always authoritative
+            // regardless of amount (projected vs actual amounts can differ).
+            // For other projected types, require exact amount match to avoid false positives.
+            $should_dedup = isset($trans_amounts[$m]) &&
+                ($proj_type === 'realized_occurrence' || $trans_amounts[$m] === $proj_amt);
+            if ($should_dedup) {
                 unset($proj_row['amounts'][$m]);
             }
         }
@@ -534,12 +546,18 @@ require_once '../../includes/header.php';
                     <?php foreach ($columns as $i => $col):
                         $val = (int)($row['col_amounts'][$col['key']] ?? 0);
                         $cell_cls = $col['key'] < $today_month ? ' cfp-past-cell' : ($col['key'] === $today_month ? ' cfp-current-cell' : '');
+                        $cell_txn_uuid = ($type === 'transaction') ? ($row['txn_uuid_by_month'][$col['key']] ?? null) : null;
                     ?>
-                        <td class="cfp-td cfp-td-amt <?= cellClass($val) . $cell_cls ?>"
+                        <td class="cfp-td cfp-td-amt <?= cellClass($val) . $cell_cls ?><?= $cell_txn_uuid ? ' cfp-td-deletable' : '' ?>"
                             data-col-idx="<?= $i ?>"
                             data-cents="<?= $val ?>"
                             data-source="<?= htmlspecialchars($row['source_uuid']) ?>">
                             <?= fmtCents($val) ?>
+                            <?php if ($cell_txn_uuid && $val !== 0): ?>
+                            <button class="cfp-delete-txn-btn"
+                                    title="Delete this transaction"
+                                    onclick="cfpDeleteTransaction('<?= htmlspecialchars($cell_txn_uuid) ?>', <?= json_encode($row['description']) ?>)">×</button>
+                            <?php endif; ?>
                         </td>
                     <?php endforeach; ?>
                     <td class="cfp-td cfp-td-amt cfp-row-total <?= cellClass((int)$row['row_total']) ?>">
@@ -647,5 +665,31 @@ require_once '../../includes/header.php';
     };
 </script>
 <script src="/pgbudget/js/cash-flow-projection.js"></script>
+
+<script>
+async function cfpDeleteTransaction(uuid, description) {
+    ConfirmModal.show({
+        title:        'Delete Transaction?',
+        message:      `Delete "${description}"? This cannot be undone.`,
+        confirmText:  'Delete',
+        confirmClass: 'btn-danger',
+        onConfirm:    async () => {
+            try {
+                const response = await fetch(`/pgbudget/api/delete-transaction.php?uuid=${encodeURIComponent(uuid)}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error deleting transaction: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Error deleting transaction: ' + err.message);
+            }
+        }
+    });
+}
+</script>
 
 <?php require_once '../../includes/footer.php'; ?>

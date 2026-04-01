@@ -494,3 +494,36 @@
         max-height: 60vh;
     }
 }
+
+/* ---- Per-cell transaction delete button ---- */
+.cfp-td-deletable {
+    position: relative;
+}
+
+.cfp-delete-txn-btn {
+    display: none;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    line-height: 14px;
+    font-size: 11px;
+    text-align: center;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    opacity: 0.85;
+}
+
+.cfp-delete-txn-btn:hover {
+    opacity: 1;
+    background: #dc2626;
+}
+
+.cfp-td-deletable:hover .cfp-delete-txn-btn {
+    display: block;
+}

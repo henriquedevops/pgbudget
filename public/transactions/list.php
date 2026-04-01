@@ -413,6 +413,9 @@ try {
                             <td class="actions-cell">
                                 <a href="edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
                                    class="btn btn-small btn-edit" title="Edit Transaction">✏️</a>
+                                <button class="btn btn-small btn-delete-txn"
+                                        title="Delete Transaction"
+                                        onclick="deleteSingleTransaction('<?= htmlspecialchars($txn['uuid']) ?>', <?= json_encode($txn['description']) ?>)">🗑️</button>
                                 <?php
                                 // Show "Create Installment Plan" button for credit card transactions without existing plans
                                 $is_cc_transaction = ($txn['credit_type'] === 'liability' || $txn['debit_type'] === 'liability');
@@ -432,7 +435,7 @@ try {
                                     ✏️
                                 </button>
                                 <button class="swipe-action-btn delete"
-                                        onclick="if(confirm('Delete this transaction?')) { /* Add delete logic */ }"
+                                        onclick="deleteSingleTransaction('<?= htmlspecialchars($txn['uuid']) ?>', <?= json_encode($txn['description']) ?>)"
                                         title="Delete">
                                     🗑️
                                 </button>
@@ -822,6 +825,21 @@ try {
     box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
 }
 
+/* Delete Transaction Button */
+.btn-delete-txn {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border: 1px solid #ef4444;
+    color: #991b1b;
+    margin-left: 0.25rem;
+}
+
+.btn-delete-txn:hover {
+    background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+    border-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
 /* Create Installment Plan Button */
 .btn-create-installment {
     background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
@@ -917,5 +935,31 @@ try {
 
 <!-- Include search-filter JavaScript -->
 <script src="../js/search-filter.js"></script>
+
+<script>
+async function deleteSingleTransaction(uuid, description) {
+    ConfirmModal.show({
+        title:        'Delete Transaction?',
+        message:      `Delete "${description}"? This cannot be undone.`,
+        confirmText:  'Delete',
+        confirmClass: 'btn-danger',
+        onConfirm:    async () => {
+            try {
+                const response = await fetch(`/pgbudget/api/delete-transaction.php?uuid=${encodeURIComponent(uuid)}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error deleting transaction: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Error deleting transaction: ' + err.message);
+            }
+        }
+    });
+}
+</script>
 
 <?php require_once '../../includes/footer.php'; ?>
