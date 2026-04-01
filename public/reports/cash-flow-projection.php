@@ -211,11 +211,15 @@ foreach ($projected_source_types as $proj_type) {
         if (!isset($pivot[$trans_key])) continue;
         $trans_amounts = $pivot[$trans_key]['amounts'];
         foreach ($proj_row['amounts'] as $m => $proj_amt) {
-            // For realized_occurrence rows, the transaction is always authoritative
-            // regardless of amount (projected vs actual amounts can differ).
-            // For other projected types, require exact amount match to avoid false positives.
+            // The transaction is always authoritative when:
+            //   a) it's a realized_occurrence (projected vs actual amounts naturally differ), OR
+            //   b) it's an event/recurring in a past or current month — the actual transaction
+            //      has already happened so the projected amount is irrelevant even if it differs
+            //      slightly (e.g. IMPOSTO DE RENDA projected -685331 vs actual -685230).
+            // For future months keep exact-match to avoid false positives.
+            $is_past_or_current = ($m <= $today_month);
             $should_dedup = isset($trans_amounts[$m]) &&
-                ($proj_type === 'realized_occurrence' || $trans_amounts[$m] === $proj_amt);
+                ($proj_type === 'realized_occurrence' || $is_past_or_current || $trans_amounts[$m] === $proj_amt);
             if ($should_dedup) {
                 unset($proj_row['amounts'][$m]);
             }
