@@ -508,3 +508,17 @@
 .cfp-td-deletable:hover .cfp-delete-txn-btn {
     display: block;
 }
+
+/* ---- Per-cell provenance indicators ---- */
+.cfp-ci {
+    font-size: 0.6rem;
+    margin-left: 2px;
+    opacity: 0.55;
+    vertical-align: super;
+    font-style: normal;
+    pointer-events: none;
+}
+
+.cfp-ci-actual   { color: #15803d; }
+.cfp-ci-realized { color: #0369a1; }
+.cfp-ci-projected { color: #94a3b8; }

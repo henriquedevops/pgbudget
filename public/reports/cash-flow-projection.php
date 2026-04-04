@@ -121,12 +121,17 @@ foreach ($detail_rows as $row) {
             'description'      => $row['description'],
             'amounts'          => [],
             'txn_uuid_by_month'=> [],
+            'actual_months'    => [],
+            'realized_months'  => [],
         ];
     }
     $m = $row['month'];
     $pivot[$key]['amounts'][$m] = ($pivot[$key]['amounts'][$m] ?? 0) + (int)$row['amount'];
     if ($row['source_type'] === 'transaction') {
         $pivot[$key]['txn_uuid_by_month'][$m] = $row['source_uuid'];
+        $pivot[$key]['actual_months'][$m]      = true;
+    } elseif ($row['source_type'] === 'realized_occurrence') {
+        $pivot[$key]['realized_months'][$m] = true;
     }
     if (!in_array($m, $all_months)) {
         $all_months[] = $m;
@@ -195,6 +200,12 @@ foreach ($pivot as $row) {
         foreach ($row['txn_uuid_by_month'] ?? [] as $m => $uuid) {
             $merged_pivot[$merge_key]['txn_uuid_by_month'][$m] = $uuid;
         }
+        foreach ($row['actual_months'] ?? [] as $m => $_) {
+            $merged_pivot[$merge_key]['actual_months'][$m] = true;
+        }
+        foreach ($row['realized_months'] ?? [] as $m => $_) {
+            $merged_pivot[$merge_key]['realized_months'][$m] = true;
+        }
     }
 }
 $pivot = $merged_pivot;
@@ -248,8 +259,28 @@ foreach (['event', 'recurring'] as $proj_type) {
         foreach ($pivot[$trans_key]['txn_uuid_by_month'] ?? [] as $m => $uuid) {
             $pivot[$key]['txn_uuid_by_month'][$m] = $uuid;
         }
+        foreach ($pivot[$trans_key]['actual_months'] ?? [] as $m => $_) {
+            $pivot[$key]['actual_months'][$m] = true;
+        }
         unset($pivot[$trans_key]);
     }
+}
+
+// Merge realized_occurrence rows into their matching event row (same description).
+// Realized occurrences fire in the realized_date month (may differ from scheduled month)
+// and are complementary to the event projections after dedup.
+foreach (array_keys($pivot) as $key) {
+    if (!isset($pivot[$key])) continue;
+    if ($pivot[$key]['source_type'] !== 'realized_occurrence') continue;
+    $event_key = 'event:' . $pivot[$key]['description'];
+    if (!isset($pivot[$event_key])) continue;
+    foreach ($pivot[$key]['amounts'] as $m => $amt) {
+        $pivot[$event_key]['amounts'][$m] = ($pivot[$event_key]['amounts'][$m] ?? 0) + $amt;
+    }
+    foreach ($pivot[$key]['realized_months'] ?? [] as $m => $_) {
+        $pivot[$event_key]['realized_months'][$m] = true;
+    }
+    unset($pivot[$key]);
 }
 
 // Category mode: collapse pivot to one row per (source_type, subcategory)
@@ -568,13 +599,24 @@ require_once '../../includes/header.php';
                     <?php foreach ($columns as $i => $col):
                         $val = (int)($row['col_amounts'][$col['key']] ?? 0);
                         $cell_cls = $col['key'] < $today_month ? ' cfp-past-cell' : ($col['key'] === $today_month ? ' cfp-current-cell' : '');
-                        $cell_txn_uuid = ($type === 'transaction') ? ($row['txn_uuid_by_month'][$col['key']] ?? null) : null;
+                        $cell_txn_uuid = ($row['txn_uuid_by_month'] ?? [])[$col['key']] ?? null;
+                        // Per-cell provenance indicator (monthly view only — one month per column)
+                        $cell_indicator = null;
+                        if ($val !== 0 && count($col['months']) === 1) {
+                            $cm = $col['months'][0];
+                            if (isset(($row['actual_months'] ?? [])[$cm]))   $cell_indicator = 'actual';
+                            elseif (isset(($row['realized_months'] ?? [])[$cm])) $cell_indicator = 'realized';
+                            elseif (in_array($type, ['event','recurring','obligation','loan_amort','loan_interest','installment','deduction','income'])) $cell_indicator = 'projected';
+                        }
                     ?>
                         <td class="cfp-td cfp-td-amt <?= cellClass($val) . $cell_cls ?><?= $cell_txn_uuid ? ' cfp-td-deletable' : '' ?>"
                             data-col-idx="<?= $i ?>"
                             data-cents="<?= $val ?>"
                             data-source="<?= htmlspecialchars($row['source_uuid']) ?>">
                             <?= fmtCents($val) ?>
+                            <?php if ($cell_indicator === 'actual'): ?><span class="cfp-ci cfp-ci-actual" title="Actual transaction">✓</span><?php endif; ?>
+                            <?php if ($cell_indicator === 'realized'): ?><span class="cfp-ci cfp-ci-realized" title="Realized occurrence">↺</span><?php endif; ?>
+                            <?php if ($cell_indicator === 'projected'): ?><span class="cfp-ci cfp-ci-projected" title="Projection">~</span><?php endif; ?>
                             <?php if ($cell_txn_uuid && $val !== 0): ?>
                             <button class="cfp-delete-txn-btn"
                                     title="Delete this transaction"
