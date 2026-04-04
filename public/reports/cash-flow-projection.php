@@ -283,31 +283,21 @@ foreach (array_keys($pivot) as $key) {
     unset($pivot[$key]);
 }
 
-// Inflow / outflow totals — computed here, before any category collapse, so the
-// values are identical regardless of the grouping mode selected.
-$col_inflows  = [];
-$col_outflows = [];
-$_reference_only = ['realized_event', 'past_installment'];
+// Inflow / outflow totals — aggregate per raw month here (before category collapse)
+// so the values are identical regardless of grouping mode. Column folding happens
+// after $columns is built (see below).
+$_io_reference_only = ['realized_event', 'past_installment'];
 $_month_in  = [];
 $_month_out = [];
 foreach ($pivot as $_row) {
-    if (in_array($_row['source_type'], $_reference_only)) continue;
+    if (in_array($_row['source_type'], $_io_reference_only)) continue;
     foreach ($_row['amounts'] as $_m => $_amt) {
         $_amt = (int)$_amt;
         if ($_amt > 0) $_month_in[$_m]  = ($_month_in[$_m]  ?? 0) + $_amt;
         else           $_month_out[$_m] = ($_month_out[$_m] ?? 0) + $_amt;
     }
 }
-foreach ($columns as $_col) {
-    $in = 0; $out = 0;
-    foreach ($_col['months'] as $_m) {
-        $in  += $_month_in[$_m]  ?? 0;
-        $out += $_month_out[$_m] ?? 0;
-    }
-    $col_inflows[$_col['key']]  = $in;
-    $col_outflows[$_col['key']] = $out;
-}
-unset($_reference_only, $_month_in, $_month_out, $_row, $_m, $_amt, $_col);
+unset($_row, $_m, $_amt);
 
 // Category mode: collapse pivot to one row per (source_type, subcategory)
 if ($group_mode === 'category') {
@@ -368,6 +358,20 @@ function buildColumns(array $months, string $view): array {
 }
 
 $columns = buildColumns($all_months, $view_mode);
+
+// Fold per-month inflow/outflow buckets into display columns
+$col_inflows  = [];
+$col_outflows = [];
+foreach ($columns as $_col) {
+    $in = 0; $out = 0;
+    foreach ($_col['months'] as $_m) {
+        $in  += $_month_in[$_m]  ?? 0;
+        $out += $_month_out[$_m] ?? 0;
+    }
+    $col_inflows[$_col['key']]  = $in;
+    $col_outflows[$_col['key']] = $out;
+}
+unset($_io_reference_only, $_month_in, $_month_out, $_col, $_m);
 
 // -------------------------------------------------------------------
 // Aggregate amounts per row per column
