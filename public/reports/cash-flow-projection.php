@@ -283,6 +283,32 @@ foreach (array_keys($pivot) as $key) {
     unset($pivot[$key]);
 }
 
+// Inflow / outflow totals — computed here, before any category collapse, so the
+// values are identical regardless of the grouping mode selected.
+$col_inflows  = [];
+$col_outflows = [];
+$_reference_only = ['realized_event', 'past_installment'];
+$_month_in  = [];
+$_month_out = [];
+foreach ($pivot as $_row) {
+    if (in_array($_row['source_type'], $_reference_only)) continue;
+    foreach ($_row['amounts'] as $_m => $_amt) {
+        $_amt = (int)$_amt;
+        if ($_amt > 0) $_month_in[$_m]  = ($_month_in[$_m]  ?? 0) + $_amt;
+        else           $_month_out[$_m] = ($_month_out[$_m] ?? 0) + $_amt;
+    }
+}
+foreach ($columns as $_col) {
+    $in = 0; $out = 0;
+    foreach ($_col['months'] as $_m) {
+        $in  += $_month_in[$_m]  ?? 0;
+        $out += $_month_out[$_m] ?? 0;
+    }
+    $col_inflows[$_col['key']]  = $in;
+    $col_outflows[$_col['key']] = $out;
+}
+unset($_reference_only, $_month_in, $_month_out, $_row, $_m, $_amt, $_col);
+
 // Category mode: collapse pivot to one row per (source_type, subcategory)
 if ($group_mode === 'category') {
     $cat_pivot = [];
@@ -419,25 +445,6 @@ $col_cumulative = [];
 foreach ($columns as $col) {
     $cumulative            += $col_net[$col['key']];
     $col_cumulative[$col['key']] = $cumulative;
-}
-
-// Inflow / outflow totals per column — iterate individual rows so that mixed-sign
-// groups (e.g. 'transaction' has both income and expense rows) are split correctly.
-$col_inflows  = [];
-$col_outflows = [];
-$reference_only_types = ['realized_event', 'past_installment'];
-foreach ($columns as $col) {
-    $in = 0; $out = 0;
-    foreach ($groups as $type => $rows) {
-        if (in_array($type, $reference_only_types)) continue;
-        foreach ($rows as $row) {
-            $val = (int)($row['col_amounts'][$col['key']] ?? 0);
-            if ($val > 0) $in  += $val;
-            else          $out += $val;
-        }
-    }
-    $col_inflows[$col['key']]  = $in;
-    $col_outflows[$col['key']] = $out;
 }
 
 // Overdue: sum of unrealized projected event/recurring amounts from months before today
