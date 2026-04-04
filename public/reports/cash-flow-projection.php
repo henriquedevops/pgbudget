@@ -231,6 +231,27 @@ foreach ($projected_source_types as $proj_type) {
     unset($proj_row);
 }
 
+// Merge event/recurring rows into their matching transaction row (same description).
+// After dedup the two rows are complementary (no shared months): transaction holds past
+// actuals, event holds future projections. Absorbing the transaction months into the
+// event row produces a single row showing actuals for the past and forecasts for the
+// future — with the delete button still working for past months.
+foreach (['event', 'recurring'] as $proj_type) {
+    foreach (array_keys($pivot) as $key) {
+        if (!isset($pivot[$key])) continue;
+        if ($pivot[$key]['source_type'] !== $proj_type) continue;
+        $trans_key = 'transaction:' . $pivot[$key]['description'];
+        if (!isset($pivot[$trans_key])) continue;
+        foreach ($pivot[$trans_key]['amounts'] as $m => $amt) {
+            $pivot[$key]['amounts'][$m] = ($pivot[$key]['amounts'][$m] ?? 0) + $amt;
+        }
+        foreach ($pivot[$trans_key]['txn_uuid_by_month'] ?? [] as $m => $uuid) {
+            $pivot[$key]['txn_uuid_by_month'][$m] = $uuid;
+        }
+        unset($pivot[$trans_key]);
+    }
+}
+
 // Category mode: collapse pivot to one row per (source_type, subcategory)
 if ($group_mode === 'category') {
     $cat_pivot = [];
