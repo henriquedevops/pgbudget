@@ -421,17 +421,20 @@ foreach ($columns as $col) {
     $col_cumulative[$col['key']] = $cumulative;
 }
 
-// Inflow / outflow totals per column (exclude reference-only groups)
+// Inflow / outflow totals per column — iterate individual rows so that mixed-sign
+// groups (e.g. 'transaction' has both income and expense rows) are split correctly.
 $col_inflows  = [];
 $col_outflows = [];
 $reference_only_types = ['realized_event', 'past_installment'];
 foreach ($columns as $col) {
     $in = 0; $out = 0;
-    foreach ($group_subtotals as $type => $subs) {
+    foreach ($groups as $type => $rows) {
         if (in_array($type, $reference_only_types)) continue;
-        $val = (int)($subs[$col['key']] ?? 0);
-        if ($val > 0) $in  += $val;
-        else          $out += $val;
+        foreach ($rows as $row) {
+            $val = (int)($row['col_amounts'][$col['key']] ?? 0);
+            if ($val > 0) $in  += $val;
+            else          $out += $val;
+        }
     }
     $col_inflows[$col['key']]  = $in;
     $col_outflows[$col['key']] = $out;
