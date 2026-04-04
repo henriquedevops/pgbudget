@@ -121,9 +121,9 @@
 .cfp-table .sticky-1 {
     position: sticky;
     left: 0;
-    min-width: 260px;
-    max-width: 260px;
-    width: 260px;
+    min-width: 320px;
+    max-width: 320px;
+    width: 320px;
     z-index: var(--z-table-sticky);
     background: inherit;
     box-shadow: 1px 0 0 #e2e8f0;

@@ -530,7 +530,7 @@ require_once '../../includes/header.php';
                     data-type="<?= $type ?>"
                     data-group="<?= $type ?>"
                     data-source-uuid="<?= htmlspecialchars($row['source_uuid']) ?>">
-                    <td class="cfp-td cfp-td-desc sticky-1" title="<?= htmlspecialchars($row['subcategory'] . ' · ' . $row['category']) ?>">
+                    <td class="cfp-td cfp-td-desc sticky-1" title="<?= htmlspecialchars($row['description']) ?>">
                         <?php if ($type === 'realized_event'): ?>
                             <span class="cfp-type-badge cfp-badge-realized_event">Realized</span>
                         <?php elseif ($type === 'realized_occurrence'): ?>
