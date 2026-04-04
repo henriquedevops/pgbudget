@@ -328,6 +328,14 @@
 .cfp-summary-amt.cell-neg { color: #f87171; }
 .cfp-summary-amt.cell-zero { color: #64748b; }
 
+.cfp-inflows-row .cfp-td-summary-lbl,
+.cfp-inflows-row .cfp-summary-amt  { background: #052e16; }
+.cfp-inflows-row .cfp-summary-amt.cell-pos { color: #4ade80; }
+
+.cfp-outflows-row .cfp-td-summary-lbl,
+.cfp-outflows-row .cfp-summary-amt  { background: #450a0a; }
+.cfp-outflows-row .cfp-summary-amt.cell-neg { color: #f87171; }
+
 .cfp-net-row .cfp-td-summary-lbl { background: #1e293b; }
 .cfp-net-row .cfp-summary-amt    { background: #1e293b; }
 

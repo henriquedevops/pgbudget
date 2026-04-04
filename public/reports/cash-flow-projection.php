@@ -421,6 +421,22 @@ foreach ($columns as $col) {
     $col_cumulative[$col['key']] = $cumulative;
 }
 
+// Inflow / outflow totals per column (exclude reference-only groups)
+$col_inflows  = [];
+$col_outflows = [];
+$reference_only_types = ['realized_event', 'past_installment'];
+foreach ($columns as $col) {
+    $in = 0; $out = 0;
+    foreach ($group_subtotals as $type => $subs) {
+        if (in_array($type, $reference_only_types)) continue;
+        $val = (int)($subs[$col['key']] ?? 0);
+        if ($val > 0) $in  += $val;
+        else          $out += $val;
+    }
+    $col_inflows[$col['key']]  = $in;
+    $col_outflows[$col['key']] = $out;
+}
+
 // Overdue: sum of unrealized projected event/recurring amounts from months before today
 // (informational only — past amounts already counted in cumulative)
 $overdue_cents = 0;
@@ -657,6 +673,32 @@ require_once '../../includes/header.php';
 
             <!-- SUMMARY FOOTER -->
             <tfoot>
+                <tr class="cfp-summary cfp-inflows-row">
+                    <td class="cfp-td cfp-td-summary-lbl sticky-1">Total Inflows</td>
+                    <?php foreach ($columns as $col):
+                        $val = (int)($col_inflows[$col['key']] ?? 0);
+                    ?>
+                        <td class="cfp-td cfp-td-amt cfp-summary-amt <?= $val > 0 ? 'cell-pos' : 'cell-zero' ?>">
+                            <?= fmtCents($val) ?>
+                        </td>
+                    <?php endforeach; ?>
+                    <td class="cfp-td cfp-td-amt cfp-summary-amt <?= array_sum($col_inflows) > 0 ? 'cell-pos' : 'cell-zero' ?>">
+                        <?= fmtCents((int)array_sum($col_inflows)) ?>
+                    </td>
+                </tr>
+                <tr class="cfp-summary cfp-outflows-row">
+                    <td class="cfp-td cfp-td-summary-lbl sticky-1">Total Outflows</td>
+                    <?php foreach ($columns as $col):
+                        $val = (int)($col_outflows[$col['key']] ?? 0);
+                    ?>
+                        <td class="cfp-td cfp-td-amt cfp-summary-amt <?= $val < 0 ? 'cell-neg' : 'cell-zero' ?>">
+                            <?= fmtCents($val) ?>
+                        </td>
+                    <?php endforeach; ?>
+                    <td class="cfp-td cfp-td-amt cfp-summary-amt <?= array_sum($col_outflows) < 0 ? 'cell-neg' : 'cell-zero' ?>">
+                        <?= fmtCents((int)array_sum($col_outflows)) ?>
+                    </td>
+                </tr>
                 <?php if ($overdue_cents !== 0): ?>
                 <tr class="cfp-summary cfp-overdue-row">
                     <td class="cfp-td cfp-td-summary-lbl sticky-1">
