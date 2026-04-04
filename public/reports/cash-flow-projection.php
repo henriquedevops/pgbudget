@@ -485,8 +485,7 @@ require_once '../../includes/header.php';
         <table class="cfp-table" id="cfp-table">
             <thead>
                 <tr>
-                    <th class="cfp-th cfp-th-type sticky-1">Type</th>
-                    <th class="cfp-th cfp-th-desc sticky-2">Description</th>
+                    <th class="cfp-th cfp-th-desc sticky-1">Description</th>
                     <?php foreach ($columns as $i => $col):
                         $col_is_past    = $col['key'] < $today_month;
                         $col_is_current = $col['key'] === $today_month;
@@ -509,7 +508,7 @@ require_once '../../includes/header.php';
                 <?php $is_realized_group = in_array($type, ['realized_event', 'realized_occurrence', 'past_installment']); ?>
                 <!-- GROUP HEADER -->
                 <tr class="cfp-group-hdr<?= $is_realized_group ? ' cfp-realized-group-hdr' : '' ?>" data-type="<?= $type ?>">
-                    <td colspan="<?= 2 + count($columns) + 1 ?>" class="cfp-group-hdr-cell">
+                    <td colspan="<?= 1 + count($columns) + 1 ?>" class="cfp-group-hdr-cell">
                         <button class="cfp-collapse-btn" data-group="<?= $type ?>" title="Collapse">&#9660;</button>
                         <span class="cfp-group-name"><?= htmlspecialchars($glabel) ?></span>
                         <span class="cfp-group-count"><?= count($rows) ?> item<?= count($rows) !== 1 ? 's' : '' ?></span>
@@ -531,7 +530,7 @@ require_once '../../includes/header.php';
                     data-type="<?= $type ?>"
                     data-group="<?= $type ?>"
                     data-source-uuid="<?= htmlspecialchars($row['source_uuid']) ?>">
-                    <td class="cfp-td cfp-td-type sticky-1">
+                    <td class="cfp-td cfp-td-desc sticky-1" title="<?= htmlspecialchars($row['subcategory'] . ' · ' . $row['category']) ?>">
                         <?php if ($type === 'realized_event'): ?>
                             <span class="cfp-type-badge cfp-badge-realized_event">Realized</span>
                         <?php elseif ($type === 'realized_occurrence'): ?>
@@ -543,8 +542,6 @@ require_once '../../includes/header.php';
                         <?php else: ?>
                             <span class="cfp-type-badge cfp-badge-<?= $type ?>"><?= ucfirst(str_replace(['loan_', 'cc_', '_'], ['Ln ', 'CC ', ' '], $type)) ?></span>
                         <?php endif; ?>
-                    </td>
-                    <td class="cfp-td cfp-td-desc sticky-2" title="<?= htmlspecialchars($row['subcategory'] . ' · ' . $row['category']) ?>">
                         <?= htmlspecialchars($row['description']) ?>
                     </td>
                     <?php foreach ($columns as $i => $col):
@@ -572,7 +569,7 @@ require_once '../../includes/header.php';
 
                 <!-- GROUP SUBTOTAL -->
                 <tr class="cfp-row cfp-subtotal" data-type="<?= $type ?>" data-group="<?= $type ?>">
-                    <td class="cfp-td cfp-td-sublabel sticky-1" colspan="2">
+                    <td class="cfp-td cfp-td-sublabel sticky-1">
                         <?= htmlspecialchars($glabel) ?> Subtotal
                     </td>
                     <?php foreach ($columns as $col):
@@ -589,7 +586,7 @@ require_once '../../includes/header.php';
 
                 <!-- SPACER -->
                 <tr class="cfp-spacer" data-type="<?= $type ?>">
-                    <td colspan="<?= 2 + count($columns) + 1 ?>"></td>
+                    <td colspan="<?= 1 + count($columns) + 1 ?>"></td>
                 </tr>
 
             <?php endforeach; ?>
@@ -599,7 +596,7 @@ require_once '../../includes/header.php';
             <tfoot>
                 <?php if ($overdue_cents !== 0): ?>
                 <tr class="cfp-summary cfp-overdue-row">
-                    <td class="cfp-td cfp-td-summary-lbl sticky-1" colspan="2">
+                    <td class="cfp-td cfp-td-summary-lbl sticky-1">
                         Overdue from prev. months
                         <div class="cfp-realized-note cfp-realized-note-block">informational — already counted in past balances</div>
                     </td>
@@ -615,7 +612,7 @@ require_once '../../includes/header.php';
                 </tr>
                 <?php endif; ?>
                 <tr class="cfp-summary cfp-net-row" id="cfp-net-row">
-                    <td class="cfp-td cfp-td-summary-lbl sticky-1" colspan="2">Net Monthly Balance</td>
+                    <td class="cfp-td cfp-td-summary-lbl sticky-1">Net Monthly Balance</td>
                     <?php foreach ($columns as $i => $col):
                         $val = (int)($col_net[$col['key']] ?? 0);
                     ?>
@@ -630,7 +627,7 @@ require_once '../../includes/header.php';
                     </td>
                 </tr>
                 <tr class="cfp-summary cfp-cumulative-row" id="cfp-cumulative-row">
-                    <td class="cfp-td cfp-td-summary-lbl sticky-1" colspan="2">Cumulative Balance</td>
+                    <td class="cfp-td cfp-td-summary-lbl sticky-1">Cumulative Balance</td>
                     <?php foreach ($columns as $i => $col):
                         $val = (int)($col_cumulative[$col['key']] ?? 0);
                     ?>

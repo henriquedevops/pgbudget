@@ -121,33 +121,20 @@
 .cfp-table .sticky-1 {
     position: sticky;
     left: 0;
-    min-width: 90px;
-    max-width: 90px;
-    width: 90px;
-    z-index: var(--z-table-sticky);
-    background: inherit;
-    box-shadow: 1px 0 0 #e2e8f0;
-}
-
-.cfp-table .sticky-2 {
-    position: sticky;
-    left: 90px;
-    min-width: 200px;
-    max-width: 200px;
-    width: 200px;
+    min-width: 260px;
+    max-width: 260px;
+    width: 260px;
     z-index: var(--z-table-sticky);
     background: inherit;
     box-shadow: 1px 0 0 #e2e8f0;
 }
 
 /* Increase z-index for header sticky cells so they float above body */
-.cfp-table thead .sticky-1,
-.cfp-table thead .sticky-2 {
+.cfp-table thead .sticky-1 {
     z-index: var(--z-table-head);
 }
 
-.cfp-table tfoot .sticky-1,
-.cfp-table tfoot .sticky-2 {
+.cfp-table tfoot .sticky-1 {
     z-index: var(--z-table-sticky);
 }
 
@@ -170,7 +157,6 @@
     letter-spacing: 0.02em;
 }
 
-.cfp-th.cfp-th-type,
 .cfp-th.cfp-th-desc {
     text-align: left;
 }
@@ -248,11 +234,6 @@
     white-space: nowrap;
 }
 
-.cfp-td-type {
-    background: white;
-    text-align: left;
-}
-
 .cfp-td-desc {
     background: white;
     text-align: left;
@@ -260,6 +241,11 @@
     color: #334155;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.cfp-td-desc .cfp-type-badge {
+    margin-right: 0.4rem;
+    vertical-align: middle;
 }
 
 .cfp-td-amt {
@@ -391,10 +377,6 @@
     font-style: italic;
 }
 
-.cfp-realized-row .cfp-td-type {
-    background: #fafafa;
-}
-
 .cfp-realized-group-hdr td {
     background: #f8fafc;
     border-top-color: #cbd5e0;
@@ -456,8 +438,7 @@
     background: #fffbeb !important;
 }
 
-.cfp-highlighted .sticky-1,
-.cfp-highlighted .sticky-2 {
+.cfp-highlighted .sticky-1 {
     background: #fffbeb !important;
 }
 
