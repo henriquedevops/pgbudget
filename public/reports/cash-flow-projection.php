@@ -411,6 +411,8 @@ foreach ($pivot as $row) {
     $type = $row['source_type'];
     $row['col_amounts'] = aggregateAmounts($row['amounts'], $columns);
     $row['row_total']   = array_sum($row['col_amounts']);
+    // Skip rows that have no amounts in any displayed column
+    if (empty(array_filter($row['col_amounts']))) continue;
     $groups[$type][]    = $row;
 }
 
