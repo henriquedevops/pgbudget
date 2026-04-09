@@ -10,14 +10,31 @@
 /**
  * Parse a free-text message and detect intent + extract fields using Claude Haiku.
  *
- * @param string $user_msg  Current message from the user
- * @param array  $history   Previous exchanges: [['user'=>..., 'bot'=>...], ...]
- * @param string $today     Current date as YYYY-MM-DD
- * @param array  $cfg       Config array (needs 'claude_api_key', 'claude_model')
- * @return array  {intent, new_event|null, transaction|null, realization|null}
+ * @param string $user_msg   Current message from the user
+ * @param array  $history    Previous exchanges: [['user'=>..., 'bot'=>...], ...]
+ * @param string $today      Current date as YYYY-MM-DD
+ * @param array  $cfg        Config array (needs 'claude_api_key', 'claude_model')
+ * @param array  $categories Available categories: [['uuid'=>..., 'name'=>...], ...]
+ * @return array  {intent, new_event|null, transaction|null, realization|null, category_change|null}
  *                or ['error' => '...'] on failure.
  */
-function tg_parse_message(string $user_msg, array $history, string $today, array $cfg): array {
+function tg_parse_message(string $user_msg, array $history, string $today, array $cfg, array $categories = []): array {
+    $category_block = '';
+    if (!empty($categories)) {
+        $lines = [];
+        foreach ($categories as $cat) {
+            $lines[] = '  - ' . $cat['name'] . ' (uuid: ' . $cat['uuid'] . ')';
+        }
+        $category_list  = implode("\n", $lines);
+        $category_block = <<<CAT
+
+AVAILABLE CATEGORIES for transaction.category_uuid (outflow transactions only):
+{$category_list}
+Pick the UUID of the best-matching category based on the description/merchant.
+Use null if inflow, if it is a transfer between accounts, or if no category fits well.
+CAT;
+    }
+
     $system = <<<PROMPT
 You are a financial assistant for a budget app. Today is {$today}.
 
@@ -35,7 +52,11 @@ INTENTS:
    Keywords: pago, já recebi, já paguei, caiu, realizei, chegou, confirmar.
    Examples: "pago conta de luz de março", "salário caiu", "recebi o aluguel de fevereiro"
 
-4. unknown — Intent cannot be determined.
+4. change_category — Correcting the category of the last recorded transaction.
+   Keywords: muda categoria, categoriza como, era, na verdade é, categoria errada.
+   Examples: "muda categoria para restaurante", "era combustível", "categoriza como saúde"
+
+5. unknown — Intent cannot be determined.
 
 EXTRACTION RULES:
 - Dates: "amanhã"=tomorrow, "hoje"=today, "dia 15"=15th of current/next month,
@@ -49,12 +70,12 @@ EXTRACTION RULES:
   (nubank, santander, caixa, samsung, picpay, elo, mercado pago, inter, itau, bradesco).
 - If a required field for the intent is missing, set "clarify" to a single short
   question in the same language as the user. Otherwise set "clarify" to null.
-
+{$category_block}
 Return ONLY a raw JSON object — no prose, no markdown, no code fences.
 
 Schema:
 {
-  "intent": "new_event"|"record_transaction"|"mark_realized"|"unknown",
+  "intent": "new_event"|"record_transaction"|"mark_realized"|"change_category"|"unknown",
   "new_event": {
     "name": string|null,
     "amount_reais": number|null,
@@ -70,11 +91,16 @@ Schema:
     "direction": "inflow"|"outflow"|null,
     "date": "YYYY-MM-DD"|null,
     "account_hint": string|null,
+    "category_uuid": string|null,
     "clarify": string|null
   }|null,
   "realization": {
     "event_name": string|null,
     "month": "YYYY-MM-01"|null,
+    "clarify": string|null
+  }|null,
+  "category_change": {
+    "category_name": string|null,
     "clarify": string|null
   }|null
 }
@@ -89,7 +115,7 @@ PROMPT;
 
     $payload = [
         'model'      => $cfg['claude_model'],
-        'max_tokens' => 384,
+        'max_tokens' => 512,
         'system'     => $system,
         'messages'   => $messages,
     ];
@@ -138,9 +164,25 @@ PROMPT;
  * @param string|null $caption    Optional caption the user sent with the photo
  * @param string      $today      Current date as YYYY-MM-DD
  * @param array       $cfg        Config array (needs 'claude_api_key', 'claude_model')
+ * @param array       $categories Available categories: [['uuid'=>..., 'name'=>...], ...]
  * @return array  {transaction: {...}} or ['error' => '...'] on failure
  */
-function tg_parse_receipt_image(string $image_b64, string $media_type, ?string $caption, string $today, array $cfg): array {
+function tg_parse_receipt_image(string $image_b64, string $media_type, ?string $caption, string $today, array $cfg, array $categories = []): array {
+    $category_block = '';
+    if (!empty($categories)) {
+        $lines = [];
+        foreach ($categories as $cat) {
+            $lines[] = '  - ' . $cat['name'] . ' (uuid: ' . $cat['uuid'] . ')';
+        }
+        $category_list  = implode("\n", $lines);
+        $category_block = <<<CAT
+
+AVAILABLE CATEGORIES for transaction.category_uuid:
+{$category_list}
+Pick the UUID that best matches the merchant/product. Use null if unclear or for refunds.
+CAT;
+    }
+
     $system = <<<PROMPT
 You are a financial assistant analyzing a receipt image for a budget app. Today is {$today}.
 
@@ -157,7 +199,7 @@ RULES:
   Return null if no payment method is visible.
 - clarify: if this is not a receipt or the total cannot be read, set to a short question in Portuguese.
   Otherwise null.
-
+{$category_block}
 Return ONLY a raw JSON object — no prose, no markdown, no code fences.
 
 Schema:
@@ -168,6 +210,7 @@ Schema:
     "direction":     "inflow"|"outflow"|null,
     "date":          "YYYY-MM-DD"|null,
     "account_hint":  string|null,
+    "category_uuid": string|null,
     "clarify":       string|null
   }
 }
@@ -192,7 +235,7 @@ PROMPT;
 
     $payload = [
         'model'      => $cfg['claude_model'],
-        'max_tokens' => 256,
+        'max_tokens' => 384,
         'system'     => $system,
         'messages'   => [['role' => 'user', 'content' => $content]],
     ];
@@ -305,10 +348,13 @@ function tg_state_clear(int $chat_id): void {
 // ---------------------------------------------------------------------------
 
 /** Save the last bot action so /undo can reverse it. */
-function tg_action_save(int $chat_id, string $type, string $uuid, string $label, string $matched_event_uuid = ''): void {
+function tg_action_save(int $chat_id, string $type, string $uuid, string $label, string $matched_event_uuid = '', array $extras = []): void {
     $data = ['type' => $type, 'uuid' => $uuid, 'label' => $label, 'ts' => time()];
     if ($matched_event_uuid !== '') {
         $data['matched_event_uuid'] = $matched_event_uuid;
+    }
+    foreach ($extras as $k => $v) {
+        $data[$k] = $v;
     }
     file_put_contents(
         sys_get_temp_dir() . '/pgbudget_tg_action_' . $chat_id . '.json',

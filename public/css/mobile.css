@@ -258,16 +258,22 @@
     transition: none;
 }
 
-/* Swipe action buttons (revealed on swipe) */
+/* Swipe action buttons (revealed on swipe, touch devices only) */
 .swipe-actions {
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    gap: 0;
-    transform: translateX(100%);
+    display: none; /* Hidden on desktop/mouse devices */
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .swipe-actions {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        transform: translateX(100%);
+    }
 }
 
 .swipe-actions-left {

@@ -25,10 +25,10 @@ if (preg_match('/^\d{4}-\d{2}$/', $start_month_raw)) {
 } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_month_raw)) {
     $start_month = $start_month_raw;
 } else {
-    $start_month = date('Y-m-01');
+    $start_month = date('Y') . '-01-01';
 }
 
-$months_ahead = (int)($_GET['months'] ?? 24);
+$months_ahead = (int)($_GET['months'] ?? 12);
 $months_ahead = max(1, min(120, $months_ahead));
 
 $view_mode = $_GET['view'] ?? 'monthly';
@@ -410,6 +410,7 @@ $groups = [];
 foreach ($pivot as $row) {
     $type = $row['source_type'];
     $row['col_amounts'] = aggregateAmounts($row['amounts'], $columns);
+    if (empty(array_filter($row['col_amounts']))) continue;
     $row['row_total']   = array_sum($row['col_amounts']);
     $groups[$type][]    = $row;
 }
@@ -419,6 +420,202 @@ foreach ($groups as $type => &$rows) {
     usort($rows, fn($a, $b) => strcmp($a['description'], $b['description']));
 }
 unset($rows);
+
+// -------------------------------------------------------------------
+// Fetch tooltip metadata: account name + status for each source row
+// -------------------------------------------------------------------
+$source_meta = [];  // keyed by source_uuid => ['account' => ..., 'status' => ..., 'detail' => ...]
+
+// Collect UUIDs by type
+$uuids_by_type = [];
+foreach ($groups as $type => $rows) {
+    foreach ($rows as $row) {
+        $uuids_by_type[$type][] = $row['source_uuid'];
+    }
+}
+
+// Helper to fetch and index results
+$fetchMeta = function(string $sql, array $uuids, callable $mapper) use ($db, &$source_meta) {
+    if (empty($uuids)) return;
+    $placeholders = implode(',', array_fill(0, count($uuids), '?'));
+    $stmt = $db->prepare(str_replace('__IN__', $placeholders, $sql));
+    $stmt->execute($uuids);
+    foreach ($stmt->fetchAll() as $r) {
+        $source_meta[$r['uuid']] = $mapper($r);
+    }
+};
+
+// income
+$fetchMeta(
+    "SELECT uuid, name, employer_name, income_type FROM api.income_sources WHERE uuid IN (__IN__)",
+    $uuids_by_type['income'] ?? [],
+    fn($r) => [
+        'status'  => 'Projected income',
+        'account' => $r['employer_name'] ? $r['employer_name'] : $r['name'],
+        'detail'  => ucfirst(str_replace('_', ' ', $r['income_type'] ?? '')),
+    ]
+);
+
+// deduction
+$fetchMeta(
+    "SELECT uuid, name, employer_name, deduction_type FROM api.payroll_deductions WHERE uuid IN (__IN__)",
+    $uuids_by_type['deduction'] ?? [],
+    fn($r) => [
+        'status'  => 'Projected deduction',
+        'account' => $r['employer_name'] ? $r['employer_name'] : $r['name'],
+        'detail'  => ucfirst(str_replace('_', ' ', $r['deduction_type'] ?? '')),
+    ]
+);
+
+// obligation
+$fetchMeta(
+    "SELECT uuid, name, payee_name, default_payment_account_name FROM api.obligations WHERE uuid IN (__IN__)",
+    $uuids_by_type['obligation'] ?? [],
+    fn($r) => [
+        'status'  => 'Projected bill',
+        'account' => $r['default_payment_account_name'] ?: ($r['payee_name'] ?: $r['name']),
+        'detail'  => $r['payee_name'] ?: '',
+    ]
+);
+
+// loan_amort + loan_interest share the same source UUIDs
+$loanUuids = array_unique(array_merge(
+    $uuids_by_type['loan_amort']    ?? [],
+    $uuids_by_type['loan_interest'] ?? []
+));
+$fetchMeta(
+    "SELECT uuid, lender_name, account_name FROM api.loans WHERE uuid IN (__IN__)",
+    $loanUuids,
+    fn($r) => [
+        'status'  => 'Projected loan payment',
+        'account' => $r['account_name'] ?: $r['lender_name'],
+        'detail'  => $r['lender_name'] ?: '',
+    ]
+);
+
+// installment — account comes from credit card
+$fetchMeta(
+    "SELECT ip.uuid, a.name AS cc_name
+     FROM data.installment_plans ip
+     JOIN data.accounts a ON a.id = ip.credit_card_account_id
+     WHERE ip.uuid IN (__IN__)",
+    $uuids_by_type['installment'] ?? [],
+    fn($r) => [
+        'status'  => 'Projected installment',
+        'account' => $r['cc_name'],
+        'detail'  => 'Credit card installment',
+    ]
+);
+
+// past_installment
+$fetchMeta(
+    "SELECT ip.uuid, a.name AS cc_name
+     FROM data.installment_plans ip
+     JOIN data.accounts a ON a.id = ip.credit_card_account_id
+     WHERE ip.uuid IN (__IN__)",
+    $uuids_by_type['past_installment'] ?? [],
+    fn($r) => [
+        'status'  => 'Past installment (done)',
+        'account' => $r['cc_name'],
+        'detail'  => 'Credit card installment',
+    ]
+);
+
+// projected events
+$fetchMeta(
+    "SELECT uuid, name, event_type, direction FROM api.projected_events WHERE uuid IN (__IN__)",
+    array_unique(array_merge(
+        $uuids_by_type['event']               ?? [],
+        $uuids_by_type['realized_event']      ?? [],
+        $uuids_by_type['realized_occurrence'] ?? []
+    )),
+    fn($r) => [
+        'status'  => $r['direction'] === 'inflow' ? 'Projected income event' : 'Projected expense event',
+        'account' => ucfirst(str_replace('_', ' ', $r['event_type'] ?? 'event')),
+        'detail'  => $r['name'],
+    ]
+);
+
+// actual transactions — show the asset/checking account involved
+$fetchMeta(
+    "SELECT t.uuid, t.date::text AS date,
+            da.name AS debit_name,  da.type AS debit_type,
+            ca.name AS credit_name, ca.type AS credit_type
+     FROM data.transactions t
+     JOIN data.accounts da ON da.id = t.debit_account_id
+     JOIN data.accounts ca ON ca.id = t.credit_account_id
+     WHERE t.uuid IN (__IN__)",
+    $uuids_by_type['transaction'] ?? [],
+    fn($r) => [
+        'status'  => 'Actual transaction ✓',
+        'account' => $r['debit_type'] === 'asset' ? $r['debit_name'] : ($r['credit_type'] === 'asset' ? $r['credit_name'] : $r['debit_name']),
+        'detail'  => $r['date'],
+    ]
+);
+
+// recurring
+$fetchMeta(
+    "SELECT rt.uuid, a.name AS account_name
+     FROM data.recurring_transactions rt
+     JOIN data.accounts a ON a.id = rt.account_id
+     WHERE rt.uuid IN (__IN__)",
+    $uuids_by_type['recurring'] ?? [],
+    fn($r) => [
+        'status'  => 'Recurring transaction',
+        'account' => $r['account_name'],
+        'detail'  => '',
+    ]
+);
+
+// Per-cell transaction UUIDs from merged event rows — these need account info too
+// (their UUIDs are not in $uuids_by_type['transaction'] because the rows were merged)
+$cell_txn_uuids = [];
+foreach ($groups as $rows) {
+    foreach ($rows as $row) {
+        foreach ($row['txn_uuid_by_month'] ?? [] as $uuid) {
+            if (!isset($source_meta[$uuid])) {
+                $cell_txn_uuids[] = $uuid;
+            }
+        }
+    }
+}
+$cell_txn_uuids = array_unique($cell_txn_uuids);
+if (!empty($cell_txn_uuids)) {
+    $fetchMeta(
+        "SELECT t.uuid, t.date::text AS date,
+                da.name AS debit_name,  da.type AS debit_type,
+                ca.name AS credit_name, ca.type AS credit_type
+         FROM data.transactions t
+         JOIN data.accounts da ON da.id = t.debit_account_id
+         JOIN data.accounts ca ON ca.id = t.credit_account_id
+         WHERE t.uuid IN (__IN__)",
+        $cell_txn_uuids,
+        fn($r) => [
+            'status'  => 'Actual transaction ✓',
+            'account' => $r['debit_type'] === 'asset' ? $r['debit_name'] : ($r['credit_type'] === 'asset' ? $r['credit_name'] : $r['debit_name']),
+            'detail'  => $r['date'],
+        ]
+    );
+}
+
+// Collect unique account names for the account filter chips
+$unique_accounts = [];
+foreach ($groups as $type => $rows) {
+    foreach ($rows as $row) {
+        $acc = $source_meta[$row['source_uuid']]['account'] ?? '';
+        // For event/recurring rows that absorbed transactions, use the transaction account
+        if (in_array($type, ['event', 'recurring']) && !empty($row['txn_uuid_by_month'])) {
+            foreach ($row['txn_uuid_by_month'] as $_uuid) {
+                $_a = $source_meta[$_uuid]['account'] ?? '';
+                if ($_a !== '') { $acc = $_a; break; }
+            }
+        }
+        if ($acc !== '' && !in_array($acc, $unique_accounts, true)) {
+            $unique_accounts[] = $acc;
+        }
+    }
+}
+sort($unique_accounts);
 
 // Compute group subtotals per column
 $group_subtotals = [];
@@ -538,13 +735,43 @@ require_once '../../includes/header.php';
         <!-- Source type filter toggles -->
         <?php if (!empty($groups)): ?>
         <div class="cfp-filter-bar">
-            <span class="cfp-filter-label">Show:</span>
+            <span class="cfp-filter-label">Direction:</span>
+            <label class="cfp-filter-chip cfp-dir-chip active" data-direction="inflow">
+                <input type="checkbox" class="cfp-dir-filter" data-direction="inflow" checked>
+                ▲ Inflow
+            </label>
+            <label class="cfp-filter-chip cfp-dir-chip active" data-direction="outflow">
+                <input type="checkbox" class="cfp-dir-filter" data-direction="outflow" checked>
+                ▼ Outflow
+            </label>
+            <span class="cfp-filter-sep">|</span>
+            <span class="cfp-filter-label">Type:</span>
             <?php foreach ($group_order as $type): if (!isset($groups[$type])) continue; ?>
                 <label class="cfp-filter-chip active" data-type="<?= $type ?>">
                     <input type="checkbox" class="cfp-type-filter" data-type="<?= $type ?>" checked>
                     <?= htmlspecialchars($group_labels[$type]) ?>
                 </label>
             <?php endforeach; ?>
+            <?php if (count($unique_accounts) > 1): ?>
+            <span class="cfp-filter-sep">|</span>
+            <div class="cfp-acct-dropdown" id="cfp-acct-dropdown">
+                <button class="cfp-acct-btn" id="cfp-acct-btn" type="button">
+                    📂 All accounts <span class="cfp-acct-caret">▾</span>
+                </button>
+                <div class="cfp-acct-popover" id="cfp-acct-popover" hidden>
+                    <label class="cfp-acct-all">
+                        <input type="checkbox" id="cfp-acct-all" checked> <strong>All accounts</strong>
+                    </label>
+                    <hr class="cfp-acct-divider">
+                    <?php foreach ($unique_accounts as $acc): ?>
+                    <label class="cfp-acct-option">
+                        <input type="checkbox" class="cfp-account-filter" data-account="<?= htmlspecialchars($acc) ?>" checked>
+                        <?= htmlspecialchars($acc) ?>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
         <?php endif; ?>
     </div>
@@ -606,11 +833,24 @@ require_once '../../includes/header.php';
 
                 <!-- DETAIL ROWS -->
                 <?php foreach ($rows as $row):
-                    $is_highlighted = ($highlight_uuid !== '' && $row['source_uuid'] === $highlight_uuid);
+                    $is_highlighted   = ($highlight_uuid !== '' && $row['source_uuid'] === $highlight_uuid);
+                    $row_direction    = ($row['row_total'] >= 0) ? 'inflow' : 'outflow';
+                    $row_account      = $source_meta[$row['source_uuid']]['account'] ?? '';
+                    // For event/recurring rows that absorbed actual transactions, prefer the
+                    // transaction's asset account (e.g. "Henrique's Salary") over the generic
+                    // event-type label (e.g. "Other") so account filtering works correctly.
+                    if (in_array($row['source_type'], ['event', 'recurring']) && !empty($row['txn_uuid_by_month'])) {
+                        foreach ($row['txn_uuid_by_month'] as $_txn_uuid) {
+                            $_txn_account = $source_meta[$_txn_uuid]['account'] ?? '';
+                            if ($_txn_account !== '') { $row_account = $_txn_account; break; }
+                        }
+                    }
                 ?>
                 <tr class="cfp-row cfp-detail<?= $is_realized_group ? ' cfp-realized-row' : '' ?><?= $is_highlighted ? ' cfp-highlighted' : '' ?>"
                     data-type="<?= $type ?>"
                     data-group="<?= $type ?>"
+                    data-direction="<?= $row_direction ?>"
+                    data-account="<?= htmlspecialchars($row_account) ?>"
                     data-source-uuid="<?= htmlspecialchars($row['source_uuid']) ?>">
                     <td class="cfp-td cfp-td-desc sticky-1" title="<?= htmlspecialchars($row['description']) ?>">
                         <?php if ($type === 'realized_event'): ?>
@@ -642,7 +882,10 @@ require_once '../../includes/header.php';
                         <td class="cfp-td cfp-td-amt <?= cellClass($val) . $cell_cls ?><?= $cell_txn_uuid ? ' cfp-td-deletable' : '' ?>"
                             data-col-idx="<?= $i ?>"
                             data-cents="<?= $val ?>"
-                            data-source="<?= htmlspecialchars($row['source_uuid']) ?>">
+                            data-source="<?= htmlspecialchars($row['source_uuid']) ?>"
+                            <?= $cell_txn_uuid ? 'data-txn-uuid="' . htmlspecialchars($cell_txn_uuid) . '"' : '' ?>
+                            data-cell-status="<?= $cell_indicator ?? '' ?>"
+                            data-col-label="<?= htmlspecialchars($col['label']) ?>">
                             <?= fmtCents($val) ?>
                             <?php if ($cell_indicator === 'actual'): ?><span class="cfp-ci cfp-ci-actual" title="Actual transaction">✓</span><?php endif; ?>
                             <?php if ($cell_indicator === 'realized'): ?><span class="cfp-ci cfp-ci-realized" title="Realized occurrence">↺</span><?php endif; ?>
@@ -665,14 +908,16 @@ require_once '../../includes/header.php';
                     <td class="cfp-td cfp-td-sublabel sticky-1">
                         <?= htmlspecialchars($glabel) ?> Subtotal
                     </td>
-                    <?php foreach ($columns as $col):
+                    <?php foreach ($columns as $i => $col):
                         $val = (int)($subs[$col['key']] ?? 0);
                     ?>
-                        <td class="cfp-td cfp-td-amt cfp-subtotal-amt <?= cellClass($val) ?>">
+                        <td class="cfp-td cfp-td-amt cfp-subtotal-amt <?= cellClass($val) ?>"
+                            data-col-idx="<?= $i ?>" data-cents="<?= $val ?>">
                             <?= fmtCents($val) ?>
                         </td>
                     <?php endforeach; ?>
-                    <td class="cfp-td cfp-td-amt cfp-subtotal-amt <?= cellClass((int)($subs['__total'] ?? 0)) ?>">
+                    <td class="cfp-td cfp-td-amt cfp-subtotal-amt cfp-subtotal-total <?= cellClass((int)($subs['__total'] ?? 0)) ?>"
+                        data-cents="<?= (int)($subs['__total'] ?? 0) ?>">
                         <?= fmtCents((int)($subs['__total'] ?? 0)) ?>
                     </td>
                 </tr>
@@ -772,6 +1017,9 @@ require_once '../../includes/header.php';
     <?php endif; ?>
 </div>
 
+<!-- Row tooltip -->
+<div id="cfp-row-tooltip" class="cfp-row-tooltip" role="tooltip" aria-hidden="true"></div>
+
 <script>
     window.CFP = {
         ledger:      '<?= htmlspecialchars($ledger_uuid) ?>',
@@ -782,6 +1030,7 @@ require_once '../../includes/header.php';
         colLabels:   <?= json_encode(array_column($columns, 'label')) ?>,
         currencySymbol: '$',
         highlightUuid: '<?= htmlspecialchars($highlight_uuid) ?>',
+        sourceMeta:  <?= json_encode($source_meta, JSON_UNESCAPED_UNICODE) ?>,
     };
 </script>
 <script src="/pgbudget/js/cash-flow-projection.js"></script>

@@ -173,6 +173,18 @@ try {
     $stmt->execute([...$params, $per_page, $offset]);
     $transactions = $stmt->fetchAll();
 
+    // Fetch unrealized projected events for the link modal
+    $stmt = $db->prepare("
+        SELECT uuid, name, direction, amount, event_date
+        FROM api.projected_events
+        WHERE ledger_uuid = ?
+          AND is_realized = false
+          AND linked_transaction_uuid IS NULL
+        ORDER BY event_date
+    ");
+    $stmt->execute([$ledger_uuid]);
+    $unrealized_events = $stmt->fetchAll();
+
 } catch (Exception $e) {
     $_SESSION['error'] = 'Database error occurred.';
     error_log("Database error: " . $e->getMessage());
@@ -375,7 +387,7 @@ try {
                                 <?= date('M j, Y', strtotime($txn['date'])) ?>
                                 <small><?= date('g:i A', strtotime($txn['created_at'])) ?></small>
                             </td>
-                            <td class="description-cell">
+                            <td class="description-cell" title="<?= htmlspecialchars($txn['description']) ?>">
                                 <?= htmlspecialchars($txn['description']) ?>
                                 <?php if (!empty($txn['installment_plan_uuid'])): ?>
                                     <a href="../installments/view.php?ledger=<?= urlencode($ledger_uuid) ?>&plan=<?= urlencode($txn['installment_plan_uuid']) ?>"
@@ -426,20 +438,12 @@ try {
                                        class="btn btn-small btn-create-installment"
                                        title="Create Installment Plan">💳</a>
                                 <?php endif; ?>
+                                <?php if (!empty($unrealized_events)): ?>
+                                    <button class="btn btn-small btn-link-event"
+                                            title="Link to Projected Event"
+                                            onclick="openLinkModal('<?= htmlspecialchars($txn['uuid']) ?>', <?= json_encode($txn['description']) ?>, <?= (int)$txn['amount'] ?>)">🔗</button>
+                                <?php endif; ?>
                             </td>
-                            <!-- Swipe actions (mobile only) -->
-                            <div class="swipe-actions">
-                                <button class="swipe-action-btn edit"
-                                        onclick="window.location.href='edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>'"
-                                        title="Edit">
-                                    ✏️
-                                </button>
-                                <button class="swipe-action-btn delete"
-                                        onclick="deleteSingleTransaction('<?= htmlspecialchars($txn['uuid']) ?>', <?= json_encode($txn['description']) ?>)"
-                                        title="Delete">
-                                    🗑️
-                                </button>
-                            </div>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -490,6 +494,10 @@ try {
 </div>
 
 <style>
+.container {
+    max-width: 1400px;
+}
+
 .filters-section {
     background: white;
     padding: 2rem;
@@ -566,7 +574,7 @@ try {
 .transactions-table {
     background: white;
     border-radius: 8px;
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin: 1rem 0;
 }
@@ -857,6 +865,52 @@ try {
 
 .actions-cell {
     white-space: nowrap;
+    min-width: 120px;
+}
+
+/* Link to Projected Event Button */
+.btn-link-event {
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    border: 1px solid #6366f1;
+    color: #3730a3;
+    margin-left: 0.25rem;
+}
+
+.btn-link-event:hover {
+    background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
+    border-color: #4f46e5;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+}
+
+/* Link Event Modal */
+#link-event-modal .bulk-modal-content {
+    max-width: 520px;
+}
+
+#link-event-modal .txn-summary {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    color: #4a5568;
+}
+
+#link-event-modal .txn-summary strong {
+    display: block;
+    color: #2d3748;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+#link-event-modal select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 0.875rem;
 }
 </style>
 
@@ -929,6 +983,36 @@ try {
     </div>
 </div>
 
+<!-- Link to Projected Event Modal -->
+<div id="link-event-modal" class="bulk-modal hidden">
+    <div class="bulk-modal-content">
+        <div class="bulk-modal-header">
+            <h2>Link to Projected Event</h2>
+        </div>
+        <div class="bulk-modal-body">
+            <div class="txn-summary">
+                <strong id="link-modal-txn-desc"></strong>
+                <span id="link-modal-txn-amount"></span>
+            </div>
+            <label for="link-event-select">Select Projected Event:</label>
+            <select id="link-event-select">
+                <option value="">— Select an event —</option>
+                <?php foreach ($unrealized_events as $ev): ?>
+                    <option value="<?= htmlspecialchars($ev['uuid']) ?>">
+                        <?= htmlspecialchars(date('M j, Y', strtotime($ev['event_date']))) ?>
+                        — <?= htmlspecialchars($ev['name']) ?>
+                        (<?= $ev['direction'] === 'inflow' ? '+' : '−' ?>R$ <?= number_format($ev['amount'] / 100, 2, ',', '.') ?>)
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="bulk-modal-footer">
+            <button onclick="closeBulkModal('link-event-modal')" class="bulk-modal-btn secondary">Cancel</button>
+            <button onclick="submitLinkEvent()" class="bulk-modal-btn primary">Link</button>
+        </div>
+    </div>
+</div>
+
 <!-- Include bulk operations CSS and JavaScript -->
 <link rel="stylesheet" href="../css/bulk-operations.css">
 <script src="../js/bulk-operations.js"></script>
@@ -937,6 +1021,46 @@ try {
 <script src="../js/search-filter.js"></script>
 
 <script>
+let _linkTxnUuid = null;
+
+function openLinkModal(txnUuid, txnDescription, txnAmountCents) {
+    _linkTxnUuid = txnUuid;
+    document.getElementById('link-modal-txn-desc').textContent = txnDescription;
+    document.getElementById('link-modal-txn-amount').textContent =
+        'R$ ' + (txnAmountCents / 100).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('link-event-select').value = '';
+    document.getElementById('link-event-modal').classList.remove('hidden');
+}
+
+async function submitLinkEvent() {
+    const eventUuid = document.getElementById('link-event-select').value;
+    if (!eventUuid) {
+        alert('Please select a projected event.');
+        return;
+    }
+    const formData = new FormData();
+    formData.append('action', 'update');
+    formData.append('event_uuid', eventUuid);
+    formData.append('is_realized', '1');
+    formData.append('linked_transaction_uuid', _linkTxnUuid);
+
+    try {
+        const response = await fetch('/pgbudget/api/projected-events.php', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            closeBulkModal('link-event-modal');
+            window.location.reload();
+        } else {
+            alert('Error linking: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
 async function deleteSingleTransaction(uuid, description) {
     ConfirmModal.show({
         title:        'Delete Transaction?',

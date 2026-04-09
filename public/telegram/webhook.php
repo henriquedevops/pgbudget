@@ -310,9 +310,10 @@ function handle_free_text(int $chat_id, string $text, array $user, string $ledge
         return;
     }
 
-    $today   = date('Y-m-d');
-    $history = tg_state_load($chat_id);
-    $parsed  = tg_parse_message($text, $history, $today, $cfg);
+    $today      = date('Y-m-d');
+    $history    = tg_state_load($chat_id);
+    $categories = fetch_categories($db, $ledger_uuid);
+    $parsed     = tg_parse_message($text, $history, $today, $cfg, $categories);
 
     if (isset($parsed['error'])) {
         error_log('pgbudget Telegram parser error: ' . $parsed['error']);
@@ -325,10 +326,13 @@ function handle_free_text(int $chat_id, string $text, array $user, string $ledge
             handle_new_event($chat_id, $text, $parsed['new_event'] ?? [], $history, $ledger_uuid, $db, $cfg);
             break;
         case 'record_transaction':
-            handle_record_transaction($chat_id, $text, $parsed['transaction'] ?? [], $history, $ledger_uuid, $db, $cfg);
+            handle_record_transaction($chat_id, $text, $parsed['transaction'] ?? [], $history, $ledger_uuid, $categories, $db, $cfg);
             break;
         case 'mark_realized':
             handle_mark_realized($chat_id, $text, $parsed['realization'] ?? [], $history, $ledger_uuid, $db, $cfg);
+            break;
+        case 'change_category':
+            handle_change_category($chat_id, $text, $parsed['category_change'] ?? [], $history, $categories, $db, $cfg);
             break;
         default:
             tg_send($chat_id, "Não entendi. Use /help para ver exemplos do que posso fazer.", $cfg);
@@ -395,7 +399,7 @@ function handle_new_event(int $chat_id, string $text, array $data, array $histor
     }
 }
 
-function handle_record_transaction(int $chat_id, string $text, array $data, array $history, string $ledger_uuid, PDO $db, array $cfg): void {
+function handle_record_transaction(int $chat_id, string $text, array $data, array $history, string $ledger_uuid, array $categories, PDO $db, array $cfg): void {
     if (!empty($data['clarify'])) {
         $history[] = ['user' => $text, 'bot' => $data['clarify']];
         tg_state_save($chat_id, $history);
@@ -418,16 +422,18 @@ function handle_record_transaction(int $chat_id, string $text, array $data, arra
     }
 
     $amount_cents = (int) round((float)$data['amount_reais'] * 100);
+    $category_uuid = !empty($data['category_uuid']) ? $data['category_uuid'] : null;
 
     try {
         $stmt = $db->prepare("
             SELECT api.add_transaction(
                 ?::text, ?::date, ?::text, ?::text, ?::bigint, ?::text,
-                NULL::text, NULL::text, NULL::text
+                ?::text, NULL::text, NULL::text
             )
         ");
         $stmt->execute([$ledger_uuid, $data['date'], $data['description'],
-                        $data['direction'], $amount_cents, $account_uuid]);
+                        $data['direction'], $amount_cents, $account_uuid,
+                        $category_uuid]);
         $tx_uuid = $stmt->fetchColumn();
 
         tg_state_clear($chat_id);
@@ -454,7 +460,8 @@ function handle_record_transaction(int $chat_id, string $text, array $data, arra
 
         tg_action_save($chat_id, 'transaction', $tx_uuid,
                        "{$data['description']} " . fmt_brl($amount_cents),
-                       $match_uuid);
+                       $match_uuid,
+                       ['direction' => $data['direction'], 'category_uuid' => $category_uuid]);
 
         $dir_label    = $data['direction'] === 'inflow' ? 'entrada 📈' : 'saída 📉';
         $account_name = account_name_from_uuid($account_uuid, $cfg);
@@ -462,12 +469,16 @@ function handle_record_transaction(int $chat_id, string $text, array $data, arra
                . fmt_brl($amount_cents) . " · {$dir_label} · "
                . (new DateTime($data['date']))->format('d/m/Y')
                . " · conta: *{$account_name}*";
+        if ($category_uuid) {
+            $cat_name = category_name_from_uuid($category_uuid, $categories);
+            $reply .= "\n🏷️ categoria: *{$cat_name}*";
+        }
         if ($match_uuid !== '') {
             $reply .= "\n✓ _Correspondeu ao evento planejado «{$match_name}» e marcou como realizado._";
         } else {
             $reply .= "\n_Nenhum evento correspondente; aparecerá como transação na projeção._";
         }
-        $reply .= "\n\n_/undo se a conta estiver errada._";
+        $reply .= "\n\n_/undo se algo estiver errado. Ou diga \"muda categoria para X\" para corrigir._";
         tg_send($chat_id, $reply, $cfg);
 
     } catch (Exception $e) {
@@ -602,8 +613,9 @@ function handle_photo(int $chat_id, array $msg, array $user, string $ledger_uuid
         return;
     }
 
-    $today  = date('Y-m-d');
-    $parsed = tg_parse_receipt_image(base64_encode($image_data), 'image/jpeg', $caption ?: null, $today, $cfg);
+    $today      = date('Y-m-d');
+    $categories = fetch_categories($db, $ledger_uuid);
+    $parsed     = tg_parse_receipt_image(base64_encode($image_data), 'image/jpeg', $caption ?: null, $today, $cfg, $categories);
 
     if (isset($parsed['error'])) {
         error_log('pgbudget Telegram receipt parse error: ' . $parsed['error']);
@@ -612,7 +624,80 @@ function handle_photo(int $chat_id, array $msg, array $user, string $ledger_uuid
     }
 
     $history = tg_state_load($chat_id);
-    handle_record_transaction($chat_id, $caption ?: '[recibo]', $parsed['transaction'] ?? [], $history, $ledger_uuid, $db, $cfg);
+    handle_record_transaction($chat_id, $caption ?: '[recibo]', $parsed['transaction'] ?? [], $history, $ledger_uuid, $categories, $db, $cfg);
+}
+
+// ---------------------------------------------------------------------------
+// Change-category handler
+// ---------------------------------------------------------------------------
+
+function handle_change_category(int $chat_id, string $text, array $data, array $history, array $categories, PDO $db, array $cfg): void {
+    $action = tg_action_load($chat_id);
+    if (!$action || $action['type'] !== 'transaction') {
+        tg_send($chat_id, "Não há transação recente para alterar a categoria (limite: 1 hora).", $cfg);
+        return;
+    }
+
+    if (!empty($data['clarify'])) {
+        $history[] = ['user' => $text, 'bot' => $data['clarify']];
+        tg_state_save($chat_id, $history);
+        tg_send($chat_id, $data['clarify'], $cfg);
+        return;
+    }
+
+    if (empty($data['category_name'])) {
+        tg_send($chat_id, "Qual categoria você quer usar?", $cfg);
+        return;
+    }
+
+    // Find category by fuzzy name match
+    $needle        = strtolower($data['category_name']);
+    $category_uuid = null;
+    $category_name = null;
+    foreach ($categories as $cat) {
+        $hay = strtolower($cat['name']);
+        if (str_contains($hay, $needle) || str_contains($needle, $hay)) {
+            $category_uuid = $cat['uuid'];
+            $category_name = $cat['name'];
+            break;
+        }
+    }
+
+    if (!$category_uuid) {
+        tg_send($chat_id, "Categoria não encontrada: \"{$data['category_name']}\".\nUse um nome da lista de categorias disponíveis.", $cfg);
+        return;
+    }
+
+    try {
+        $direction = $action['direction'] ?? 'outflow';
+        // For outflow: category is on the debit side; for inflow: credit side
+        if ($direction === 'outflow') {
+            $stmt = $db->prepare("
+                UPDATE data.transactions
+                SET debit_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
+                WHERE uuid = ?
+            ");
+        } else {
+            $stmt = $db->prepare("
+                UPDATE data.transactions
+                SET credit_account_id = (SELECT id FROM data.accounts WHERE uuid = ?)
+                WHERE uuid = ?
+            ");
+        }
+        $stmt->execute([$category_uuid, $action['uuid']]);
+
+        // Update saved action with new category
+        tg_action_save($chat_id, 'transaction', $action['uuid'], $action['label'],
+                       $action['matched_event_uuid'] ?? '',
+                       ['direction' => $direction, 'category_uuid' => $category_uuid]);
+
+        tg_state_clear($chat_id);
+        tg_send($chat_id, "✅ Categoria atualizada para *{$category_name}*.", $cfg);
+
+    } catch (Exception $e) {
+        error_log('pgbudget Telegram change_category: ' . $e->getMessage());
+        tg_send($chat_id, "Erro ao atualizar categoria. Tente novamente.", $cfg);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -638,6 +723,37 @@ function account_name_from_uuid(string $uuid, array $cfg): string {
         foreach ($cfg['accounts'] as $keyword => $acct_uuid) {
             if ($acct_uuid === $uuid) return ucfirst($keyword);
         }
+    }
+    return $uuid;
+}
+
+/**
+ * Fetch equity/expense accounts suitable for use as transaction categories.
+ * Excludes internal accounts like CC Payment clearing accounts.
+ */
+function fetch_categories(PDO $db, string $ledger_uuid): array {
+    try {
+        $stmt = $db->prepare("
+            SELECT uuid, name, type
+            FROM api.accounts
+            WHERE ledger_uuid = ?
+              AND type IN ('equity', 'expense')
+              AND name NOT LIKE 'CC Payment:%'
+              AND name NOT IN ('Unassigned', 'Off-budget', 'temp', 'INSS', 'IRPF',
+                               'Previdencia Privada', 'Interest', 'Taxes&amp;Interests')
+            ORDER BY name
+        ");
+        $stmt->execute([$ledger_uuid]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        error_log('pgbudget Telegram fetch_categories: ' . $e->getMessage());
+        return [];
+    }
+}
+
+function category_name_from_uuid(string $uuid, array $categories): string {
+    foreach ($categories as $cat) {
+        if ($cat['uuid'] === $uuid) return $cat['name'];
     }
     return $uuid;
 }

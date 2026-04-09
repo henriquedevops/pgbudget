@@ -115,6 +115,7 @@
                                 Finances <span class="caret" aria-hidden="true">▾</span>
                             </button>
                             <ul class="nav-dropdown-menu" role="menu">
+                                <li><a href="/pgbudget/transactions/list.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">All Transactions</a></li>
                                 <li><a href="/pgbudget/categories/manage.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Categories</a></li>
                                 <li><a href="/pgbudget/credit-cards/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Credit Cards</a></li>
                                 <li><a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Loans</a></li>

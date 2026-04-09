@@ -3,7 +3,7 @@
  * Phase 6.5: Offline support and caching
  */
 
-const CACHE_VERSION = 'pgbudget-v1.0.2';
+const CACHE_VERSION = 'pgbudget-v1.0.3';
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 const DATA_CACHE_NAME = `${CACHE_VERSION}-data`;
 
@@ -82,6 +82,11 @@ self.addEventListener('fetch', (event) => {
 
     // Never intercept navigation requests (PHP pages redirect based on auth — let browser handle)
     if (request.mode === 'navigate') {
+        return;
+    }
+
+    // Never intercept PHP pages — they are dynamic and auth-dependent
+    if (url.pathname.endsWith('.php')) {
         return;
     }
 
