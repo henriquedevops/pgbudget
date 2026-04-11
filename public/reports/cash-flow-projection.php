@@ -523,16 +523,19 @@ $fetchMeta(
 
 // projected events
 $fetchMeta(
-    "SELECT uuid, name, event_type, direction FROM api.projected_events WHERE uuid IN (__IN__)",
+    "SELECT uuid, name, event_type, direction, frequency, linked_transaction_uuid FROM api.projected_events WHERE uuid IN (__IN__)",
     array_unique(array_merge(
         $uuids_by_type['event']               ?? [],
         $uuids_by_type['realized_event']      ?? [],
         $uuids_by_type['realized_occurrence'] ?? []
     )),
     fn($r) => [
-        'status'  => $r['direction'] === 'inflow' ? 'Projected income event' : 'Projected expense event',
-        'account' => ucfirst(str_replace('_', ' ', $r['event_type'] ?? 'event')),
-        'detail'  => $r['name'],
+        'status'                  => $r['direction'] === 'inflow' ? 'Projected income event' : 'Projected expense event',
+        'account'                 => ucfirst(str_replace('_', ' ', $r['event_type'] ?? 'event')),
+        'detail'                  => $r['name'],
+        'frequency'               => $r['frequency'],
+        'direction'               => $r['direction'],
+        'linked_transaction_uuid' => $r['linked_transaction_uuid'] ?? '',
     ]
 );
 
@@ -789,6 +792,8 @@ require_once '../../includes/header.php';
         </div>
     <?php else: ?>
 
+    <?php $linkable_cells_js = []; ?>
+
     <!-- Projection Table -->
     <div class="cfp-table-wrapper" id="cfp-table-wrapper">
         <table class="cfp-table" id="cfp-table">
@@ -879,17 +884,45 @@ require_once '../../includes/header.php';
                             elseif (in_array($type, ['event','recurring','obligation','loan_amort','loan_interest','installment','deduction','income'])) $cell_indicator = 'projected';
                         }
                     ?>
-                        <td class="cfp-td cfp-td-amt <?= cellClass($val) . $cell_cls ?><?= $cell_txn_uuid ? ' cfp-td-deletable' : '' ?>"
+                        <?php
+                            $is_linkable = ($cell_indicator === 'projected' && $type === 'event' && $val !== 0);
+                            $cell_extra_cls = $cell_txn_uuid ? ' cfp-td-deletable' : ($is_linkable ? ' cfp-td-linkable' : '');
+                            // Collect linkable cells for the JS bundle panel
+                            if ($is_linkable) {
+                                $linkable_cells_js[] = [
+                                    'eventUuid'   => $row['source_uuid'],
+                                    'month'       => $col['months'][0],
+                                    'amountCents' => abs($val),
+                                    'description' => $row['description'],
+                                    'direction'   => $source_meta[$row['source_uuid']]['direction'] ?? 'outflow',
+                                ];
+                            }
+                            // For realized event cells, expose linked txn uuid for bundle detection
+                            $cell_linked_txn_uuid = '';
+                            if ($cell_indicator === 'realized' || $cell_indicator === 'actual') {
+                                $cell_linked_txn_uuid = $source_meta[$row['source_uuid']]['linked_transaction_uuid'] ?? '';
+                            }
+                        ?>
+                        <td class="cfp-td cfp-td-amt <?= cellClass($val) . $cell_cls . $cell_extra_cls ?>"
                             data-col-idx="<?= $i ?>"
                             data-cents="<?= $val ?>"
                             data-source="<?= htmlspecialchars($row['source_uuid']) ?>"
                             <?= $cell_txn_uuid ? 'data-txn-uuid="' . htmlspecialchars($cell_txn_uuid) . '"' : '' ?>
                             data-cell-status="<?= $cell_indicator ?? '' ?>"
-                            data-col-label="<?= htmlspecialchars($col['label']) ?>">
+                            data-col-label="<?= htmlspecialchars($col['label']) ?>"
+                            <?= $cell_linked_txn_uuid ? 'data-linked-txn-uuid="' . htmlspecialchars($cell_linked_txn_uuid) . '"' : '' ?>
+                            <?php if ($is_linkable): ?>
+                            data-event-uuid="<?= htmlspecialchars($row['source_uuid']) ?>"
+                            data-month="<?= htmlspecialchars($col['months'][0]) ?>"
+                            data-amount="<?= abs($val) ?>"
+                            data-desc="<?= htmlspecialchars($row['description']) ?>"
+                            title="Click to link to real transaction"
+                            <?php endif; ?>>
                             <?= fmtCents($val) ?>
                             <?php if ($cell_indicator === 'actual'): ?><span class="cfp-ci cfp-ci-actual" title="Actual transaction">✓</span><?php endif; ?>
                             <?php if ($cell_indicator === 'realized'): ?><span class="cfp-ci cfp-ci-realized" title="Realized occurrence">↺</span><?php endif; ?>
-                            <?php if ($cell_indicator === 'projected'): ?><span class="cfp-ci cfp-ci-projected" title="Projection">~</span><?php endif; ?>
+                            <?php if ($cell_indicator === 'projected' && !$is_linkable): ?><span class="cfp-ci cfp-ci-projected" title="Projection">~</span><?php endif; ?>
+                            <?php if ($is_linkable): ?><span class="cfp-ci cfp-ci-linkable" title="Click to link to real transaction">⛓</span><?php endif; ?>
                             <?php if ($cell_txn_uuid && $val !== 0): ?>
                             <button class="cfp-delete-txn-btn"
                                     title="Delete this transaction"
@@ -1022,18 +1055,85 @@ require_once '../../includes/header.php';
 
 <script>
     window.CFP = {
-        ledger:      '<?= htmlspecialchars($ledger_uuid) ?>',
-        startMonth:  '<?= $start_month ?>',
-        monthsAhead: <?= $months_ahead ?>,
-        viewMode:    '<?= $view_mode ?>',
-        numCols:     <?= count($columns) ?>,
-        colLabels:   <?= json_encode(array_column($columns, 'label')) ?>,
+        ledger:         '<?= htmlspecialchars($ledger_uuid) ?>',
+        startMonth:     '<?= $start_month ?>',
+        monthsAhead:    <?= $months_ahead ?>,
+        viewMode:       '<?= $view_mode ?>',
+        numCols:        <?= count($columns) ?>,
+        colLabels:      <?= json_encode(array_column($columns, 'label')) ?>,
         currencySymbol: '$',
-        highlightUuid: '<?= htmlspecialchars($highlight_uuid) ?>',
-        sourceMeta:  <?= json_encode($source_meta, JSON_UNESCAPED_UNICODE) ?>,
+        highlightUuid:  '<?= htmlspecialchars($highlight_uuid) ?>',
+        sourceMeta:     <?= json_encode($source_meta, JSON_UNESCAPED_UNICODE) ?>,
+        linkableCells:  <?= json_encode($linkable_cells_js, JSON_UNESCAPED_UNICODE) ?>,
     };
 </script>
 <script src="/pgbudget/js/cash-flow-projection.js"></script>
+
+<!-- Link-to-real-transaction modal -->
+<div id="cfp-link-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="cfp-link-modal-title">
+    <div class="modal-container cfp-link-modal-box">
+
+        <!-- Header -->
+        <div class="cfp-link-modal-header">
+            <h3 id="cfp-link-modal-title">Link to Real Transaction</h3>
+            <div class="cfp-link-event-info">
+                Month: <strong id="cfp-link-event-month"></strong>
+                &nbsp;·&nbsp;
+                Projected total: <strong id="cfp-link-event-amount"></strong>
+            </div>
+        </div>
+
+        <!-- Two-column body -->
+        <div class="cfp-link-body">
+
+            <!-- LEFT: bundle projections -->
+            <div class="cfp-link-left">
+                <div class="cfp-link-panel-label">Projections to bundle</div>
+                <div id="cfp-bundle-list" class="cfp-bundle-list"></div>
+            </div>
+
+            <!-- RIGHT: real transaction picker -->
+            <div class="cfp-link-right">
+                <div class="cfp-link-panel-label">Real transaction</div>
+                <div class="cfp-link-search">
+                    <input type="text" id="cfp-link-search-input" placeholder="Filter…" autocomplete="off">
+                </div>
+                <div id="cfp-link-txn-list" class="cfp-link-txn-list">
+                    <div class="cfp-link-loading">Loading…</div>
+                </div>
+            </div>
+
+        </div><!-- /.cfp-link-body -->
+
+        <!-- Summary bar -->
+        <div class="cfp-link-summary" id="cfp-link-summary">
+            <span>Projections: <strong id="cfp-sum-proj">—</strong></span>
+            <span>Real: <strong id="cfp-sum-real">—</strong></span>
+            <span id="cfp-sum-diff-wrap">Difference: <strong id="cfp-sum-diff">—</strong></span>
+        </div>
+
+        <!-- Interest prompt (hidden until needed) -->
+        <div id="cfp-interest-prompt" class="cfp-interest-prompt" style="display:none" role="alert">
+            <p class="cfp-interest-prompt-msg">
+                The actual amount (<strong id="cfp-ip-real"></strong>) is higher than the sum of
+                selected projections (<strong id="cfp-ip-proj"></strong>). Should the difference of
+                <strong id="cfp-ip-diff"></strong> be recorded as interest or late payment fee?
+            </p>
+            <div class="cfp-interest-prompt-actions">
+                <button id="cfp-ip-yes-btn"    class="btn btn-primary"   type="button">Yes, record as interest</button>
+                <button id="cfp-ip-no-btn"     class="btn btn-secondary" type="button">No, just link</button>
+                <button id="cfp-ip-cancel-btn" class="btn btn-ghost"     type="button">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Footer actions -->
+        <div class="modal-actions">
+            <button id="cfp-link-cancel-btn" class="btn btn-secondary" type="button">Cancel</button>
+            <button id="cfp-link-confirm-btn" class="btn btn-primary"  type="button" disabled>Link Transaction</button>
+        </div>
+
+    </div>
+</div>
 
 <script>
 async function cfpDeleteTransaction(uuid, description) {
@@ -1059,6 +1159,411 @@ async function cfpDeleteTransaction(uuid, description) {
         }
     });
 }
+</script>
+
+<script>
+(function () {
+    'use strict';
+
+    // ------------------------------------------------------------------
+    // State
+    // ------------------------------------------------------------------
+    var _linkMonth          = '';
+    var _selectedTxnUuid    = '';
+    var _selectedTxnAmount  = 0;   // absolute cents of the chosen real txn
+    var _allTxns            = [];
+    // _bundleItems: array of { eventUuid, month, amountCents, description, checked }
+    var _bundleItems        = [];
+
+    // ------------------------------------------------------------------
+    // DOM refs
+    // ------------------------------------------------------------------
+    var modal          = document.getElementById('cfp-link-modal');
+    var bundleListEl   = document.getElementById('cfp-bundle-list');
+    var listEl         = document.getElementById('cfp-link-txn-list');
+    var searchEl       = document.getElementById('cfp-link-search-input');
+    var confirmBtn     = document.getElementById('cfp-link-confirm-btn');
+    var cancelBtn      = document.getElementById('cfp-link-cancel-btn');
+    var interestPrompt = document.getElementById('cfp-interest-prompt');
+    var ipYesBtn       = document.getElementById('cfp-ip-yes-btn');
+    var ipNoBtn        = document.getElementById('cfp-ip-no-btn');
+    var ipCancelBtn    = document.getElementById('cfp-ip-cancel-btn');
+    var sumProjEl      = document.getElementById('cfp-sum-proj');
+    var sumRealEl      = document.getElementById('cfp-sum-real');
+    var sumDiffEl      = document.getElementById('cfp-sum-diff');
+    var sumDiffWrap    = document.getElementById('cfp-sum-diff-wrap');
+
+    // ------------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------------
+    function fmtCents(c) {
+        if (c === 0) return '—';
+        var sym  = (window.CFP && CFP.currencySymbol) || '$';
+        var sign = c < 0 ? '-' : '';
+        return sign + sym + (Math.abs(c) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function escHtml(s) {
+        return String(s || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // Sum of checked bundle items (absolute cents)
+    function bundleTotal() {
+        return _bundleItems.reduce(function (sum, it) {
+            return it.checked ? sum + it.amountCents : sum;
+        }, 0);
+    }
+
+    // ------------------------------------------------------------------
+    // Summary bar
+    // ------------------------------------------------------------------
+    function updateSummary() {
+        var proj = bundleTotal();
+        var real = _selectedTxnAmount;
+        var diff = real - proj;  // positive = real > projected (overage)
+
+        if (sumProjEl) sumProjEl.textContent = fmtCents(proj);
+        if (sumRealEl) sumRealEl.textContent = real > 0 ? fmtCents(real) : '—';
+
+        if (real > 0 && proj > 0) {
+            if (sumDiffEl) {
+                sumDiffEl.textContent = (diff >= 0 ? '+' : '') + fmtCents(diff);
+                sumDiffEl.className   = diff > 0 ? 'cell-neg' : (diff < 0 ? 'cell-pos' : '');
+            }
+            if (sumDiffWrap) sumDiffWrap.style.display = '';
+        } else {
+            if (sumDiffWrap) sumDiffWrap.style.display = 'none';
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Bundle panel
+    // ------------------------------------------------------------------
+    function renderBundleList() {
+        if (!bundleListEl) return;
+        if (!_bundleItems.length) {
+            bundleListEl.innerHTML = '<div class="cfp-bundle-empty">No other projections for this month.</div>';
+            return;
+        }
+        var html = '';
+        _bundleItems.forEach(function (it, idx) {
+            var sign    = it.direction === 'inflow' ? '+' : '−';
+            var checked = it.checked ? ' checked' : '';
+            var cls     = it.checked ? ' cfp-bundle-item--checked' : '';
+            var disabled = it.primary ? ' disabled' : '';
+            html += '<label class="cfp-bundle-item' + cls + '" data-idx="' + idx + '">'
+                  + '<input type="checkbox"' + checked + disabled + ' data-idx="' + idx + '">'
+                  + '<span class="cfp-bundle-item-desc">' + escHtml(it.description) + '</span>'
+                  + '<span class="cfp-bundle-item-amt">' + sign + fmtCents(it.amountCents) + '</span>'
+                  + '</label>';
+        });
+        bundleListEl.innerHTML = html;
+
+        bundleListEl.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                var idx = parseInt(cb.dataset.idx, 10);
+                if (!isNaN(idx)) {
+                    _bundleItems[idx].checked = cb.checked;
+                    var label = cb.closest('.cfp-bundle-item');
+                    if (label) label.classList.toggle('cfp-bundle-item--checked', cb.checked);
+                }
+                updateSummary();
+                updateConfirmBtn();
+            });
+        });
+    }
+
+    function updateConfirmBtn() {
+        if (!confirmBtn) return;
+        confirmBtn.disabled = (_selectedTxnUuid === '' || bundleTotal() === 0);
+    }
+
+    // ------------------------------------------------------------------
+    // Open / close
+    // ------------------------------------------------------------------
+    function openModal(eventUuid, month, amountCents, description) {
+        _linkMonth         = month;
+        _selectedTxnUuid   = '';
+        _selectedTxnAmount = 0;
+        _allTxns           = [];
+
+        // Build bundle items: the clicked event is first and pre-checked (primary)
+        var allCells = (window.CFP && CFP.linkableCells) || [];
+        var sameMonth = allCells.filter(function (c) { return c.month === month; });
+
+        _bundleItems = sameMonth.map(function (c) {
+            return {
+                eventUuid:   c.eventUuid,
+                month:       c.month,
+                amountCents: c.amountCents,
+                description: c.description,
+                direction:   c.direction || 'outflow',
+                checked:     c.eventUuid === eventUuid,
+                primary:     c.eventUuid === eventUuid,
+            };
+        });
+        // If clicked event isn't in linkableCells (edge case), prepend it
+        var hasAnchor = _bundleItems.some(function (it) { return it.primary; });
+        if (!hasAnchor) {
+            _bundleItems.unshift({
+                eventUuid:   eventUuid,
+                month:       month,
+                amountCents: amountCents,
+                description: description,
+                direction:   'outflow',
+                checked:     true,
+                primary:     true,
+            });
+        }
+
+        // Header
+        document.getElementById('cfp-link-event-month').textContent  = month.slice(0, 7);
+        document.getElementById('cfp-link-event-amount').textContent = fmtCents(bundleTotal());
+
+        searchEl.value      = '';
+        confirmBtn.disabled  = true;
+        confirmBtn.textContent = 'Link Transaction';
+        hideInterestPrompt();
+
+        renderBundleList();
+        updateSummary();
+
+        listEl.innerHTML = '<div class="cfp-link-loading">Loading…</div>';
+        modal.classList.add('show');
+        searchEl.focus();
+
+        loadTransactions();
+    }
+
+    function closeModal() {
+        modal.classList.remove('show');
+        _selectedTxnUuid   = '';
+        _selectedTxnAmount = 0;
+        _bundleItems        = [];
+        hideInterestPrompt();
+    }
+
+    // ------------------------------------------------------------------
+    // Interest prompt
+    // ------------------------------------------------------------------
+    function hideInterestPrompt() {
+        if (interestPrompt) interestPrompt.style.display = 'none';
+        if (confirmBtn)     confirmBtn.style.display     = '';
+        if (cancelBtn)      cancelBtn.style.display      = '';
+    }
+
+    function showInterestPrompt(realCents, projCents, diffCents) {
+        document.getElementById('cfp-ip-real').textContent = fmtCents(realCents);
+        document.getElementById('cfp-ip-proj').textContent = fmtCents(projCents);
+        document.getElementById('cfp-ip-diff').textContent = fmtCents(diffCents);
+        if (interestPrompt) interestPrompt.style.display = '';
+        if (confirmBtn)     confirmBtn.style.display     = 'none';
+        if (cancelBtn)      cancelBtn.style.display      = 'none';
+    }
+
+    // ------------------------------------------------------------------
+    // Load & render real transactions
+    // ------------------------------------------------------------------
+    async function loadTransactions() {
+        var ledger = (window.CFP && CFP.ledger) || '';
+        // Sort by closeness to the bundle total (not just the clicked amount)
+        var targetAmt = bundleTotal() || _bundleItems.reduce(function (s, it) {
+            return it.primary ? it.amountCents : s;
+        }, 0);
+        var url = '/pgbudget/api/transactions-for-link.php'
+                + '?ledger_uuid=' + encodeURIComponent(ledger)
+                + '&amount_cents=' + encodeURIComponent(targetAmt)
+                + '&month='        + encodeURIComponent(_linkMonth);
+        try {
+            var resp = await fetch(url);
+            var data = await resp.json();
+            if (!data.success) throw new Error(data.error || 'Load failed');
+            _allTxns = data.transactions || [];
+            renderList(_allTxns);
+        } catch (err) {
+            listEl.innerHTML = '<div class="cfp-link-empty">Error loading transactions: ' + err.message + '</div>';
+        }
+    }
+
+    function renderList(txns) {
+        if (!txns.length) {
+            listEl.innerHTML = '<div class="cfp-link-empty">No transactions found in this date range.</div>';
+            return;
+        }
+        var html = '';
+        txns.forEach(function (t) {
+            var amtCents = parseInt(t.amount, 10);
+            var amtClass = amtCents >= 0 ? 'cell-pos' : 'cell-neg';
+            var diff     = parseInt(t.amount_diff, 10);
+            var diffStr  = diff === 0 ? 'exact match' : ('±' + fmtCents(diff));
+            var sel      = t.uuid === _selectedTxnUuid ? ' selected' : '';
+            html += '<div class="cfp-link-txn-item' + sel + '" data-uuid="' + escHtml(t.uuid) + '" data-amount="' + escHtml(t.amount) + '">'
+                  + '<span class="cfp-link-txn-date">'    + escHtml(t.date)        + '</span>'
+                  + '<span class="cfp-link-txn-desc">'    + escHtml(t.description) + '</span>'
+                  + '<span class="cfp-link-txn-account">' + escHtml(t.account || '') + '</span>'
+                  + '<span class="cfp-link-txn-amount ' + amtClass + '">' + fmtCents(amtCents) + '</span>'
+                  + '<span class="cfp-link-txn-diff">'    + escHtml(diffStr)       + '</span>'
+                  + '</div>';
+        });
+        listEl.innerHTML = html;
+
+        listEl.querySelectorAll('.cfp-link-txn-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                _selectedTxnUuid   = item.dataset.uuid;
+                _selectedTxnAmount = Math.abs(parseInt(item.dataset.amount, 10));
+                listEl.querySelectorAll('.cfp-link-txn-item').forEach(function (i) {
+                    i.classList.toggle('selected', i.dataset.uuid === _selectedTxnUuid);
+                });
+                updateSummary();
+                updateConfirmBtn();
+            });
+        });
+    }
+
+    function applySearch(q) {
+        if (!q.trim()) { renderList(_allTxns); return; }
+        q = q.toLowerCase();
+        renderList(_allTxns.filter(function (t) {
+            return (t.description || '').toLowerCase().includes(q)
+                || (t.date || '').includes(q)
+                || (t.account || '').toLowerCase().includes(q);
+        }));
+    }
+
+    // ------------------------------------------------------------------
+    // Submission
+    // ------------------------------------------------------------------
+    async function doLink(treatAsInterest) {
+        if (!_selectedTxnUuid) return;
+        var checked = _bundleItems.filter(function (it) { return it.checked; });
+        if (!checked.length) return;
+
+        var proj          = bundleTotal();
+        var interestCents = treatAsInterest ? (_selectedTxnAmount - proj) : null;
+
+        [confirmBtn, ipYesBtn, ipNoBtn, ipCancelBtn].forEach(function (b) {
+            if (b) b.disabled = true;
+        });
+        if (confirmBtn) confirmBtn.textContent = 'Linking…';
+
+        try {
+            var body = {
+                events: checked.map(function (it) {
+                    return { event_uuid: it.eventUuid, month: it.month };
+                }),
+                txn_uuid:              _selectedTxnUuid,
+                treat_as_interest:     treatAsInterest,
+                interest_amount_cents: interestCents,
+            };
+            var resp = await fetch('/pgbudget/api/link-projected-event.php', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(body),
+            });
+            var data = await resp.json();
+            if (!data.success) throw new Error(data.error || 'Link failed');
+            closeModal();
+            window.location.reload();
+        } catch (err) {
+            [confirmBtn, ipYesBtn, ipNoBtn, ipCancelBtn].forEach(function (b) {
+                if (b) b.disabled = false;
+            });
+            if (confirmBtn) confirmBtn.textContent = 'Link Transaction';
+            alert('Error linking: ' + err.message);
+        }
+    }
+
+    function confirmLink() {
+        if (!_selectedTxnUuid) return;
+        var proj = bundleTotal();
+        var diff = _selectedTxnAmount - proj;
+        if (diff > 0) {
+            showInterestPrompt(_selectedTxnAmount, proj, diff);
+        } else {
+            doLink(false);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Bundle indicator post-processing
+    // Used after page load to mark cells that share a linked transaction
+    // ------------------------------------------------------------------
+    function markBundles() {
+        var cells = document.querySelectorAll('[data-linked-txn-uuid]');
+        var byTxn = {};
+        cells.forEach(function (td) {
+            var id = td.dataset.linkedTxnUuid;
+            if (!id) return;
+            byTxn[id] = byTxn[id] || [];
+            byTxn[id].push(td);
+        });
+        Object.keys(byTxn).forEach(function (txnUuid) {
+            var group = byTxn[txnUuid];
+            if (group.length < 2) return;
+            var names = group.map(function (td) {
+                var src = td.dataset.source || '';
+                var meta = (window.CFP && CFP.sourceMeta && CFP.sourceMeta[src]) || {};
+                return meta.detail || src;
+            }).filter(Boolean).join(', ');
+            group.forEach(function (td) {
+                var ci = td.querySelector('.cfp-ci');
+                if (ci) {
+                    ci.textContent = '🔗';
+                    ci.className   = 'cfp-ci cfp-ci-bundle';
+                    ci.title       = 'Bundle: ' + names;
+                }
+            });
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // Wire up
+    // ------------------------------------------------------------------
+    if (cancelBtn)  cancelBtn.addEventListener('click',  closeModal);
+    if (confirmBtn) confirmBtn.addEventListener('click', confirmLink);
+    if (ipYesBtn)   ipYesBtn.addEventListener('click',   function () { doLink(true);  });
+    if (ipNoBtn)    ipNoBtn.addEventListener('click',    function () { doLink(false); });
+    if (ipCancelBtn) ipCancelBtn.addEventListener('click', function () {
+        hideInterestPrompt();
+        updateConfirmBtn();
+    });
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal && modal.classList.contains('show')) closeModal();
+    });
+    if (searchEl) {
+        searchEl.addEventListener('input', function () { applySearch(searchEl.value); });
+    }
+
+    // Delegate click from linkable cells
+    document.addEventListener('click', function (e) {
+        var td = e.target.closest('.cfp-td-linkable');
+        if (!td) return;
+        e.stopPropagation();
+        openModal(
+            td.dataset.eventUuid,
+            td.dataset.month,
+            parseInt(td.dataset.amount, 10),
+            td.dataset.desc
+        );
+    });
+
+    // Run bundle marking after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', markBundles);
+    } else {
+        markBundles();
+    }
+
+})();
 </script>
 
 <?php require_once '../../includes/footer.php'; ?>
