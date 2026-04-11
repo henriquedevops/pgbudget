@@ -183,7 +183,7 @@ require_once '../../includes/header.php';
         <div class="page-actions">
             <a href="../budget/dashboard.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">← Back to Dashboard</a>
             <a href="settings.php?ledger=<?= urlencode($ledger_uuid) ?>&card=<?= urlencode($card_uuid) ?>" class="btn btn-secondary">⚙️ Settings</a>
-            <button type="button" class="btn btn-primary" onclick="openSchedulePaymentModal('<?= htmlspecialchars($card_uuid) ?>', '<?= htmlspecialchars($card['name']) ?>')">
+            <button type="button" class="btn btn-primary" onclick="openSchedulePaymentModal('<?= htmlspecialchars($card_uuid) ?>', '<?= htmlspecialchars($card['name']) ?>', '<?= htmlspecialchars($ledger_uuid) ?>')">
                 💵 Schedule Payment
             </button>
         </div>

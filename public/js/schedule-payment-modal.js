@@ -230,11 +230,11 @@ SchedulePaymentModal = {
 
     async loadCurrentStatement() {
         try {
-            const response = await fetch(`/pgbudget/api/credit-card-statements.php?credit_card_uuid=${this.currentCardUuid}&is_current=true`);
+            const response = await fetch(`/pgbudget/api/statements.php?account_uuid=${this.currentCardUuid}&current=true`);
             const data = await response.json();
 
-            if (data.success && data.statements && data.statements.length > 0) {
-                this.currentStatement = data.statements[0];
+            if (data.success && data.data) {
+                this.currentStatement = data.data;
             }
         } catch (error) {
             console.error('Error loading statement:', error);
@@ -411,8 +411,8 @@ SchedulePaymentModal = {
 };
 
 // Global function to open modal (called from dashboard)
-function openSchedulePaymentModal(cardUuid, cardName) {
-    SchedulePaymentModal.open(cardUuid, cardName);
+function openSchedulePaymentModal(cardUuid, cardName, ledgerUuid) {
+    SchedulePaymentModal.open(cardUuid, cardName, ledgerUuid);
 }
 
 // Initialize when DOM is ready
