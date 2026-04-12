@@ -111,7 +111,7 @@ require_once '../../includes/header.php';
 
 .info-section h3 {
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .info-section ul {

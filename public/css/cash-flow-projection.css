@@ -30,10 +30,10 @@
 
 .cfp-controls-row .form-group label {
     display: block;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.875rem;
     margin-bottom: 0.35rem;
-    color: #444;
+    color: var(--color-text-primary, #1e293b);
 }
 
 .cfp-controls-row .form-input {
@@ -62,7 +62,7 @@
 .cfp-filter-label {
     font-weight: 600;
     font-size: 0.85rem;
-    color: #555;
+    color: var(--color-text-primary, #374151);
     margin-right: 0.25rem;
 }
 
@@ -77,7 +77,7 @@
     cursor: pointer;
     border: 1px solid #cbd5e0;
     background: #f7f9fc;
-    color: #555;
+    color: var(--color-text-primary, #374151);
     user-select: none;
     transition: background 0.15s, color 0.15s;
 }
@@ -110,7 +110,7 @@
 }
 
 .cfp-filter-sep {
-    color: #cbd5e1;
+    color: var(--color-text-muted);
     font-size: 1rem;
     margin: 0 0.25rem;
 }
@@ -131,7 +131,7 @@
     cursor: pointer;
     border: 1px solid #cbd5e0;
     background: #f7f9fc;
-    color: #555;
+    color: var(--color-text-primary, #374151);
     white-space: nowrap;
     transition: background 0.15s, color 0.15s;
 }
@@ -287,7 +287,7 @@
     border: none;
     cursor: pointer;
     font-size: 0.7rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     margin-right: 0.4rem;
     padding: 0 0.15rem;
     transition: transform 0.15s;
@@ -307,7 +307,7 @@
     margin-left: 0.5rem;
     font-size: 0.72rem;
     font-weight: 400;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     text-transform: none;
     letter-spacing: 0;
 }
@@ -322,7 +322,7 @@
 }
 
 .cfp-td {
-    padding: 0.45rem 0.75rem;
+    padding: 0.625rem 0.75rem; /* 10px 12px — Phase D density */
     border-bottom: 1px solid #f0f4f8;
     vertical-align: middle;
     white-space: nowrap;
@@ -352,7 +352,7 @@
 /* ---- Amount colour coding ---- */
 .cell-pos   { color: #166534; }
 .cell-neg   { color: #991b1b; }
-.cell-zero  { color: #94a3b8; }
+.cell-zero  { color: var(--color-text-muted); }
 
 /* ---- Total column ---- */
 .cfp-row-total {
@@ -368,7 +368,7 @@
 .cfp-td-sublabel {
     font-weight: 600;
     font-size: 0.78rem;
-    color: #475569;
+    color: var(--color-text-muted);
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
     text-align: left;
@@ -420,7 +420,7 @@
 /* Override positive/negative for dark footer */
 .cfp-summary-amt.cell-pos { color: #4ade80; }
 .cfp-summary-amt.cell-neg { color: #f87171; }
-.cfp-summary-amt.cell-zero { color: #64748b; }
+.cfp-summary-amt.cell-zero { color: var(--color-text-muted); }
 
 .cfp-inflows-row .cfp-td-summary-lbl,
 .cfp-inflows-row .cfp-summary-amt  { background: #052e16; }
@@ -461,12 +461,12 @@
 .cfp-badge-cc_payment         { background: #fff7ed; color: #c2410c; }
 .cfp-badge-transaction        { background: #dcfce7; color: #166534; }
 .cfp-badge-reconciliation     { background: #fef9c3; color: #713f12; }
-.cfp-badge-realized_event     { background: #e2e8f0; color: #64748b; }
+.cfp-badge-realized_event     { background: #e2e8f0; color: var(--color-text-muted); }
 
 /* ---- Realized event rows ---- */
 .cfp-realized-row {
     background: #fafafa;
-    opacity: 0.75;
+    opacity: 0.85;
 }
 
 .cfp-realized-row:hover {
@@ -475,7 +475,7 @@
 }
 
 .cfp-realized-row .cfp-td-desc {
-    color: #94a3b8;
+    color: var(--color-text-muted);
     font-style: italic;
 }
 
@@ -485,14 +485,14 @@
 }
 
 .cfp-realized-group-hdr .cfp-group-hdr-cell {
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .cfp-realized-note {
     margin-left: 0.75rem;
     font-size: 0.7rem;
     font-weight: 400;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     text-transform: none;
     letter-spacing: 0;
     font-style: italic;
@@ -506,7 +506,7 @@
 /* ---- Past / current column indicators ---- */
 .cfp-th-past {
     background: #f3f4f6;
-    color: #9ca3af;
+    color: #6b7280;
 }
 
 .cfp-th-current {
@@ -517,7 +517,7 @@
 
 /* Dim past cells slightly so future columns stand out */
 .cfp-past-cell {
-    opacity: 0.6;
+    opacity: 0.8;
 }
 
 .cfp-current-cell {
@@ -527,7 +527,7 @@
 /* ---- Legend ---- */
 .cfp-legend {
     font-size: 0.78rem;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     margin-top: 0.75rem;
     text-align: center;
 }
@@ -553,8 +553,8 @@
     border: 1px solid #e2e8f0;
 }
 
-.empty-state h3 { color: #64748b; margin-bottom: 1rem; }
-.empty-state p  { color: #94a3b8; margin-bottom: 1.5rem; }
+.empty-state h3 { color: var(--color-text-muted); margin-bottom: 1rem; }
+.empty-state p  { color: var(--color-text-muted); margin-bottom: 1.5rem; }
 
 .empty-state-links {
     display: flex;
@@ -665,11 +665,11 @@
 
 .cfp-link-event-info {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .cfp-link-event-info strong {
-    color: #1e293b;
+    color: var(--color-text-primary);
 }
 
 .cfp-link-search {
@@ -717,7 +717,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     margin-bottom: 0.5rem;
 }
 
@@ -764,20 +764,20 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #1e293b;
+    color: var(--color-text-primary);
 }
 
 .cfp-bundle-item-amt {
     font-size: 0.8rem;
     font-weight: 600;
     white-space: nowrap;
-    color: #475569;
+    color: var(--color-text-muted);
 }
 
 .cfp-bundle-empty {
     padding: 1.5rem 0.75rem;
     text-align: center;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     font-size: 0.82rem;
 }
 
@@ -790,12 +790,12 @@
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     font-size: 0.82rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     margin-bottom: 0.75rem;
     flex-wrap: wrap;
 }
 
-.cfp-link-summary strong { color: #1e293b; }
+.cfp-link-summary strong { color: var(--color-text-primary); }
 
 /* Bundle indicator on realized cells */
 .cfp-ci-bundle {
@@ -846,7 +846,7 @@
 
 .cfp-link-txn-date {
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     white-space: nowrap;
     min-width: 4.5rem;
 }
@@ -861,7 +861,7 @@
 
 .cfp-link-txn-account {
     font-size: 0.72rem;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     white-space: nowrap;
 }
 
@@ -876,29 +876,29 @@
 
 .cfp-link-txn-diff {
     font-size: 0.7rem;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     white-space: nowrap;
 }
 
 .cfp-link-empty {
     text-align: center;
     padding: 2rem 1rem;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     font-size: 0.85rem;
 }
 
 .cfp-link-loading {
     text-align: center;
     padding: 2rem 1rem;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     font-size: 0.85rem;
 }
 
 /* ---- Per-cell provenance indicators ---- */
 .cfp-ci {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     margin-left: 2px;
-    opacity: 0.55;
+    opacity: 0.8;
     vertical-align: super;
     font-style: normal;
     pointer-events: none;
@@ -906,7 +906,7 @@
 
 .cfp-ci-actual   { color: #15803d; }
 .cfp-ci-realized { color: #0369a1; }
-.cfp-ci-projected { color: #94a3b8; }
+.cfp-ci-projected { color: var(--color-text-muted); opacity: 1; }
 
 /* ---- Row hover tooltip ---- */
 .cfp-row-tooltip {
@@ -944,7 +944,7 @@
 
 .cfp-tt-projected {
     background: #334155;
-    color: #94a3b8;
+    color: #cbd5e1;
 }
 
 .cfp-tt-done {
@@ -958,7 +958,7 @@
 }
 
 .cfp-tt-sep {
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .cfp-tt-col {
@@ -1079,4 +1079,108 @@
         background: var(--color-primary-bg);
         border-color: var(--color-primary);
     }
+}
+
+/* -----------------------------------------------------------------------
+   Sticky allocation bar — Phase E: link workflow selection mode
+----------------------------------------------------------------------- */
+.cfp-alloc-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    background: var(--color-primary, #2563eb);
+    color: #fff;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.18);
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+}
+
+.cfp-alloc-bar:not([hidden]) {
+    transform: translateY(0);
+}
+
+/* When bottom tab-bar is present, sit above it */
+@media (max-width: 768px) {
+    .cfp-alloc-bar {
+        bottom: 56px;
+        padding: 10px 16px;
+        flex-wrap: wrap;
+    }
+}
+
+.cfp-alloc-bar-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.9375rem;
+}
+
+.cfp-alloc-sep {
+    opacity: 0.5;
+}
+
+.cfp-alloc-label {
+    opacity: 0.85;
+}
+
+.cfp-alloc-amount {
+    font-size: 1.125rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.cfp-alloc-bar-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.cfp-alloc-bar .btn-sm {
+    padding: 6px 14px;
+    font-size: 0.875rem;
+}
+
+.cfp-alloc-bar .btn-secondary {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.4);
+    color: #fff;
+}
+
+.cfp-alloc-bar .btn-secondary:hover {
+    background: rgba(255,255,255,0.28);
+}
+
+/* Selection mode: highlight the projection table */
+.cfp-table-wrapper.cfp-selection-mode {
+    outline: 2.5px solid var(--color-primary, #2563eb);
+    border-radius: var(--radius-md, 6px);
+}
+
+/* Linkable cells get checkboxes in selection mode */
+.cfp-selection-mode .cfp-td-linkable {
+    position: relative;
+    cursor: pointer;
+    background: rgba(37,99,235,0.06);
+}
+
+.cfp-selection-mode .cfp-td-linkable input[type=checkbox] {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-primary, #2563eb);
+    margin: 0;
+}
+
+.cfp-selection-mode .cfp-td-linkable.cfp-cell-selected {
+    background: rgba(37,99,235,0.13);
 }

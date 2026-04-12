@@ -542,12 +542,12 @@ require_once '../../includes/header.php';
 
 .timing-opt-label strong {
     font-size: 0.9rem;
-    color: #1e293b;
+    color: var(--color-text-primary);
 }
 
 .timing-opt-label small {
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .future-date-picker {

@@ -234,7 +234,7 @@ require_once '../../includes/header.php';
 <style>
 .wif-intro {
     font-size: 0.9rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     margin-bottom: 1.5rem;
 }
 
@@ -248,7 +248,7 @@ require_once '../../includes/header.php';
 }
 
 .report-subtitle {
-    color: #64748b;
+    color: var(--color-text-muted);
     margin-top: 0.25rem;
     font-size: 0.9rem;
 }
@@ -285,7 +285,7 @@ require_once '../../includes/header.php';
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #475569;
+    color: var(--color-text-muted);
     margin: 0 0 0.75rem;
 }
 
@@ -307,7 +307,7 @@ require_once '../../includes/header.php';
 
 .wif-freq {
     font-size: 0.72rem;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     font-weight: 400;
 }
 
@@ -325,7 +325,7 @@ require_once '../../includes/header.php';
     background: #f8fafc;
     border-right: 1px solid #cbd5e0;
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .wif-input {
@@ -387,7 +387,7 @@ require_once '../../includes/header.php';
 
 .wif-table tfoot td {
     background: #0f172a;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     font-weight: 700;
     font-size: 0.78rem;
     border-top: 2px solid #1e293b;
@@ -404,14 +404,14 @@ require_once '../../includes/header.php';
 
 .pos  { color: #166534; }
 .neg  { color: #991b1b; }
-.zero { color: #94a3b8; }
+.zero { color: var(--color-text-muted); }
 .delta-pos { color: #166534; font-weight: 600; }
 .delta-neg { color: #991b1b; font-weight: 600; }
 
 /* Override dark footer colours */
 tfoot .pos  { color: #4ade80; }
 tfoot .neg  { color: #f87171; }
-tfoot .zero { color: #64748b; }
+tfoot .zero { color: var(--color-text-muted); }
 tfoot .delta-pos { color: #4ade80; }
 tfoot .delta-neg { color: #f87171; }
 

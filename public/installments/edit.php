@@ -315,12 +315,12 @@ require_once '../../includes/header.php';
 .page-title h1 {
     margin: 0 0 8px 0;
     font-size: 2rem;
-    color: #1a202c;
+    color: var(--color-text-primary);
 }
 
 .page-title p {
     margin: 0;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .page-actions {
@@ -350,13 +350,13 @@ require_once '../../includes/header.php';
 }
 
 .btn-primary:disabled {
-    background: #a0aec0;
+    background: #64748b;
     cursor: not-allowed;
 }
 
 .btn-secondary {
     background: #e2e8f0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .btn-secondary:hover {
@@ -409,7 +409,7 @@ require_once '../../includes/header.php';
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 1.25rem;
-    color: #1a202c;
+    color: var(--color-text-primary);
     border-bottom: 2px solid #3182ce;
     padding-bottom: 8px;
 }
@@ -418,7 +418,7 @@ require_once '../../includes/header.php';
     margin-top: 24px;
     margin-bottom: 12px;
     font-size: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .info-card {
@@ -447,7 +447,7 @@ require_once '../../includes/header.php';
 .info-label {
     font-size: 12px;
     font-weight: 600;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 6px;
@@ -455,7 +455,7 @@ require_once '../../includes/header.php';
 
 .info-value {
     font-size: 16px;
-    color: #1a202c;
+    color: var(--color-text-primary);
     font-weight: 600;
     margin-bottom: 4px;
 }
@@ -467,7 +467,7 @@ require_once '../../includes/header.php';
 }
 
 .text-muted {
-    color: #a0aec0;
+    color: var(--color-text-muted);
     font-size: 12px;
 }
 
@@ -483,7 +483,7 @@ require_once '../../includes/header.php';
     margin-top: 0;
     margin-bottom: 16px;
     font-size: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .progress-stats {
@@ -501,7 +501,7 @@ require_once '../../includes/header.php';
 .stat-label {
     font-size: 12px;
     font-weight: 600;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     margin-bottom: 6px;
 }
@@ -552,7 +552,7 @@ require_once '../../includes/header.php';
 
 .installment-amount {
     font-weight: 600;
-    color: #1a202c;
+    color: var(--color-text-primary);
 }
 
 .total-remaining {
@@ -576,7 +576,7 @@ require_once '../../includes/header.php';
 .form-group label {
     display: block;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 8px;
     font-size: 14px;
 }
@@ -606,7 +606,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-top: 6px;
     font-size: 12px;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .recalc-preview {

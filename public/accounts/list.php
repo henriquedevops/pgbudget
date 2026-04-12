@@ -414,11 +414,11 @@ require_once '../../includes/header.php';
 
 .page-title h1 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .page-title p {
-    color: #718096;
+    color: var(--color-text-muted);
     margin: 0.5rem 0 0 0;
 }
 
@@ -441,12 +441,12 @@ require_once '../../includes/header.php';
 
 .group-header h2 {
     margin: 0 0 0.5rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .group-header p {
     margin: 0;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -611,7 +611,7 @@ require_once '../../includes/header.php';
 
 .modal-header h2 {
     margin: 0 0 0.5rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .modal-body {
@@ -633,7 +633,7 @@ require_once '../../includes/header.php';
 }
 
 .impact-item strong {
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .warning-box {
@@ -722,7 +722,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .form-group input,
@@ -737,7 +737,7 @@ require_once '../../includes/header.php';
 .form-hint {
     margin-top: 0.5rem;
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .btn-link {
@@ -799,7 +799,7 @@ require_once '../../includes/header.php';
 }
 
 .loan-label {
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-weight: 500;
 }
 
@@ -853,7 +853,7 @@ require_once '../../includes/header.php';
 
 .loan-detail-label {
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -861,7 +861,7 @@ require_once '../../includes/header.php';
 
 .loan-detail-value {
     font-size: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-weight: 600;
 }
 
@@ -992,6 +992,20 @@ require_once '../../includes/header.php';
     .installment-info-actions {
         flex-direction: column;
     }
+}
+
+@media (prefers-color-scheme: dark) {
+    .page-title h1   { color: var(--color-text-primary); }
+    .page-title p    { color: var(--color-text-muted); }
+    .page-header     { border-color: var(--color-border); }
+    .account-group   { background: var(--color-surface) !important; }
+    .group-header h2 { color: var(--color-text-primary); }
+    .group-header p  { color: var(--color-text-muted); }
+    .accounts-table .account-name { color: #60a5fa; }
+    .modal-content   { background: var(--color-surface); }
+    .modal-header h2 { color: var(--color-text-primary); }
+    .balance-summary { background: linear-gradient(135deg, #1e3a5f 0%, #4c1d95 100%); }
+    .btn-danger      { background-color: #7f1d1d; color: #fca5a5; }
 }
 </style>
 

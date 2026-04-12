@@ -144,7 +144,7 @@
 
 .action-history-header h1 {
     font-size: 2rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .action-history-controls {
@@ -215,18 +215,18 @@
 .action-description {
     font-size: 16px;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .action-meta {
     font-size: 14px;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .action-time {
     font-size: 14px;
-    color: #a0aec0;
+    color: var(--color-text-muted);
     text-align: right;
 }
 
@@ -249,7 +249,7 @@
 .action-history-empty {
     text-align: center;
     padding: 4rem 2rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .action-history-empty .icon {
@@ -265,7 +265,7 @@
 }
 
 .action-history-empty p {
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 /* ============================================

@@ -304,7 +304,7 @@ require_once '../../includes/header.php';
 
 .form-help {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-top: 0.25rem;
     display: block;
 }
@@ -315,7 +315,7 @@ require_once '../../includes/header.php';
     gap: 0.25rem;
     cursor: pointer;
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -336,7 +336,7 @@ require_once '../../includes/header.php';
 
 .help-section h3 {
     margin: 0 0 1rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .examples-grid {
@@ -353,7 +353,7 @@ require_once '../../includes/header.php';
 }
 
 .example h4 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin: 0 0 0.75rem 0;
 }
 

@@ -151,7 +151,7 @@ require_once '../../includes/header.php';
                         <label for="fixed_amount">Fixed Amount</label>
                         <input type="number" id="fixed_amount" name="fixed_amount"
                                min="0.01" step="0.01"
-                               value="<?= $deduction['fixed_amount'] ? number_format($deduction['fixed_amount'] / 100, 2, '.', '') : '' ?>">
+                               value="<?= $deduction['fixed_amount'] ? number_format($deduction['fixed_amount'] / 100, 2, '.', '') : '' ?>" inputmode="decimal">
                     </div>
                 </div>
 
@@ -160,7 +160,7 @@ require_once '../../includes/header.php';
                         <label for="estimated_amount">Estimated Amount</label>
                         <input type="number" id="estimated_amount" name="estimated_amount"
                                min="0.01" step="0.01"
-                               value="<?= $deduction['estimated_amount'] ? number_format($deduction['estimated_amount'] / 100, 2, '.', '') : '' ?>">
+                               value="<?= $deduction['estimated_amount'] ? number_format($deduction['estimated_amount'] / 100, 2, '.', '') : '' ?>" inputmode="decimal">
                     </div>
                 </div>
 
@@ -179,7 +179,7 @@ require_once '../../includes/header.php';
                             <label for="percentage_value">Percentage Value (%)</label>
                             <input type="number" id="percentage_value" name="percentage_value"
                                    min="0" max="100" step="0.01"
-                                   value="<?= $deduction['percentage_value'] ?? '' ?>">
+                                   value="<?= $deduction['percentage_value'] ?? '' ?>" inputmode="decimal">
                         </div>
 
                         <div class="form-group">

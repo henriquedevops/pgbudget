@@ -386,7 +386,7 @@ require_once '../../includes/header.php';
                             <span id="detail-status">-</span>
                         </div>
                         <div id="detail-next-payment" class="detail-next-payment" style="display: none; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 2px dashed #e2e8f0;">
-                            <small style="color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem;">After This Payment:</small>
+                            <small style="color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem;">After This Payment:</small>
                             <div class="detail-row" style="border: none; padding: 0.25rem 0;">
                                 <span style="font-size: 0.875rem;">Next Payment Due:</span>
                                 <span id="detail-next-due" style="font-size: 0.875rem;">-</span>
@@ -623,7 +623,7 @@ require_once '../../includes/header.php';
 
 .form-help {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-top: 0.25rem;
 }
 
@@ -644,7 +644,7 @@ require_once '../../includes/header.php';
 }
 
 .help-item h4 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -696,7 +696,7 @@ require_once '../../includes/header.php';
     gap: 0.5rem;
     cursor: pointer;
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -749,7 +749,7 @@ require_once '../../includes/header.php';
 }
 
 .installment-preview h4 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin: 0 0 0.75rem 0;
     font-size: 0.9rem;
     font-weight: 600;
@@ -762,7 +762,7 @@ require_once '../../includes/header.php';
 }
 
 .preview-loading {
-    color: #718096;
+    color: var(--color-text-muted);
     font-style: italic;
 }
 
@@ -788,7 +788,7 @@ require_once '../../includes/header.php';
 
 .preview-installment-amount {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .preview-total {
@@ -806,7 +806,7 @@ require_once '../../includes/header.php';
 }
 
 .preview-total-amount {
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 1.1rem;
 }
 
@@ -835,7 +835,7 @@ require_once '../../includes/header.php';
     gap: 0.5rem;
     cursor: pointer;
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .split-toggle input[type="checkbox"] {
@@ -853,13 +853,13 @@ require_once '../../includes/header.php';
 }
 
 .split-header h3 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin: 0 0 0.5rem 0;
     font-size: 1.125rem;
 }
 
 .split-help {
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
     margin: 0 0 1rem 0;
 }
@@ -976,7 +976,7 @@ require_once '../../includes/header.php';
     gap: 0.5rem;
     cursor: pointer;
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -1079,7 +1079,7 @@ require_once '../../includes/header.php';
 }
 
 .obligation-details h4 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin: 0 0 0.75rem 0;
     font-size: 0.9rem;
     font-weight: 600;
@@ -1106,7 +1106,7 @@ require_once '../../includes/header.php';
     gap: 0.5rem;
     cursor: pointer;
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -1140,7 +1140,7 @@ require_once '../../includes/header.php';
 }
 
 .payment-details h4 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin: 0 0 0.75rem 0;
     font-size: 0.9rem;
     font-weight: 600;
@@ -1166,7 +1166,7 @@ require_once '../../includes/header.php';
 
 .detail-row span:last-child {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .warning-message {
@@ -1233,19 +1233,19 @@ require_once '../../includes/header.php';
 
 .autocomplete-payee-name {
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
     display: block;
 }
 
 .autocomplete-payee-meta {
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-top: 0.25rem;
 }
 
 .autocomplete-empty {
     padding: 0.75rem 1rem;
-    color: #a0aec0;
+    color: var(--color-text-muted);
     font-style: italic;
     text-align: center;
 }
@@ -1446,7 +1446,7 @@ function updateInstallmentPreview() {
     `;
 
     if (numberOfInstallments > 1) {
-        html += `<div style="margin-top: 0.5rem; font-size: 0.75rem; color: #718096;">
+        html += `<div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--color-text-muted);">
             ${numberOfInstallments - 1} payments of $${installmentAmount.toFixed(2)} + 1 payment of $${lastInstallment.toFixed(2)}
         </div>`;
     }

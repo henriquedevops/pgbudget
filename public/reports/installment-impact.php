@@ -201,11 +201,11 @@ require_once '../../includes/header.php';
 .report-header h1 {
     margin: 0;
     font-size: 2rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .report-subtitle {
-    color: #718096;
+    color: var(--color-text-muted);
     margin: 0.5rem 0 0 0;
     font-size: 1rem;
 }
@@ -230,11 +230,11 @@ require_once '../../includes/header.php';
 .section-header h2 {
     margin: 0 0 0.5rem 0;
     font-size: 1.5rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .section-description {
-    color: #718096;
+    color: var(--color-text-muted);
     margin: 0;
     font-size: 0.875rem;
 }
@@ -242,7 +242,7 @@ require_once '../../includes/header.php';
 .loading-state {
     text-align: center;
     padding: 2rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-style: italic;
 }
 
@@ -276,7 +276,7 @@ require_once '../../includes/header.php';
 
 .installment-date {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .installment-date .day {
@@ -286,7 +286,7 @@ require_once '../../includes/header.php';
 
 .installment-date .month {
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
 }
 
@@ -297,13 +297,13 @@ require_once '../../includes/header.php';
 
 .installment-plan-name {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .installment-progress {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .installment-category {
@@ -318,7 +318,7 @@ require_once '../../includes/header.php';
 .installment-amount {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-text-primary);
     text-align: right;
 }
 
@@ -355,7 +355,7 @@ require_once '../../includes/header.php';
 .empty-state {
     text-align: center;
     padding: 3rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .empty-state-icon {
@@ -386,7 +386,7 @@ require_once '../../includes/header.php';
 
 .category-name {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 1rem;
 }
 
@@ -425,12 +425,12 @@ require_once '../../includes/header.php';
 }
 
 .detail-label {
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .detail-value {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .detail-value.negative {
@@ -493,7 +493,7 @@ require_once '../../includes/header.php';
 .form-group label {
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.875rem;
 }
 
@@ -531,7 +531,7 @@ require_once '../../includes/header.php';
 
 .result-header h3 {
     margin: 0 0 1rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .result-content {
@@ -549,13 +549,13 @@ require_once '../../includes/header.php';
 
 .result-label {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .result-value {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .result-chart {

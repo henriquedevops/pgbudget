@@ -385,12 +385,12 @@ require_once '../../includes/header.php';
 .page-title h1 {
     margin: 0 0 8px 0;
     font-size: 2rem;
-    color: #1a202c;
+    color: var(--color-text-primary);
 }
 
 .page-title p {
     margin: 0;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .page-actions {
@@ -421,7 +421,7 @@ require_once '../../includes/header.php';
 
 .btn-secondary {
     background: #e2e8f0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .btn-secondary:hover {
@@ -496,7 +496,7 @@ require_once '../../includes/header.php';
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 1.25rem;
-    color: #1a202c;
+    color: var(--color-text-primary);
     border-bottom: 2px solid #3182ce;
     padding-bottom: 8px;
 }
@@ -515,7 +515,7 @@ require_once '../../includes/header.php';
 .detail-label {
     font-size: 12px;
     font-weight: 600;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 6px;
@@ -523,7 +523,7 @@ require_once '../../includes/header.php';
 
 .detail-value {
     font-size: 16px;
-    color: #1a202c;
+    color: var(--color-text-primary);
     font-weight: 500;
 }
 
@@ -541,7 +541,7 @@ require_once '../../includes/header.php';
 }
 
 .detail-notes strong {
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .detail-notes p {
@@ -567,7 +567,7 @@ require_once '../../includes/header.php';
 .progress-card-label {
     font-size: 12px;
     font-weight: 600;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 8px;
@@ -576,7 +576,7 @@ require_once '../../includes/header.php';
 .progress-card-value {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #1a202c;
+    color: var(--color-text-primary);
     margin-bottom: 4px;
 }
 
@@ -590,7 +590,7 @@ require_once '../../includes/header.php';
 
 .progress-card-hint {
     font-size: 12px;
-    color: #a0aec0;
+    color: var(--color-text-muted);
 }
 
 .progress-bar-section {
@@ -602,7 +602,7 @@ require_once '../../includes/header.php';
     justify-content: space-between;
     margin-bottom: 8px;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .progress-bar-container {
@@ -629,7 +629,7 @@ require_once '../../includes/header.php';
 }
 
 .text-muted {
-    color: #a0aec0;
+    color: var(--color-text-muted);
 }
 
 .text-danger {
@@ -655,7 +655,7 @@ require_once '../../includes/header.php';
     padding: 12px;
     text-align: left;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;

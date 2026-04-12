@@ -173,7 +173,8 @@ require_once '../../includes/header.php';
                                    required
                                    min="0.01"
                                    step="0.01"
-                                   placeholder="1200.00">
+                                   placeholder="1200.00"
+                                   inputmode="decimal">
                             <small class="form-hint">Total purchase amount in dollars (e.g., 10.00 for $10)</small>
                         </div>
 
@@ -350,7 +351,7 @@ require_once '../../includes/header.php';
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 1.25rem;
-    color: #1a202c;
+    color: var(--color-text-primary);
     border-bottom: 2px solid #3182ce;
     padding-bottom: 8px;
 }
@@ -363,7 +364,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-bottom: 6px;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .form-group input[type="text"],
@@ -391,7 +392,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-top: 4px;
     font-size: 12px;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .form-row {
@@ -457,7 +458,7 @@ require_once '../../includes/header.php';
 
 .slider-label {
     font-size: 14px;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .preview-section {
@@ -500,13 +501,13 @@ require_once '../../includes/header.php';
 .summary-value {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1a202c;
+    color: var(--color-text-primary);
 }
 
 .schedule-preview h4 {
     margin-top: 0;
     margin-bottom: 12px;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .schedule-table-wrapper {
@@ -538,7 +539,7 @@ require_once '../../includes/header.php';
 
 .schedule-table th {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .schedule-table tbody tr:hover {
@@ -592,7 +593,7 @@ require_once '../../includes/header.php';
 
 .btn-secondary {
     background: #e2e8f0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .btn-secondary:hover {

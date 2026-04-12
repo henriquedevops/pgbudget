@@ -293,7 +293,7 @@ try {
 
 .search-help {
     text-align: center;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -305,11 +305,11 @@ try {
 
 .search-results-summary h2 {
     margin-bottom: 0.5rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .search-results-summary p {
-    color: #718096;
+    color: var(--color-text-muted);
     margin: 0;
 }
 
@@ -319,7 +319,7 @@ try {
 
 .results-section h3 {
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
     padding-bottom: 0.5rem;
     border-bottom: 1px solid #e2e8f0;
 }
@@ -356,13 +356,13 @@ try {
 
 .result-title {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .result-meta {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .result-action {
@@ -406,7 +406,7 @@ try {
 .more-results {
     margin-top: 1rem;
     text-align: center;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -426,7 +426,7 @@ try {
 
 .search-suggestions h3 {
     margin-bottom: 1.5rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .suggestion-links {
@@ -459,13 +459,13 @@ try {
 
 .suggestion-title {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
 .suggestion-description {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .empty-state {
@@ -482,7 +482,7 @@ try {
 }
 
 .empty-state p {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 2rem;
 }
 

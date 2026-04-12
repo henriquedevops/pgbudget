@@ -68,7 +68,7 @@
 .summary-value {
     font-weight: 700;
     font-size: 1.125rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .summary-value.qf-suggested {
@@ -84,7 +84,7 @@
 
 #quick-fund-suggestions h4 {
     margin: 0 0 1rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 1rem;
 }
 
@@ -130,7 +130,7 @@
 
 .qf-category-name label {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.9375rem;
     cursor: pointer;
     margin: 0;
@@ -150,7 +150,7 @@
 
 .qf-reason {
     font-size: 0.8125rem;
-    color: #718096;
+    color: var(--color-text-muted);
     line-height: 1.4;
 }
 
@@ -179,7 +179,7 @@
 #quick-fund-loading {
     text-align: center;
     padding: 2rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 #quick-fund-loading p {
@@ -213,7 +213,7 @@
 }
 
 .empty-state strong {
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 1.125rem;
 }
 

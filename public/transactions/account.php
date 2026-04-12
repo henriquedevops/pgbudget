@@ -273,7 +273,7 @@ try {
 .stat-label {
     display: block;
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 0.5rem;
 }
 
@@ -281,7 +281,7 @@ try {
     display: block;
     font-size: 1.5rem;
     font-weight: bold;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .account-type-badge {
@@ -309,7 +309,7 @@ try {
 
 .transactions-section h2 {
     margin-bottom: 1.5rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .empty-state {
@@ -325,7 +325,7 @@ try {
 }
 
 .empty-state p {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 2rem;
 }
 
@@ -359,7 +359,7 @@ try {
 }
 
 .date-cell {
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -373,7 +373,7 @@ try {
 }
 
 .account-cell .account-type {
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.75rem;
 }
 
@@ -392,7 +392,7 @@ try {
 }
 
 .amount-cell .side-label {
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.75rem;
 }
 

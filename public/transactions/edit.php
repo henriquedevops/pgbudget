@@ -233,7 +233,7 @@ require_once '../../includes/header.php';
 
                 <div class="form-group">
                     <label for="amount">Amount *</label>
-                    <input type="text" id="amount" name="amount" value="<?= number_format($transaction['amount'] / 100, 2) ?>" required pattern="^\d+(\.\d{2})?$" placeholder="0.00">
+                    <input type="text" id="amount" name="amount" value="<?= number_format($transaction['amount'] / 100, 2) ?>" required pattern="^\d+(\.\d{2})?$" placeholder="0.00" inputmode="decimal">
                 </div>
 
                 <div class="form-row">
@@ -308,7 +308,7 @@ require_once '../../includes/header.php';
 .transaction-original h3 {
     margin-top: 0;
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .original-details {
@@ -324,13 +324,13 @@ require_once '../../includes/header.php';
 
 .detail-label {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 0.25rem;
     font-weight: 600;
 }
 
 .detail-value {
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-weight: 500;
 }
 
@@ -383,7 +383,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .form-group input,

@@ -99,8 +99,8 @@
                    autocomplete="off"
                    autofocus>
             <div class="inline-edit-buttons">
-                <button type="button" class="inline-edit-save" title="Save (Enter)">✓</button>
-                <button type="button" class="inline-edit-cancel" title="Cancel (Esc)">✗</button>
+                <button type="button" class="inline-edit-save" title="Save (Enter)" aria-label="Save">✓</button>
+                <button type="button" class="inline-edit-cancel" title="Cancel (Esc)" aria-label="Cancel">✗</button>
             </div>
         `;
 

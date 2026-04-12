@@ -50,7 +50,7 @@
     background: none;
     border: none;
     font-size: 1.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     cursor: pointer;
     padding: 0;
     width: 32px;
@@ -64,7 +64,7 @@
 
 .modal-close:hover {
     background: #f7fafc;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 /* Modal Body */
@@ -96,7 +96,7 @@
 .preview-section h3 {
     margin: 0 0 16px 0;
     font-size: 1.125rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-weight: 600;
 }
 
@@ -115,7 +115,7 @@
 .detail-label {
     font-size: 12px;
     font-weight: 600;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -219,7 +219,7 @@
 .loading {
     text-align: center;
     padding: 40px;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 /* Progress Container */
@@ -247,7 +247,7 @@
 .progress-text {
     text-align: center;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 14px;
 }
 
@@ -299,7 +299,7 @@
 
 .batch-results h3 {
     margin: 0 0 16px 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .batch-results p {
@@ -358,7 +358,7 @@
 
 .btn-secondary {
     background: #e2e8f0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .btn-secondary:hover {
@@ -376,7 +376,7 @@
 
 .modal-cancel {
     background: #e2e8f0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .modal-cancel:hover {

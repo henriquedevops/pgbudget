@@ -10,12 +10,14 @@
 
 .report-header h1 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary, #0f172a);
+    font-weight: 700;
 }
 
 .report-subtitle {
-    color: #718096;
+    color: var(--color-text-muted, #4b5563);
     margin: 0.5rem 0 0 0;
+    font-weight: 500;
 }
 
 .filter-card {
@@ -174,7 +176,7 @@
     border: none;
     font-size: 2rem;
     cursor: pointer;
-    color: #718096;
+    color: var(--color-text-muted, #475569);
 }
 
 .modal-body {
@@ -184,13 +186,13 @@
 
 .loading-text {
     text-align: center;
-    color: #718096;
+    color: var(--color-text-muted, #475569);
     padding: 2rem;
 }
 
 .error-text {
     text-align: center;
-    color: #e53e3e;
+    color: #991b1b;
     padding: 2rem;
 }
 

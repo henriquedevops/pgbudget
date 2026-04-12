@@ -268,7 +268,7 @@ require_once '../../includes/header.php';
 
 .form-help {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-top: 0.25rem;
     display: block;
 }
@@ -279,7 +279,7 @@ require_once '../../includes/header.php';
     gap: 0.25rem;
     cursor: pointer;
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .checkbox-label input[type="checkbox"] {

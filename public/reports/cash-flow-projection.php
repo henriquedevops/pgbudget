@@ -680,6 +680,7 @@ function cellClass(int $cents): string {
 
 require_once '../../includes/header.php';
 ?>
+<link rel="stylesheet" href="/pgbudget/css/reports.css">
 <link rel="stylesheet" href="/pgbudget/css/cash-flow-projection.css">
 
 <div class="container cfp-container">
@@ -829,7 +830,7 @@ require_once '../../includes/header.php';
                 <!-- GROUP HEADER -->
                 <tr class="cfp-group-hdr<?= $is_realized_group ? ' cfp-realized-group-hdr' : '' ?>" data-type="<?= $type ?>">
                     <td colspan="<?= 1 + count($columns) + 1 ?>" class="cfp-group-hdr-cell">
-                        <button class="cfp-collapse-btn" data-group="<?= $type ?>" title="Collapse">&#9660;</button>
+                        <button class="cfp-collapse-btn" data-group="<?= $type ?>" title="Collapse" aria-label="Collapse group">&#9660;</button>
                         <span class="cfp-group-name"><?= htmlspecialchars($glabel) ?></span>
                         <span class="cfp-group-count"><?= count($rows) ?> item<?= count($rows) !== 1 ? 's' : '' ?></span>
                         <?php if ($type === 'realized_event'): ?>
@@ -932,6 +933,7 @@ require_once '../../includes/header.php';
                             <?php if ($cell_txn_uuid && $val !== 0): ?>
                             <button class="cfp-delete-txn-btn"
                                     title="Delete this transaction"
+                                    aria-label="Delete transaction"
                                     onclick="cfpDeleteTransaction('<?= htmlspecialchars($cell_txn_uuid) ?>', <?= json_encode($row['description']) ?>)">×</button>
                             <?php endif; ?>
                         </td>
@@ -1074,6 +1076,20 @@ require_once '../../includes/header.php';
     };
 </script>
 <script src="/pgbudget/js/cash-flow-projection.js"></script>
+
+<!-- Sticky allocation bar (appears during link selection mode) -->
+<div id="cfp-alloc-bar" class="cfp-alloc-bar" aria-live="polite" hidden>
+    <div class="cfp-alloc-bar-info">
+        <span class="cfp-alloc-count" id="cfp-alloc-count">0 items</span>
+        <span class="cfp-alloc-sep">·</span>
+        <span class="cfp-alloc-label">Selected:</span>
+        <strong class="cfp-alloc-amount" id="cfp-alloc-amount">$0.00</strong>
+    </div>
+    <div class="cfp-alloc-bar-actions">
+        <button class="btn btn-secondary btn-sm" id="cfp-alloc-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="cfp-alloc-confirm" type="button">Pick Real Transaction</button>
+    </div>
+</div>
 
 <!-- Link-to-real-transaction modal -->
 <div id="cfp-link-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="cfp-link-modal-title">
@@ -1549,18 +1565,47 @@ async function cfpDeleteTransaction(uuid, description) {
         searchEl.addEventListener('input', function () { applySearch(searchEl.value); });
     }
 
-    // Delegate click from linkable cells
+    // Delegate click from linkable cells → enter selection mode
     document.addEventListener('click', function (e) {
         var td = e.target.closest('.cfp-td-linkable');
         if (!td) return;
+        // Ignore clicks on the checkbox itself (handled separately)
+        if (e.target.tagName === 'INPUT') return;
         e.stopPropagation();
-        openModal(
-            td.dataset.eventUuid,
-            td.dataset.month,
-            parseInt(td.dataset.amount, 10),
-            td.dataset.desc
-        );
+        if (typeof cfpEnterSelectionMode === 'function') {
+            cfpEnterSelectionMode(td);
+        } else {
+            openModal(td.dataset.eventUuid, td.dataset.month,
+                      parseInt(td.dataset.amount, 10), td.dataset.desc);
+        }
     });
+
+    // Expose openModal so the allocation bar can invoke it with a pre-built bundle
+    window._cfpOpenModalWithBundle = function (bundleItems) {
+        if (!bundleItems || !bundleItems.length) return;
+        _linkMonth         = bundleItems[0].month;
+        _selectedTxnUuid   = '';
+        _selectedTxnAmount = 0;
+        _allTxns           = [];
+        _bundleItems       = bundleItems;
+
+        document.getElementById('cfp-link-event-month').textContent  = _linkMonth.slice(0, 7);
+        document.getElementById('cfp-link-event-amount').textContent = fmtCents(bundleTotal());
+
+        searchEl.value        = '';
+        confirmBtn.disabled   = true;
+        confirmBtn.textContent = 'Link Transaction';
+        hideInterestPrompt();
+
+        renderBundleList();
+        updateSummary();
+
+        listEl.innerHTML = '<div class="cfp-link-loading">Loading…</div>';
+        modal.classList.add('show');
+        searchEl.focus();
+
+        loadTransactions();
+    };
 
     // Run bundle marking after DOM is ready
     if (document.readyState === 'loading') {
@@ -1569,6 +1614,125 @@ async function cfpDeleteTransaction(uuid, description) {
         markBundles();
     }
 
+})();
+</script>
+
+<script>
+/* ------------------------------------------------------------------
+   Sticky allocation bar — selection mode for multi-link workflow
+------------------------------------------------------------------ */
+(function () {
+    'use strict';
+
+    var _selMode   = false;
+    var _selMonth  = '';
+    var _selItems  = [];  // { td, checkbox, eventUuid, amountCents, description, direction }
+
+    function fmtCents(c) {
+        if (c === 0) return '—';
+        var sym  = (window.CFP && CFP.currencySymbol) || '$';
+        var sign = c < 0 ? '-' : '';
+        return sign + sym + (Math.abs(c) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function allocTotal() {
+        return _selItems.reduce(function (s, it) {
+            return it.checkbox.checked ? s + it.amountCents : s;
+        }, 0);
+    }
+
+    function allocCount() {
+        return _selItems.filter(function (it) { return it.checkbox.checked; }).length;
+    }
+
+    function updateBar() {
+        var countEl   = document.getElementById('cfp-alloc-count');
+        var amountEl  = document.getElementById('cfp-alloc-amount');
+        var confirmEl = document.getElementById('cfp-alloc-confirm');
+        var n = allocCount();
+        if (countEl)   countEl.textContent  = n + ' item' + (n !== 1 ? 's' : '') + ' selected';
+        if (amountEl)  amountEl.textContent = fmtCents(allocTotal());
+        if (confirmEl) confirmEl.disabled   = (n === 0);
+        _selItems.forEach(function (it) {
+            it.td.classList.toggle('cfp-cell-selected', it.checkbox.checked);
+        });
+    }
+
+    window.cfpEnterSelectionMode = function (clickedTd) {
+        if (_selMode) cfpExitSelectionMode();
+        _selMode  = true;
+        _selMonth = clickedTd.dataset.month;
+        _selItems = [];
+
+        var wrapper = document.getElementById('cfp-table-wrapper');
+        if (wrapper) wrapper.classList.add('cfp-selection-mode');
+
+        document.querySelectorAll('.cfp-td-linkable[data-month="' + _selMonth + '"]').forEach(function (td) {
+            var cb      = document.createElement('input');
+            cb.type     = 'checkbox';
+            cb.checked  = (td === clickedTd);
+            cb.setAttribute('aria-label', 'Select ' + (td.dataset.desc || 'projection'));
+            cb.addEventListener('change', updateBar);
+            td.insertBefore(cb, td.firstChild);
+
+            var meta  = (window.CFP && CFP.sourceMeta && CFP.sourceMeta[td.dataset.eventUuid]) || {};
+            _selItems.push({
+                td:          td,
+                checkbox:    cb,
+                eventUuid:   td.dataset.eventUuid,
+                amountCents: parseInt(td.dataset.amount, 10) || 0,
+                description: td.dataset.desc || '',
+                direction:   meta.direction || 'outflow',
+            });
+        });
+
+        var bar = document.getElementById('cfp-alloc-bar');
+        if (bar) bar.removeAttribute('hidden');
+        updateBar();
+    };
+
+    function cfpExitSelectionMode() {
+        _selMode = false;
+        var wrapper = document.getElementById('cfp-table-wrapper');
+        if (wrapper) wrapper.classList.remove('cfp-selection-mode');
+        _selItems.forEach(function (it) {
+            if (it.checkbox && it.checkbox.parentNode) it.checkbox.parentNode.removeChild(it.checkbox);
+            it.td.classList.remove('cfp-cell-selected');
+        });
+        _selItems = [];
+        var bar = document.getElementById('cfp-alloc-bar');
+        if (bar) bar.setAttribute('hidden', '');
+    }
+
+    var cancelBtn  = document.getElementById('cfp-alloc-cancel');
+    var confirmBtn = document.getElementById('cfp-alloc-confirm');
+
+    if (cancelBtn) cancelBtn.addEventListener('click', cfpExitSelectionMode);
+
+    if (confirmBtn) confirmBtn.addEventListener('click', function () {
+        var bundle = _selItems
+            .filter(function (it) { return it.checkbox.checked; })
+            .map(function (it, idx) {
+                return {
+                    eventUuid:   it.eventUuid,
+                    month:       _selMonth,
+                    amountCents: it.amountCents,
+                    description: it.description,
+                    direction:   it.direction,
+                    checked:     true,
+                    primary:     idx === 0,
+                };
+            });
+        if (!bundle.length) return;
+        cfpExitSelectionMode();
+        if (typeof window._cfpOpenModalWithBundle === 'function') {
+            window._cfpOpenModalWithBundle(bundle);
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && _selMode) cfpExitSelectionMode();
+    });
 })();
 </script>
 

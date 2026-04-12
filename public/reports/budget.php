@@ -220,11 +220,11 @@ require_once '../../includes/header.php';
 .report-header h1 {
     margin: 0;
     font-size: 2rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .report-subtitle {
-    color: #718096;
+    color: var(--color-text-muted);
     margin: 0.5rem 0 0 0;
     font-size: 1rem;
 }
@@ -244,7 +244,7 @@ require_once '../../includes/header.php';
 
 .filter-card h3 {
     margin: 0 0 1rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .period-filter-form {
@@ -266,7 +266,7 @@ require_once '../../includes/header.php';
 .form-group label {
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.875rem;
 }
 
@@ -300,14 +300,14 @@ require_once '../../includes/header.php';
 
 .summary-label {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 0.5rem;
 }
 
 .summary-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .summary-value.positive {
@@ -338,7 +338,7 @@ require_once '../../includes/header.php';
 
 .chart-header h3 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .chart-container {
@@ -362,7 +362,7 @@ require_once '../../includes/header.php';
 
 .table-header h3 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .table-responsive {

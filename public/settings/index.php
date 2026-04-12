@@ -128,12 +128,12 @@ require_once '../../includes/header.php';
 .settings-header h1 {
     margin: 0 0 0.5rem 0;
     font-size: 2rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .settings-header p {
     margin: 0;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .settings-section {
@@ -147,7 +147,7 @@ require_once '../../includes/header.php';
 .section-header h2 {
     margin: 0;
     font-size: 1.5rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .settings-card {
@@ -164,12 +164,12 @@ require_once '../../includes/header.php';
 .card-content h3 {
     margin: 0 0 0.5rem 0;
     font-size: 1.25rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .card-content > p {
     margin: 0 0 1.5rem 0;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .budgets-list {
@@ -194,13 +194,13 @@ require_once '../../includes/header.php';
 }
 
 .budget-info strong {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .budget-description {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .budget-actions {
@@ -231,7 +231,7 @@ require_once '../../includes/header.php';
 }
 
 .info-value {
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .empty-state {
@@ -244,7 +244,7 @@ require_once '../../includes/header.php';
 
 .empty-state p {
     margin: 0 0 1rem 0;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 @media (max-width: 768px) {

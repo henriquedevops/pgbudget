@@ -343,12 +343,12 @@ require_once '../../includes/header.php';
 .page-title h1 {
     margin: 0 0 8px 0;
     font-size: 2rem;
-    color: #1a202c;
+    color: var(--color-text-primary);
 }
 
 .page-title p {
     margin: 0;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .page-actions {
@@ -379,7 +379,7 @@ require_once '../../includes/header.php';
 
 .btn-secondary {
     background: #e2e8f0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .btn-secondary:hover {
@@ -397,11 +397,11 @@ require_once '../../includes/header.php';
 
 .empty-state h3 {
     margin-top: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .empty-state p {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 24px;
 }
 
@@ -432,7 +432,7 @@ require_once '../../includes/header.php';
 .stat-label {
     font-size: 14px;
     font-weight: 600;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -441,13 +441,13 @@ require_once '../../includes/header.php';
 .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #1a202c;
+    color: var(--color-text-primary);
     margin-bottom: 4px;
 }
 
 .stat-hint {
     font-size: 12px;
-    color: #a0aec0;
+    color: var(--color-text-muted);
 }
 
 .filters-bar {
@@ -489,7 +489,7 @@ require_once '../../includes/header.php';
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-left: auto;
 }
 
@@ -526,7 +526,7 @@ require_once '../../includes/header.php';
     padding: 12px;
     text-align: left;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -552,7 +552,7 @@ require_once '../../includes/header.php';
 }
 
 .text-muted {
-    color: #a0aec0;
+    color: var(--color-text-muted);
 }
 
 .text-danger {
@@ -561,7 +561,7 @@ require_once '../../includes/header.php';
 
 .amount {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .progress-info {
@@ -627,7 +627,7 @@ require_once '../../includes/header.php';
     font-size: 12px;
     cursor: pointer;
     text-decoration: none;
-    color: #2d3748;
+    color: var(--color-text-primary);
     display: inline-block;
 }
 

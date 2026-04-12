@@ -351,7 +351,7 @@ const chart = new Chart(ctx, {
 .history-section h2 {
     padding: 1.5rem 2rem 0 2rem;
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .history-table table {
@@ -393,7 +393,7 @@ const chart = new Chart(ctx, {
 }
 
 .change-value.neutral {
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .context-section {
@@ -406,7 +406,7 @@ const chart = new Chart(ctx, {
 
 .context-section h2 {
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .transactions-preview {
@@ -427,13 +427,13 @@ const chart = new Chart(ctx, {
 
 .transaction-description {
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .transaction-details {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .transaction-amount {
@@ -463,7 +463,7 @@ const chart = new Chart(ctx, {
 }
 
 .empty-state p {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 2rem;
 }
 

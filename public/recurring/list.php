@@ -209,7 +209,7 @@ require_once '../../includes/header.php';
 
 .alert p {
     margin: 0 0 1rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .due-transactions {
@@ -236,7 +236,7 @@ require_once '../../includes/header.php';
 
 .due-details {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .recurring-list {
@@ -335,7 +335,7 @@ require_once '../../includes/header.php';
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .empty-icon {
@@ -344,7 +344,7 @@ require_once '../../includes/header.php';
 }
 
 .empty-state h2 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -364,7 +364,7 @@ require_once '../../includes/header.php';
 
 .help-section h3 {
     margin: 0 0 1rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .help-grid {
@@ -374,7 +374,7 @@ require_once '../../includes/header.php';
 }
 
 .help-item h4 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 

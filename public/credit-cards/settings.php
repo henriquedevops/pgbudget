@@ -189,7 +189,7 @@ require_once '../../includes/header.php';
                         <div class="utilization-bar-fill <?= $utilization_percent >= 80 ? 'critical' : ($utilization_percent >= 50 ? 'high' : ($utilization_percent >= 30 ? 'medium' : 'low')) ?>"
                              style="width: <?= min(100, $utilization_percent) ?>%"></div>
                     </div>
-                    <div style="text-align: center; color: #718096; font-size: 0.875rem; font-weight: 600;">
+                    <div style="text-align: center; color: var(--color-text-muted); font-size: 0.875rem; font-weight: 600;">
                         <?= number_format($utilization_percent, 1) ?>% Utilization
                     </div>
                 </div>

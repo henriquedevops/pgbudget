@@ -226,12 +226,13 @@ require_once '../../includes/header.php';
                             </div>
                             <div class="card-quick-actions">
                                 <a href="settings.php?ledger=<?= urlencode($ledger_uuid) ?>&card=<?= urlencode($card['account_uuid']) ?>"
-                                   class="icon-btn" title="Settings">⚙️</a>
+                                   class="icon-btn" title="Settings" aria-label="Card settings">⚙️</a>
                                 <a href="statements.php?ledger=<?= urlencode($ledger_uuid) ?>&card=<?= urlencode($card['account_uuid']) ?>"
-                                   class="icon-btn" title="Statements">📄</a>
+                                   class="icon-btn" title="Statements" aria-label="Card statements">📄</a>
                                 <button type="button"
                                         class="icon-btn"
                                         title="Schedule Payment"
+                                        aria-label="Schedule payment"
                                         onclick="openSchedulePaymentModal('<?= htmlspecialchars($card['account_uuid']) ?>', '<?= htmlspecialchars($card['account_name']) ?>')">
                                     💵
                                 </button>

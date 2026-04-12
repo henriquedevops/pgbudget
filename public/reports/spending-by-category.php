@@ -404,11 +404,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 .report-header h1 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .report-subtitle {
-    color: #718096;
+    color: var(--color-text-muted);
     margin: 0.5rem 0 0 0;
 }
 
@@ -568,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
     border: none;
     font-size: 2rem;
     cursor: pointer;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .modal-body {
@@ -578,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 .loading-text {
     text-align: center;
-    color: #718096;
+    color: var(--color-text-muted);
     padding: 2rem;
 }
 

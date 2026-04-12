@@ -317,12 +317,12 @@ require_once '../../includes/header.php';
 .page-title h1 {
     margin: 0 0 8px 0;
     font-size: 2rem;
-    color: #1a202c;
+    color: var(--color-text-primary);
 }
 
 .page-title p {
     margin: 0;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 1rem;
 }
 
@@ -354,7 +354,7 @@ require_once '../../includes/header.php';
 
 .btn-secondary {
     background: #e2e8f0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .btn-secondary:hover {
@@ -414,7 +414,7 @@ require_once '../../includes/header.php';
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 1.25rem;
-    color: #1a202c;
+    color: var(--color-text-primary);
     border-bottom: 2px solid #3182ce;
     padding-bottom: 8px;
 }
@@ -423,7 +423,7 @@ require_once '../../includes/header.php';
     margin-top: 24px;
     margin-bottom: 12px;
     font-size: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .detail-item {
@@ -435,7 +435,7 @@ require_once '../../includes/header.php';
 .detail-label {
     font-size: 12px;
     font-weight: 600;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 6px;
@@ -443,7 +443,7 @@ require_once '../../includes/header.php';
 
 .detail-value {
     font-size: 16px;
-    color: #1a202c;
+    color: var(--color-text-primary);
     font-weight: 500;
 }
 
@@ -454,7 +454,7 @@ require_once '../../includes/header.php';
 }
 
 .text-muted {
-    color: #a0aec0;
+    color: var(--color-text-muted);
 }
 
 .progress-section {
@@ -467,7 +467,7 @@ require_once '../../includes/header.php';
     margin-top: 0;
     margin-bottom: 12px;
     font-size: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .progress-bar-label {
@@ -475,7 +475,7 @@ require_once '../../includes/header.php';
     justify-content: space-between;
     margin-bottom: 8px;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 14px;
 }
 
@@ -525,7 +525,7 @@ require_once '../../includes/header.php';
 .installment-number {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1a202c;
+    color: var(--color-text-primary);
 }
 
 .badge {
@@ -567,12 +567,12 @@ require_once '../../includes/header.php';
 
 .installment-detail-row .label {
     font-weight: 600;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .installment-detail-row .value {
     font-weight: 600;
-    color: #1a202c;
+    color: var(--color-text-primary);
 }
 
 .amount-highlight {
@@ -591,7 +591,7 @@ require_once '../../includes/header.php';
 
 .preview-box p {
     margin: 0 0 12px 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .transaction-preview {
@@ -626,13 +626,13 @@ require_once '../../includes/header.php';
 .entry-label {
     font-size: 12px;
     font-weight: 600;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
 }
 
 .entry-account {
     font-weight: 600;
-    color: #1a202c;
+    color: var(--color-text-primary);
 }
 
 .entry-amount {
@@ -650,7 +650,7 @@ require_once '../../includes/header.php';
 
 .transaction-arrow {
     font-size: 1.5rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-weight: 700;
 }
 

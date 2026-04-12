@@ -28,5 +28,5 @@
 
 .help-sidebar h3 {
     margin-top: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }

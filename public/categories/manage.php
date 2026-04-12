@@ -440,18 +440,19 @@ window.onclick = function(event) {
 
 .categories-section h2 {
     margin: 2rem 0 1rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
     border-bottom: 2px solid #e2e8f0;
     padding-bottom: 0.5rem;
-    font-size: 1.25rem;
+    font-size: 1.375rem;
+    font-weight: 700;
 }
 
 /* Category Groups */
 .category-group {
     margin-bottom: 1rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border);
     border-radius: 8px;
-    background: white;
+    background: var(--color-surface);
     overflow: hidden;
 }
 
@@ -460,14 +461,14 @@ window.onclick = function(event) {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background: linear-gradient(to right, #f7fafc, #edf2f7);
+    background: var(--color-surface-alt);
     cursor: pointer;
     transition: background 0.2s;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .group-header:hover {
-    background: linear-gradient(to right, #edf2f7, #e2e8f0);
+    background: var(--color-border);
 }
 
 .group-info {
@@ -475,10 +476,11 @@ window.onclick = function(event) {
     align-items: center;
     gap: 0.75rem;
     font-size: 1.1rem;
+    color: var(--color-text-primary);
 }
 
 .collapse-icon {
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
     transition: transform 0.2s;
 }
@@ -500,7 +502,7 @@ window.onclick = function(event) {
 
 .total-label {
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     font-weight: 600;
 }
@@ -508,17 +510,17 @@ window.onclick = function(event) {
 .total-value {
     font-size: 1rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .group-categories {
-    background: #fafafa;
+    background: var(--color-surface-alt);
 }
 
 .empty-group {
     padding: 2rem;
     text-align: center;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .empty-group p {
@@ -527,8 +529,8 @@ window.onclick = function(event) {
 
 /* Category Rows */
 .categories-list {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -538,7 +540,7 @@ window.onclick = function(event) {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-border);
     transition: background 0.2s;
 }
 
@@ -547,11 +549,11 @@ window.onclick = function(event) {
 }
 
 .category-row:hover {
-    background: #f7fafc;
+    background: var(--color-surface-alt);
 }
 
 .system-category {
-    background: #faf5ff;
+    background: var(--color-surface);
     border-left: 4px solid #805ad5;
 }
 
@@ -560,7 +562,7 @@ window.onclick = function(event) {
 }
 
 .child-category {
-    background: white;
+    background: var(--color-surface);
     border-left: 4px solid #3182ce;
 }
 
@@ -573,6 +575,8 @@ window.onclick = function(event) {
     align-items: center;
     gap: 0.5rem;
     font-size: 1rem;
+    color: var(--color-text-primary);
+    font-weight: 500;
 }
 
 .category-icon {
@@ -619,7 +623,7 @@ window.onclick = function(event) {
 
 .stat-label {
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     font-weight: 600;
 }
@@ -627,7 +631,7 @@ window.onclick = function(event) {
 .stat-value {
     font-size: 1rem;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .stat-value.positive {
@@ -685,7 +689,7 @@ window.onclick = function(event) {
 }
 
 .modal-content {
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
     width: 90%;
     max-width: 500px;
@@ -697,19 +701,19 @@ window.onclick = function(event) {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .modal-header h3 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .close-btn {
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: #718096;
+    color: var(--color-text-muted);
     cursor: pointer;
     padding: 0;
     width: 30px;
@@ -717,7 +721,7 @@ window.onclick = function(event) {
 }
 
 .close-btn:hover {
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .modal-body {
@@ -726,16 +730,17 @@ window.onclick = function(event) {
 
 .modal-body p {
     margin-bottom: 1rem;
-    color: #4a5568;
+    color: var(--color-text-muted);
 }
 
 .form-select {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 1rem;
-    background: white;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
 }
 
 .modal-footer {
@@ -743,24 +748,24 @@ window.onclick = function(event) {
     justify-content: flex-end;
     gap: 1rem;
     padding: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--color-border);
 }
 
 .empty-state {
     text-align: center;
     padding: 3rem;
-    background: #f7fafc;
+    background: var(--color-surface-alt);
     border-radius: 8px;
     margin: 2rem 0;
 }
 
 .empty-state h3 {
-    color: #4a5568;
+    color: var(--color-text-primary);
     margin-bottom: 1rem;
 }
 
 .empty-state p {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 2rem;
 }
 

@@ -457,11 +457,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 .report-header h1 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .report-subtitle {
-    color: #718096;
+    color: var(--color-text-muted);
     margin: 0.5rem 0 0 0;
 }
 
@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 .chart-header h3 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .chart-container {
@@ -539,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 .stat-card h3 {
     margin-top: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .completion-stats {
@@ -557,14 +557,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 .stat-label {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 0.5rem;
 }
 
 .stat-value {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -599,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 .table-header h3 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .progress-info {
@@ -624,13 +624,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 .loading-text, .empty-text {
     text-align: center;
-    color: #718096;
+    color: var(--color-text-muted);
     padding: 2rem;
 }
 
 .amount {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .amount.warning {

@@ -526,7 +526,7 @@ try {
 .filter-group label {
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.875rem;
 }
 
@@ -604,7 +604,7 @@ try {
 
 .date-cell small {
     display: block;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.75rem;
     margin-top: 0.25rem;
 }
@@ -641,7 +641,7 @@ try {
 }
 
 .account-cell .account-type {
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.75rem;
 }
 
@@ -693,7 +693,7 @@ try {
 
 .page-ellipsis {
     padding: 0.5rem 0.25rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .empty-state {
@@ -710,7 +710,7 @@ try {
 }
 
 .empty-state p {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 2rem;
 }
 
@@ -900,7 +900,7 @@ try {
 
 #link-event-modal .txn-summary strong {
     display: block;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.95rem;
     margin-bottom: 0.25rem;
 }

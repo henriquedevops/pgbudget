@@ -51,12 +51,12 @@
 }
 
 .statement-info-row span:first-child {
-    color: #718096;
+    color: var(--color-text-muted);
     font-weight: 500;
 }
 
 .statement-info-row span:last-child {
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-weight: 600;
 }
 
@@ -115,7 +115,7 @@
     display: block;
     margin-top: 0.25rem;
     font-size: 0.8rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 /* Credit Card Settings Page */
@@ -134,7 +134,7 @@
 
 .settings-section h3 {
     margin-top: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
     border-bottom: 2px solid #e2e8f0;
     padding-bottom: 0.75rem;
     margin-bottom: 1.5rem;
@@ -155,12 +155,12 @@
 }
 
 .limit-display-label {
-    color: #718096;
+    color: var(--color-text-muted);
     font-weight: 500;
 }
 
 .limit-display-value {
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-weight: 700;
     font-size: 1.25rem;
 }
@@ -231,7 +231,7 @@
 .checkbox-group label {
     margin: 0;
     font-weight: 500;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .auto-payment-settings {
@@ -290,7 +290,7 @@
 
 .statement-period {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 1.1rem;
 }
 
@@ -327,7 +327,7 @@
 
 .summary-label {
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -337,7 +337,7 @@
 .summary-value {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .summary-value.negative {

@@ -143,7 +143,7 @@ require_once '../../includes/header.php';
                     <div class="form-group">
                         <label for="amount">Amount *</label>
                         <input type="number" id="amount" name="amount" required min="0.01" step="0.01"
-                               value="<?= number_format($event['amount'] / 100, 2, '.', '') ?>">
+                               value="<?= number_format($event['amount'] / 100, 2, '.', '') ?>" inputmode="decimal">
                     </div>
 
                     <div class="form-group">

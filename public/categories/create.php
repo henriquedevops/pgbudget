@@ -192,7 +192,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .category-form input,
@@ -221,7 +221,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-top: 0.25rem;
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .form-actions {
@@ -240,7 +240,7 @@ require_once '../../includes/header.php';
 
 .category-info h3 {
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .info-content h4 {
@@ -264,7 +264,7 @@ require_once '../../includes/header.php';
 }
 
 .example-group h5 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 

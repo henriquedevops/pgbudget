@@ -206,11 +206,11 @@ require_once '../../includes/header.php';
 
 .reconcile-header h1 {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .account-info {
-    color: #718096;
+    color: var(--color-text-muted);
     margin: 0.5rem 0 0 0;
     font-size: 0.875rem;
 }
@@ -254,11 +254,11 @@ require_once '../../includes/header.php';
 
 .reconcile-form-card h2 {
     margin-top: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .form-description {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 1.5rem;
     line-height: 1.6;
 }
@@ -278,7 +278,7 @@ require_once '../../includes/header.php';
     display: block;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .form-input,
@@ -301,7 +301,7 @@ require_once '../../includes/header.php';
 .form-help {
     display: block;
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-top: 0.25rem;
 }
 
@@ -320,7 +320,7 @@ require_once '../../includes/header.php';
 .reconcile-summary h3 {
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .summary-row {
@@ -371,11 +371,11 @@ require_once '../../includes/header.php';
 
 .transactions-section h2 {
     margin-top: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .section-description {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 1.5rem;
 }
 
@@ -391,7 +391,7 @@ require_once '../../includes/header.php';
 .transactions-count {
     margin-left: auto;
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-weight: 600;
 }
 
@@ -436,13 +436,13 @@ require_once '../../includes/header.php';
 
 .transaction-description {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
 .transaction-meta {
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .transaction-amount {
@@ -480,7 +480,7 @@ require_once '../../includes/header.php';
 
 .reconciliation-history-section h2 {
     margin-top: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .adjustment-badge {
@@ -493,7 +493,7 @@ require_once '../../includes/header.php';
 .loading {
     text-align: center;
     padding: 2rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .loading::after {

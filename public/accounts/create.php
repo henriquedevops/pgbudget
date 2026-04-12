@@ -222,7 +222,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .account-form input,
@@ -248,7 +248,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-top: 0.25rem;
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .form-actions {
@@ -267,7 +267,7 @@ require_once '../../includes/header.php';
 
 .account-types-info h3 {
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .types-grid {
@@ -284,7 +284,7 @@ require_once '../../includes/header.php';
 }
 
 .type-card h4 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -294,7 +294,7 @@ require_once '../../includes/header.php';
 }
 
 .type-card small {
-    color: #718096;
+    color: var(--color-text-muted);
     font-style: italic;
 }
 </style>

@@ -11,7 +11,7 @@
     --color-surface-alt:   #f8fafc;
     --color-border:        #e2e8f0;
     --color-text-primary:  #0f172a;
-    --color-text-muted:    #64748b;
+    --color-text-muted:    #475569;
 
     /* ---- Breakpoint scale ---- */
     --screen-sm:  480px;
@@ -77,6 +77,7 @@
     --gray-50: #f9fafb;
     --gray-100: #f3f4f6;
     --gray-300: #d1d5db;
+    --gray-400: #6b7280; /* WCAG-safe muted: 4.54:1 on white */
     --gray-500: #6b7280;
     --gray-700: #374151;
     --gray-900: #111827;
@@ -92,7 +93,7 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     line-height: 1.6;
-    color: #2d3748;
+    color: var(--color-text-primary);
     background-color: #f7fafc;
     min-height: 100vh;
     display: flex;
@@ -138,11 +139,11 @@ body {
 }
 
 .nav-link:hover {
-    color: #bee3f8;
+    color: #ffffff;
 }
 
 .nav-user {
-    color: #bee3f8;
+    color: #ffffff;
     font-weight: 500;
 }
 
@@ -233,7 +234,7 @@ body {
 
 .header p {
     font-size: 1.2rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 /* Cards */
@@ -268,7 +269,7 @@ body {
 }
 
 .description {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 1rem;
 }
 
@@ -279,7 +280,7 @@ body {
 }
 
 .created-date {
-    color: #a0aec0;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -327,7 +328,7 @@ body {
 }
 
 .btn-secondary {
-    background-color: #718096;
+    background-color: var(--color-text-muted);
     color: white;
 }
 
@@ -362,7 +363,7 @@ body {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .form-input,
@@ -415,7 +416,7 @@ body {
 .table th {
     background-color: #f7fafc;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     position: sticky;
     top: 0;
     z-index: var(--z-sticky);
@@ -535,7 +536,7 @@ body {
 
 /* Footer */
 .footer {
-    background-color: #2d3748;
+    background-color: var(--color-primary);
     color: white;
     text-align: center;
     padding: 2rem 1rem;
@@ -728,7 +729,7 @@ body {
 .btn-edit:hover {
     background: #edf2f7;
     border-color: #cbd5e0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .actions-cell {
@@ -761,7 +762,7 @@ body {
 
 .period-form label {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     white-space: nowrap;
 }
 
@@ -770,7 +771,7 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 4px;
     background: white;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.875rem;
     min-width: 150px;
 }
@@ -782,7 +783,7 @@ body {
 }
 
 .period-info {
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
     font-style: italic;
 }
@@ -950,7 +951,7 @@ body {
 
 .nav-dropdown-toggle:hover,
 .nav-dropdown:focus-within .nav-dropdown-toggle {
-    color: #bee3f8;
+    color: #ffffff;
 }
 
 .nav-dropdown-toggle .caret {
@@ -1348,7 +1349,7 @@ body {
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 12px;
     padding: 8px 12px;
     min-width: 60px;
@@ -2031,5 +2032,161 @@ td.balance-cell {
     .transactions-table.mobile-cards tr {
         background: var(--color-surface);
         border-color: var(--color-border);
+    }
+
+    /* ---- Page / section headings (inline styles in PHP pages) ---- */
+    .page-title h1,
+    .page-title h2,
+    .page-header h1,
+    .page-header h2,
+    .group-header h2,
+    .group-header h3,
+    .section-header h2,
+    .section-header h3,
+    .form-section h2,
+    .form-section h3,
+    .card-header h2,
+    .card-header h3,
+    .card-content h3,
+    .balance-history-card h2,
+    .balance-history-card h3 {
+        color: var(--color-text-primary);
+    }
+
+    .page-title p,
+    .page-subtitle,
+    .group-header p,
+    .section-header p,
+    .card-header p,
+    .card-content > p,
+    .card-detail {
+        color: var(--color-text-muted);
+    }
+
+    /* ---- Form elements (inline styles) ---- */
+    .form-group label,
+    .form-label,
+    .form-hint,
+    .field-hint,
+    .form-section label {
+        color: var(--color-text-primary);
+    }
+
+    /* ---- White card containers (inline styles across many pages) ---- */
+    .account-group,
+    .filter-card,
+    .form-section,
+    .form-container,
+    .data-table-card,
+    .chart-card,
+    .balance-history-card,
+    .underfunded-goals-section,
+    .budget-summary-card,
+    .summary-card-container,
+    .page-card,
+    .content-card {
+        background: var(--color-surface) !important;
+        border-color: var(--color-border);
+        color: var(--color-text-primary);
+    }
+
+    /* ---- Tables inside white cards ---- */
+    .account-group .table th,
+    .account-group .table td,
+    .account-group .table tbody tr {
+        background: var(--color-surface);
+        border-color: var(--color-border);
+    }
+
+    .account-group .table tbody tr:hover {
+        background: var(--color-surface-alt);
+    }
+
+    /* ---- Status / badge backgrounds on light cards ---- */
+    .account-type.asset    { background: #14532d; color: #bbf7d0; }
+    .account-type.liability { background: #450a0a; color: #fecaca; }
+    .account-type.equity   { background: #1e3a5f; color: #bfdbfe; }
+
+    /* ---- Misc inline-styled muted text ---- */
+    .text-muted,
+    .text-secondary,
+    .helper-text,
+    .created-date,
+    .meta-text {
+        color: var(--color-text-muted);
+    }
+
+    /* ---- Page/section borders ---- */
+    .page-header,
+    .page-title,
+    .group-header,
+    .section-header,
+    .form-section {
+        border-color: var(--color-border);
+    }
+}
+
+/* ============================================
+   UNDO TOAST (Phase E)
+   ============================================ */
+.qa-undo-toast {
+    position: fixed;
+    bottom: 80px; /* above mobile nav bar */
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e293b;
+    color: #f1f5f9;
+    padding: 12px 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    max-width: min(420px, 90vw);
+    white-space: nowrap;
+}
+.qa-undo-toast.qa-toast-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.qa-toast-msg {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.qa-toast-undo-btn {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+    min-width: 44px;
+    min-height: 36px;
+}
+.qa-toast-undo-btn:hover {
+    background: var(--color-primary-hover);
+}
+.qa-toast-success { background: #14532d; }
+.qa-toast-error   { background: #7f1d1d; }
+
+@media (max-width: 768px) {
+    .qa-undo-toast {
+        bottom: 72px;
+        left: 16px;
+        right: 16px;
+        transform: translateY(20px);
+        max-width: none;
+        white-space: normal;
+    }
+    .qa-undo-toast.qa-toast-visible {
+        transform: translateY(0);
     }
 }

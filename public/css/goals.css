@@ -17,7 +17,7 @@
 
 .btn-goal-delete {
     background-color: #e2e8f0;
-    color: #718096;
+    color: var(--color-text-muted);
     border: 1px solid #cbd5e0;
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
@@ -25,7 +25,7 @@
 
 .btn-goal-delete:hover {
     background-color: #cbd5e0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 /* Goal Indicator in Category Rows */
@@ -94,7 +94,7 @@
 
 .goal-progress-text {
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-weight: 600;
     min-width: 40px;
     text-align: right;
@@ -145,7 +145,7 @@
 .goal-type-option label strong {
     display: block;
     font-size: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.25rem;
 }
 
@@ -158,7 +158,7 @@
 .goal-type-option label small {
     display: block;
     margin-top: 0.25rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.75rem;
     font-style: italic;
 }
@@ -180,7 +180,7 @@
 
 .goal-preview p {
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.95rem;
     font-weight: 500;
 }
@@ -245,7 +245,7 @@
 
 .underfunded-goals-section h3 {
     margin: 0 0 1rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 1.1rem;
 }
 
@@ -263,14 +263,14 @@
 
 .underfunded-goal-category {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.875rem;
     margin-bottom: 0.25rem;
 }
 
 .underfunded-goal-details {
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .underfunded-goal-amount {
@@ -283,7 +283,7 @@
 .empty-underfunded {
     text-align: center;
     padding: 1rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -311,13 +311,13 @@
     display: block;
     font-size: 1.25rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .goal-stat-label {
     display: block;
     font-size: 0.7rem;
-    color: #718096;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     margin-top: 0.25rem;
 }
@@ -393,7 +393,7 @@
     display: block;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.875rem;
 }
 
@@ -415,6 +415,6 @@
 .form-help {
     display: block;
     font-size: 0.75rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-top: 0.25rem;
 }

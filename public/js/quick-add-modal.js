@@ -367,7 +367,7 @@ QuickAddModal = (function() {
         submitBtn.disabled = true;
 
         // Submit transaction
-        submitTransaction(data, function(success, message) {
+        submitTransaction(data, function(success, message, transactionUuid) {
             submitBtn.classList.remove('loading');
             submitBtn.disabled = false;
 
@@ -382,12 +382,11 @@ QuickAddModal = (function() {
                         document.getElementById('qa-amount').focus();
                     }, 1000);
                 } else {
-                    // Close modal and reload page
-                    showSuccess(message);
-                    setTimeout(() => {
-                        close();
+                    // Close modal, show undo toast, then reload
+                    close();
+                    showUndoToast(data.description, transactionUuid, () => {
                         window.location.reload();
-                    }, 1000);
+                    });
                 }
             } else {
                 showError(message);
@@ -570,7 +569,7 @@ QuickAddModal = (function() {
                 try {
                     const response = JSON.parse(xhr.responseText);
                     if (response.success) {
-                        callback(true, response.message || 'Transaction added successfully!');
+                        callback(true, response.message || 'Transaction added successfully!', response.transaction_uuid);
                     } else {
                         callback(false, response.error || 'Failed to add transaction.');
                     }
@@ -844,6 +843,80 @@ QuickAddModal = (function() {
     function hideSuccess() {
         const successDiv = document.getElementById('qa-success');
         successDiv.style.display = 'none';
+    }
+
+    /**
+     * Show undo toast after transaction is added
+     * Displays "Transaction added · Undo" for 5 seconds
+     */
+    function showUndoToast(description, transactionUuid, onDismiss) {
+        // Remove any existing toast
+        const existing = document.getElementById('qa-undo-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'qa-undo-toast';
+        toast.className = 'qa-undo-toast';
+        toast.innerHTML = `
+            <span class="qa-toast-msg">✅ <strong>${description ? description.substring(0, 40) : 'Transaction'}</strong> added</span>
+            <button class="qa-toast-undo-btn" aria-label="Undo transaction">Undo</button>
+        `;
+        document.body.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => toast.classList.add('qa-toast-visible'));
+
+        let dismissed = false;
+        let reloadTimer = null;
+
+        const dismiss = (reload = true) => {
+            if (dismissed) return;
+            dismissed = true;
+            clearTimeout(reloadTimer);
+            toast.classList.remove('qa-toast-visible');
+            setTimeout(() => toast.remove(), 300);
+            if (reload && onDismiss) onDismiss();
+        };
+
+        // Auto-dismiss after 5 seconds, then reload
+        reloadTimer = setTimeout(() => dismiss(true), 5000);
+
+        // Undo button: delete the transaction, skip reload
+        toast.querySelector('.qa-toast-undo-btn').addEventListener('click', async () => {
+            dismiss(false); // remove toast, don't reload yet
+            if (!transactionUuid) { window.location.reload(); return; }
+            try {
+                const resp = await fetch('/pgbudget/api/delete-transaction.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transaction_uuid: transactionUuid })
+                });
+                const json = await resp.json();
+                if (json.success) {
+                    showGlobalToast('↩️ Transaction undone', 'success');
+                } else {
+                    showGlobalToast('Could not undo: ' + (json.error || 'unknown error'), 'error');
+                }
+            } catch (e) {
+                showGlobalToast('Could not undo transaction', 'error');
+            }
+            // Reload after undo so counts are fresh
+            setTimeout(() => window.location.reload(), 800);
+        });
+    }
+
+    /**
+     * Show a simple global toast (non-undo)
+     */
+    function showGlobalToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `qa-undo-toast qa-toast-visible qa-toast-${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.remove('qa-toast-visible');
+            setTimeout(() => toast.remove(), 300);
+        }, 2500);
     }
 
     /**

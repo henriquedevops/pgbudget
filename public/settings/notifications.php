@@ -290,12 +290,12 @@ require_once '../../includes/header.php';
 
 .settings-header h1 {
     margin: 0 0 0.5rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .settings-header p {
     margin: 0;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .settings-grid {
@@ -319,13 +319,13 @@ require_once '../../includes/header.php';
 
 .card-header h2 {
     margin: 0 0 0.5rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 1.25rem;
 }
 
 .email-display {
     margin: 0;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -368,12 +368,12 @@ require_once '../../includes/header.php';
 .setting-title {
     font-weight: 600;
     font-size: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .setting-description {
     margin: 0;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
     line-height: 1.5;
     padding-left: 2rem;
@@ -396,7 +396,7 @@ require_once '../../includes/header.php';
 
 .badge-disabled {
     background: #e2e8f0;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .badge-coming-soon {
@@ -478,14 +478,14 @@ require_once '../../includes/header.php';
 .info-card h3,
 .help-card h3 {
     margin: 0 0 1rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 1.125rem;
 }
 
 .info-card p,
 .help-card p {
     margin: 0 0 1rem 0;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
     line-height: 1.6;
 }
@@ -500,7 +500,7 @@ require_once '../../includes/header.php';
 
 .info-section h4 {
     margin: 0 0 0.75rem 0;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.875rem;
     font-weight: 600;
 }
@@ -509,7 +509,7 @@ require_once '../../includes/header.php';
 .help-card ol {
     margin: 0;
     padding-left: 1.5rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
     line-height: 1.6;
 }
@@ -567,7 +567,7 @@ require_once '../../includes/header.php';
 .empty-state {
     text-align: center;
     padding: 3rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 /* Responsive Design */

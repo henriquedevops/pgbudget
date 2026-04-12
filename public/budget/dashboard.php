@@ -232,7 +232,6 @@ require_once '../../includes/header.php';
             <button type="button" class="btn btn-primary" onclick="TransferModal.open({ledger_uuid: '<?= htmlspecialchars($ledger_uuid) ?>'})">
                 ⇄ Transfer
             </button>
-            <button type="button" id="show-help-sidebar" class="btn btn-info">[?] Show Help</button>
         </div>
     </div>
 
@@ -320,13 +319,13 @@ require_once '../../includes/header.php';
                 <div class="categories-header">
                     <h2>Budget Categories</h2>
                     <div class="view-toggle">
-                        <button type="button" id="view-toggle-flat" class="view-toggle-btn active" title="Flat view">
+                        <button type="button" id="view-toggle-flat" class="view-toggle-btn active" title="Flat view" aria-label="Flat view">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                                 <path d="M0 2h16v2H0V2zm0 5h16v2H0V7zm0 5h16v2H0v-2z"/>
                             </svg>
                             <span>List</span>
                         </button>
-                        <button type="button" id="view-toggle-grouped" class="view-toggle-btn" title="Grouped view">
+                        <button type="button" id="view-toggle-grouped" class="view-toggle-btn" title="Grouped view" aria-label="Grouped view">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                                 <path d="M0 2h16v2H0V2zm2 5h14v2H2V7zm2 5h12v2H4v-2z"/>
                             </svg>
@@ -676,21 +675,22 @@ require_once '../../includes/header.php';
 }
 .summary-label {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 0.5rem;
 }
 .summary-amount {
     font-size: 1.5rem;
     font-weight: 600;
+    color: var(--color-text-primary);
 }
 .summary-amount.positive {
-    color: #38a169;
+    color: #166534;
 }
 .summary-amount.negative {
-    color: #e53e3e;
+    color: #991b1b;
 }
 .summary-amount.zero {
-    color: #718096;
+    color: #4a5568;
 }
 
 /* Category View Toggle Styles */
@@ -726,7 +726,7 @@ require_once '../../includes/header.php';
 
 .view-toggle-btn:hover {
     background: #e2e8f0;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .view-toggle-btn.active {
@@ -773,7 +773,7 @@ require_once '../../includes/header.php';
 
 .group-count {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     font-weight: normal;
     margin-left: 0.5rem;
 }
@@ -845,7 +845,7 @@ require_once '../../includes/header.php';
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: #1e293b;
+    color: var(--color-text-primary);
 }
 
 .cfp-widget-link {
@@ -892,14 +892,14 @@ require_once '../../includes/header.php';
 
 .cfp-bar-lbl {
     font-size: 0.62rem;
-    color: #94a3b8;
+    color: var(--color-text-muted);
     margin-top: 0.15rem;
     text-align: center;
 }
 
 .cfp-widget-total {
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     text-align: right;
     border-top: 1px solid #f1f5f9;
     padding-top: 0.4rem;
@@ -907,36 +907,19 @@ require_once '../../includes/header.php';
 
 .cfp-widget-total .positive { color: #166534; font-weight: 600; }
 .cfp-widget-total .negative { color: #991b1b; font-weight: 600; }
+
+.category-name {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
 </style>
 
 <?php
-require_once '../../includes/help-sidebar.php';
 require_once '../../includes/transfer-modal.php';
 require_once '../../includes/quick-add-modal.php';
 ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const showHelpBtn = document.getElementById('show-help-sidebar');
-    const helpSidebar = document.getElementById('help-sidebar');
-    const closeHelpBtn = document.getElementById('close-help-sidebar');
-
-    if (showHelpBtn && helpSidebar && closeHelpBtn) {
-        showHelpBtn.addEventListener('click', function() {
-            helpSidebar.classList.add('active');
-        });
-
-        closeHelpBtn.addEventListener('click', function() {
-            helpSidebar.classList.remove('active');
-        });
-
-        // Close on backdrop click
-        helpSidebar.addEventListener('click', function(e) {
-            if (e.target.id === 'help-sidebar') {
-                helpSidebar.classList.remove('active');
-            }
-        });
-    }
-
     // Category View Toggle
     const flatViewBtn = document.getElementById('view-toggle-flat');
     const groupedViewBtn = document.getElementById('view-toggle-grouped');

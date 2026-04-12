@@ -156,7 +156,7 @@ require_once '../../includes/header.php';
 }
 
 .text-muted {
-    color: #a0aec0;
+    color: var(--color-text-muted);
 }
 
 .empty-state {
@@ -168,7 +168,7 @@ require_once '../../includes/header.php';
 }
 
 .empty-state p {
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 1.5rem;
 }
 

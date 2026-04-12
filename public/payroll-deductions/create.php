@@ -133,7 +133,7 @@ require_once '../../includes/header.php';
                     <div class="form-group">
                         <label for="fixed_amount">Fixed Amount *</label>
                         <input type="number" id="fixed_amount" name="fixed_amount"
-                               min="0.01" step="0.01" placeholder="0.00">
+                               min="0.01" step="0.01" placeholder="0.00" inputmode="decimal">
                         <small class="form-hint">The exact deduction amount each period</small>
                     </div>
                 </div>
@@ -142,7 +142,7 @@ require_once '../../includes/header.php';
                     <div class="form-group">
                         <label for="estimated_amount">Estimated Amount *</label>
                         <input type="number" id="estimated_amount" name="estimated_amount"
-                               min="0.01" step="0.01" placeholder="0.00">
+                               min="0.01" step="0.01" placeholder="0.00" inputmode="decimal">
                         <small class="form-hint">Average or expected deduction amount</small>
                     </div>
                 </div>
@@ -161,7 +161,7 @@ require_once '../../includes/header.php';
                         <div class="form-group">
                             <label for="percentage_value">Percentage Value (%)</label>
                             <input type="number" id="percentage_value" name="percentage_value"
-                                   min="0" max="100" step="0.01" placeholder="e.g., 7.5">
+                                   min="0" max="100" step="0.01" placeholder="e.g., 7.5" inputmode="decimal">
                         </div>
 
                         <div class="form-group">

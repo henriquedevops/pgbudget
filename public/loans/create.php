@@ -378,7 +378,7 @@ require_once '../../includes/header.php';
 
 .form-section h3 {
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 1.25rem;
 }
 
@@ -396,7 +396,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .form-group input,
@@ -422,7 +422,7 @@ require_once '../../includes/header.php';
     display: block;
     margin-top: 0.25rem;
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
 }
 
 .term-shortcuts {
@@ -475,14 +475,14 @@ require_once '../../includes/header.php';
 
 .preview-label {
     font-size: 0.875rem;
-    color: #718096;
+    color: var(--color-text-muted);
     margin-bottom: 0.25rem;
 }
 
 .preview-value {
     font-size: 1.25rem;
     font-weight: bold;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .form-actions {
@@ -501,7 +501,7 @@ require_once '../../includes/header.php';
 
 .loan-guide h3 {
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .guide-grid {
@@ -518,7 +518,7 @@ require_once '../../includes/header.php';
 }
 
 .guide-card h4 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 

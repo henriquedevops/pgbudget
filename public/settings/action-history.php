@@ -105,7 +105,7 @@ function getActionIcon($actionType) {
     <div class="action-history-header">
         <div>
             <h1>Action History</h1>
-            <p style="color: #718096; margin-top: 0.5rem;">
+            <p style="color: var(--color-text-muted); margin-top: 0.5rem;">
                 View your recent actions and activity log
                 <?php if ($ledger): ?>
                     for <strong><?= htmlspecialchars($ledger['name']) ?></strong>
@@ -126,7 +126,7 @@ function getActionIcon($actionType) {
             <div class="icon">📋</div>
             <h3>No Action History</h3>
             <p>Your actions will appear here as you use PGBudget.</p>
-            <p style="font-size: 14px; color: #a0aec0; margin-top: 1rem;">
+            <p style="font-size: 14px; color: var(--color-text-muted); margin-top: 1rem;">
                 Actions are stored for 30 days and can be undone with <kbd>Ctrl+Z</kbd>
             </p>
         </div>
@@ -201,7 +201,7 @@ function getActionIcon($actionType) {
             </div>
         <?php endif; ?>
 
-        <div style="margin-top: 2rem; padding: 1rem; background: #f7fafc; border-radius: 8px; text-align: center; color: #718096; font-size: 14px;">
+        <div style="margin-top: 2rem; padding: 1rem; background: #f7fafc; border-radius: 8px; text-align: center; color: var(--color-text-muted); font-size: 14px;">
             <strong>Note:</strong> Actions are automatically deleted after 30 days.
             Use <kbd>Ctrl+Z</kbd> to undo recent actions.
         </div>

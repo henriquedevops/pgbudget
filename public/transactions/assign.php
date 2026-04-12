@@ -155,7 +155,7 @@ require_once '../../includes/header.php';
                 <div class="form-group">
                     <label for="amount" class="form-label">Amount to Assign *</label>
                     <input type="text" id="amount" name="amount" class="form-input" required
-                           placeholder="0.00 or 0,00"
+                           placeholder="0.00 or 0,00" inputmode="decimal"
                            value="<?= isset($_POST['amount']) ? htmlspecialchars($_POST['amount']) : '' ?>">
                     <?php if ($budget_totals && $budget_totals['left_to_budget'] > 0): ?>
                         <small class="form-help">
@@ -291,7 +291,7 @@ require_once '../../includes/header.php';
 
 .assignment-help h3 {
     margin-bottom: 1.5rem;
-    color: #2d3748;
+    color: var(--color-text-primary);
 }
 
 .help-content {
@@ -301,7 +301,7 @@ require_once '../../includes/header.php';
 }
 
 .help-item h4 {
-    color: #2d3748;
+    color: var(--color-text-primary);
     margin-bottom: 0.5rem;
 }
 
