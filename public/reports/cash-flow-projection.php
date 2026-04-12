@@ -794,6 +794,12 @@ require_once '../../includes/header.php';
 
     <?php $linkable_cells_js = []; ?>
 
+    <!-- Mobile: toggle to show all months -->
+    <button class="cfp-show-months-toggle" id="cfp-months-toggle" onclick="cfpToggleAllMonths(this)" aria-pressed="false">
+        <i data-lucide="columns-3" aria-hidden="true"></i>
+        Show all months
+    </button>
+
     <!-- Projection Table -->
     <div class="cfp-table-wrapper" id="cfp-table-wrapper">
         <table class="cfp-table" id="cfp-table">
@@ -967,10 +973,10 @@ require_once '../../includes/header.php';
             <tfoot>
                 <tr class="cfp-summary cfp-inflows-row">
                     <td class="cfp-td cfp-td-summary-lbl sticky-1">Total Inflows</td>
-                    <?php foreach ($columns as $col):
+                    <?php foreach ($columns as $i => $col):
                         $val = (int)($col_inflows[$col['key']] ?? 0);
                     ?>
-                        <td class="cfp-td cfp-td-amt cfp-summary-amt <?= $val > 0 ? 'cell-pos' : 'cell-zero' ?>">
+                        <td class="cfp-td cfp-td-amt cfp-summary-amt <?= $val > 0 ? 'cell-pos' : 'cell-zero' ?>" data-col-idx="<?= $i ?>">
                             <?= fmtCents($val) ?>
                         </td>
                     <?php endforeach; ?>
@@ -980,10 +986,10 @@ require_once '../../includes/header.php';
                 </tr>
                 <tr class="cfp-summary cfp-outflows-row">
                     <td class="cfp-td cfp-td-summary-lbl sticky-1">Total Outflows</td>
-                    <?php foreach ($columns as $col):
+                    <?php foreach ($columns as $i => $col):
                         $val = (int)($col_outflows[$col['key']] ?? 0);
                     ?>
-                        <td class="cfp-td cfp-td-amt cfp-summary-amt <?= $val < 0 ? 'cell-neg' : 'cell-zero' ?>">
+                        <td class="cfp-td cfp-td-amt cfp-summary-amt <?= $val < 0 ? 'cell-neg' : 'cell-zero' ?>" data-col-idx="<?= $i ?>">
                             <?= fmtCents($val) ?>
                         </td>
                     <?php endforeach; ?>
@@ -997,11 +1003,11 @@ require_once '../../includes/header.php';
                         Overdue from prev. months
                         <div class="cfp-realized-note cfp-realized-note-block">informational — already counted in past balances</div>
                     </td>
-                    <?php foreach ($columns as $col):
+                    <?php foreach ($columns as $i => $col):
                         $contains_today = in_array($today_month, $col['months']);
                         $val = $contains_today ? $overdue_cents : 0;
                     ?>
-                        <td class="cfp-td cfp-td-amt cfp-summary-amt <?= $val !== 0 ? cellClass($val) : '' ?>">
+                        <td class="cfp-td cfp-td-amt cfp-summary-amt <?= $val !== 0 ? cellClass($val) : '' ?>" data-col-idx="<?= $i ?>">
                             <?= $val !== 0 ? fmtCents($val) : '—' ?>
                         </td>
                     <?php endforeach; ?>
@@ -1564,6 +1570,18 @@ async function cfpDeleteTransaction(uuid, description) {
     }
 
 })();
+</script>
+
+<script>
+function cfpToggleAllMonths(btn) {
+    const wrapper = document.getElementById('cfp-table-wrapper');
+    const isExpanded = wrapper.classList.toggle('show-all-months');
+    btn.setAttribute('aria-pressed', isExpanded);
+    btn.innerHTML = isExpanded
+        ? '<i data-lucide="columns-3" aria-hidden="true"></i> Show 3 months'
+        : '<i data-lucide="columns-3" aria-hidden="true"></i> Show all months';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
 </script>
 
 <?php require_once '../../includes/footer.php'; ?>

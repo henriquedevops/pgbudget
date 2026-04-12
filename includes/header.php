@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="PGBudget - Open-source zero-sum budgeting application with double-entry accounting">
-    <meta name="theme-color" content="#3182ce">
+    <meta name="theme-color" content="#2563eb">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,7 +16,7 @@
     <link rel="manifest" href="/pgbudget/manifest.json">
 
     <!-- Stylesheets -->
-    <?php $cv = '20260321b'; ?>
+    <?php $cv = '20260411a'; ?>
     <link rel="stylesheet" href="/pgbudget/css/core.css?v=<?= $cv ?>">
     <link rel="stylesheet" href="/pgbudget/css/components.css?v=<?= $cv ?>">
 

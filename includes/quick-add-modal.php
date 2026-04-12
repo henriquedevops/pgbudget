@@ -23,7 +23,7 @@
                     <div class="form-group">
                         <label for="qa-amount" class="form-label">Amount *</label>
                         <input type="text" id="qa-amount" name="amount" class="form-input" required
-                               placeholder="0.00" autocomplete="off">
+                               placeholder="0.00" autocomplete="off" inputmode="decimal">
                     </div>
 
                     <div class="form-group">

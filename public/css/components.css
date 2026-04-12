@@ -93,7 +93,7 @@
 }
 
 .undo-notification-info {
-    background: #3182ce;
+    background: var(--color-primary);
 }
 
 .undo-notification-success {
@@ -194,7 +194,7 @@
 }
 
 .action-icon.update {
-    background: #3182ce;
+    background: var(--color-primary);
 }
 
 .action-icon.delete {
@@ -300,7 +300,7 @@
 }
 
 .undo-bar-action {
-    background: #3182ce;
+    background: var(--color-primary);
     border: none;
     color: white;
     padding: 6px 16px;
@@ -512,10 +512,10 @@
     display: inline-block;
     margin-left: 4px;
     cursor: pointer;
-    color: #3182ce;
+    color: var(--color-primary);
     font-weight: bold;
     font-size: 0.9em;
-    border: 1px solid #3182ce;
+    border: 1px solid var(--color-primary);
     border-radius: 50%;
     width: 18px;
     height: 18px;
@@ -878,7 +878,7 @@
    ============================================ */
 
 .keyboard-selected {
-    outline: 3px solid #3182ce !important;
+    outline: 3px solid var(--color-primary) !important;
     outline-offset: 2px;
     background-color: #ebf8ff !important;
     position: relative;
@@ -889,7 +889,7 @@
     content: '▶';
     position: absolute;
     left: -20px;
-    color: #3182ce;
+    color: var(--color-primary);
     font-size: 14px;
     animation: pulse 1.5s infinite;
 }
@@ -1077,7 +1077,7 @@ kbd {
 
 /* Enhanced focus for keyboard navigation */
 :focus-visible {
-    outline: 3px solid #3182ce !important;
+    outline: 3px solid var(--color-primary) !important;
     outline-offset: 2px;
 }
 

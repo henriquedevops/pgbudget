@@ -236,7 +236,7 @@
 
 .mobile-nav-item:hover,
 .mobile-nav-item.active {
-    color: #3182ce;
+    color: var(--color-primary);
 }
 
 .mobile-nav-item .icon {
@@ -297,7 +297,7 @@
 }
 
 .swipe-action-btn.edit {
-    background: #3182ce;
+    background: var(--color-primary);
 }
 
 .swipe-action-btn.edit:hover {
@@ -467,7 +467,7 @@
     justify-content: center;
     width: 60px;
     height: 60px;
-    color: #3182ce;
+    color: var(--color-primary);
     opacity: 0;
     transition: opacity 0.3s, top 0.3s;
 }
@@ -481,7 +481,7 @@
     width: 30px;
     height: 30px;
     border: 3px solid #e2e8f0;
-    border-top-color: #3182ce;
+    border-top-color: var(--color-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -661,7 +661,7 @@
 /* Focus indicators for keyboard navigation */
 @media (max-width: 768px) {
     *:focus {
-        outline: 2px solid #3182ce;
+        outline: 2px solid var(--color-primary);
         outline-offset: 2px;
     }
 }

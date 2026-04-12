@@ -359,7 +359,7 @@ try {
         </div>
     <?php else: ?>
         <!-- Transactions Table -->
-        <div class="transactions-table">
+        <div class="transactions-table mobile-cards">
             <table>
                 <thead>
                     <tr>
@@ -378,16 +378,16 @@ try {
                 <tbody>
                     <?php foreach ($transactions as $txn): ?>
                         <tr class="transaction-row swipeable">
-                            <td class="transaction-checkbox-col">
+                            <td class="transaction-checkbox-col" data-label="">
                                 <input type="checkbox"
                                        class="transaction-checkbox"
                                        data-transaction-uuid="<?= htmlspecialchars($txn['uuid']) ?>">
                             </td>
-                            <td class="date-cell">
+                            <td class="date-cell" data-label="Date">
                                 <?= date('M j, Y', strtotime($txn['date'])) ?>
                                 <small><?= date('g:i A', strtotime($txn['created_at'])) ?></small>
                             </td>
-                            <td class="description-cell" title="<?= htmlspecialchars($txn['description']) ?>">
+                            <td class="description-cell" data-label="Description" title="<?= htmlspecialchars($txn['description']) ?>">
                                 <?= htmlspecialchars($txn['description']) ?>
                                 <?php if (!empty($txn['installment_plan_uuid'])): ?>
                                     <a href="../installments/view.php?ledger=<?= urlencode($ledger_uuid) ?>&plan=<?= urlencode($txn['installment_plan_uuid']) ?>"
@@ -404,25 +404,25 @@ try {
                                     </a>
                                 <?php endif; ?>
                             </td>
-                            <td class="type-cell">
+                            <td class="type-cell" data-label="Type">
                                 <span class="transaction-type <?= $txn['type'] ?>">
                                     <?= ucfirst($txn['type']) ?>
                                 </span>
                             </td>
-                            <td class="account-cell">
+                            <td class="account-cell" data-label="From">
                                 <span class="account-name"><?= htmlspecialchars($txn['debit_account']) ?></span>
                                 <small class="account-type"><?= ucfirst($txn['debit_type']) ?></small>
                             </td>
-                            <td class="account-cell">
+                            <td class="account-cell" data-label="To">
                                 <span class="account-name"><?= htmlspecialchars($txn['credit_account']) ?></span>
                                 <small class="account-type"><?= ucfirst($txn['credit_type']) ?></small>
                             </td>
-                            <td class="amount-cell">
+                            <td class="amount-cell" data-label="Amount">
                                 <span class="amount <?= $txn['type'] === 'inflow' ? 'positive' : 'negative' ?>">
                                     <?= formatCurrency($txn['amount']) ?>
                                 </span>
                             </td>
-                            <td class="actions-cell">
+                            <td class="actions-cell" data-label="Actions">
                                 <a href="edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
                                    class="btn btn-small btn-edit" title="Edit Transaction">✏️</a>
                                 <button class="btn btn-small btn-delete-txn"

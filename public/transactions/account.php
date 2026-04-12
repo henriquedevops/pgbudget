@@ -173,7 +173,7 @@ try {
                 </a>
             </div>
         <?php else: ?>
-            <div class="transactions-table">
+            <div class="transactions-table mobile-cards">
                 <table>
                     <thead>
                         <tr>
@@ -188,28 +188,28 @@ try {
                     <tbody>
                         <?php foreach ($transactions as $transaction): ?>
                             <tr class="transaction-row">
-                                <td class="date-cell">
+                                <td class="date-cell" data-label="Date">
                                     <?= date('M j, Y', strtotime($transaction['date'])) ?>
                                 </td>
-                                <td class="description-cell">
+                                <td class="description-cell" data-label="Description">
                                     <?= htmlspecialchars($transaction['description']) ?>
                                 </td>
-                                <td class="account-cell">
+                                <td class="account-cell" data-label="Account">
                                     <span class="account-name"><?= htmlspecialchars($transaction['other_account_name']) ?></span>
                                     <small class="account-type"><?= ucfirst($transaction['other_account_type']) ?></small>
                                 </td>
-                                <td class="amount-cell">
+                                <td class="amount-cell" data-label="Amount">
                                     <span class="amount <?= $transaction['side'] === 'debit' ? 'debit' : 'credit' ?>">
                                         <?= $transaction['side'] === 'debit' ? '+' : '-' ?><?= formatCurrency($transaction['amount']) ?>
                                     </span>
                                     <small class="side-label"><?= ucfirst($transaction['side']) ?></small>
                                 </td>
-                                <td class="balance-cell">
+                                <td class="balance-cell" data-label="Balance">
                                     <span class="running-balance <?= $transaction['running_balance'] >= 0 ? 'positive' : 'negative' ?>">
                                         <?= formatCurrency($transaction['running_balance']) ?>
                                     </span>
                                 </td>
-                                <td class="actions-cell">
+                                <td class="actions-cell" data-label="Actions">
                                     <a href="edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($transaction['uuid']) ?>" class="btn btn-small btn-edit" title="Edit Transaction">✏️</a>
                                 </td>
                             </tr>

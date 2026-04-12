@@ -278,7 +278,7 @@ require_once '../../includes/header.php';
                 <div class="form-group">
                     <label for="amount" class="form-label">Amount *</label>
                     <input type="text" id="amount" name="amount" class="form-input" required
-                           placeholder="0.00 or 0,00"
+                           placeholder="0.00 or 0,00" inputmode="decimal"
                            value="<?= isset($_POST['amount']) ? htmlspecialchars($_POST['amount']) : '' ?>">
                 </div>
             </div>

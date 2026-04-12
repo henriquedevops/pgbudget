@@ -1,10 +1,24 @@
 /* === style.css === */
 :root {
     /* ---- Brand / Primary ---- */
-    --color-primary:       #2b6cb0;
-    --color-primary-hover: #245a9c;
-    --color-primary-light: #3182ce;
-    --color-primary-bg:    #ebf8ff;
+    --color-primary:       #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-primary-light: #3b82f6;
+    --color-primary-bg:    #eff6ff;
+
+    /* ---- Surface & Border tokens ---- */
+    --color-surface:       #ffffff;
+    --color-surface-alt:   #f8fafc;
+    --color-border:        #e2e8f0;
+    --color-text-primary:  #0f172a;
+    --color-text-muted:    #64748b;
+
+    /* ---- Breakpoint scale ---- */
+    --screen-sm:  480px;
+    --screen-md:  768px;
+    --screen-lg:  1024px;
+    --screen-xl:  1280px;
+    --screen-2xl: 1536px;
 
     /* ---- Border Radius Scale ---- */
     --radius-sm:   4px;
@@ -88,7 +102,7 @@ body {
 
 /* Navigation */
 .navbar {
-    background-color: #2b6cb0;
+    background-color: var(--color-primary);
     color: white;
     padding: 1rem 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -214,7 +228,7 @@ body {
 .header h1 {
     font-size: 3rem;
     margin-bottom: 0.5rem;
-    color: #2b6cb0;
+    color: var(--color-primary);
 }
 
 .header p {
@@ -245,7 +259,7 @@ body {
 }
 
 .ledger-card h3 a {
-    color: #2b6cb0;
+    color: var(--color-primary);
     text-decoration: none;
 }
 
@@ -366,7 +380,7 @@ body {
 .form-select:focus,
 .form-textarea:focus {
     outline: none;
-    border-color: #3182ce;
+    border-color: var(--color-primary-light);
     box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
 }
 
@@ -435,6 +449,15 @@ body {
 
 .amount {
     font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.currency,
+.balance-amount,
+.running-balance,
+.amount-cell,
+.balance-cell {
+    font-variant-numeric: tabular-nums;
 }
 
 .progress-bar {
@@ -618,7 +641,7 @@ body {
 
 .message-info {
     background: #ebf8ff;
-    border-left: 4px solid #3182ce;
+    border-left: 4px solid var(--color-primary-light);
     color: #2c5aa0;
 }
 
@@ -754,7 +777,7 @@ body {
 
 .period-form select:focus {
     outline: none;
-    border-color: #3182ce;
+    border-color: var(--color-primary-light);
     box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
 }
 
@@ -1334,7 +1357,7 @@ body {
 
 .mobile-nav-item:hover,
 .mobile-nav-item.active {
-    color: #3182ce;
+    color: var(--color-primary-light);
 }
 
 .mobile-nav-item .icon {
@@ -1389,7 +1412,7 @@ body {
 }
 
 .swipe-action-btn.edit {
-    background: #3182ce;
+    background: var(--color-primary-light);
 }
 
 .swipe-action-btn.edit:hover {
@@ -1559,7 +1582,7 @@ body {
     justify-content: center;
     width: 60px;
     height: 60px;
-    color: #3182ce;
+    color: var(--color-primary-light);
     opacity: 0;
     transition: opacity 0.3s, top 0.3s;
 }
@@ -1573,7 +1596,7 @@ body {
     width: 30px;
     height: 30px;
     border: 3px solid #e2e8f0;
-    border-top-color: #3182ce;
+    border-top-color: var(--color-primary-light);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -1753,7 +1776,7 @@ body {
 /* Focus indicators for keyboard navigation */
 @media (max-width: 768px) {
     *:focus {
-        outline: 2px solid #3182ce;
+        outline: 2px solid var(--color-primary-light);
         outline-offset: 2px;
     }
 }
@@ -1904,7 +1927,7 @@ body {
     border: 1px solid #bee3f8;
     border-radius: var(--radius-md);
     padding: 1rem;
-    color: #2b6cb0;
+    color: var(--color-primary);
     margin-bottom: 1rem;
 }
 .warning-box {
@@ -1944,5 +1967,69 @@ body {
     .main-content > .container,
     .page-content {
         animation: none;
+    }
+}
+
+/* =====================================================
+   Tabular numerals for all monetary table cells
+   ===================================================== */
+.table td.amount-cell,
+.table td.balance-cell,
+.table td.date-cell,
+td.amount-cell,
+td.balance-cell {
+    font-variant-numeric: tabular-nums;
+}
+
+/* =====================================================
+   Dark mode token layer
+   ===================================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-surface:      #0f172a;
+        --color-surface-alt:  #1e293b;
+        --color-border:       #334155;
+        --color-text-primary: #f1f5f9;
+        --color-text-muted:   #94a3b8;
+        --color-primary:      #3b82f6;
+        --color-primary-hover:#2563eb;
+        --color-primary-bg:   #1e3a5f;
+        --gray-50:  #1e293b;
+        --gray-100: #334155;
+        --gray-300: #475569;
+        --gray-500: #94a3b8;
+        --gray-700: #cbd5e1;
+        --gray-900: #f1f5f9;
+    }
+
+    body {
+        color: var(--color-text-primary);
+        background-color: var(--color-surface-alt);
+    }
+
+    .ledger-card,
+    .stat-item,
+    .plan-card,
+    .card,
+    .modal-content,
+    .bulk-modal-content {
+        background: var(--color-surface);
+        border-color: var(--color-border);
+        color: var(--color-text-primary);
+    }
+
+    .table th,
+    .table td {
+        border-color: var(--color-border);
+        color: var(--color-text-primary);
+    }
+
+    .table thead th {
+        background-color: var(--color-surface-alt);
+    }
+
+    .transactions-table.mobile-cards tr {
+        background: var(--color-surface);
+        border-color: var(--color-border);
     }
 }

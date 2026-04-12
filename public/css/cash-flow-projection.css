@@ -983,3 +983,100 @@
 .cfp-detail {
     cursor: default;
 }
+
+/* ============================================
+   MOBILE CARD LAYOUT  (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+    /* Let the table scroll horizontally on small screens
+       rather than forcing a complex card reflow.
+       The sticky first column keeps the description visible. */
+    .cfp-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        /* Show a scroll shadow hint */
+        background:
+            linear-gradient(to right, white 30%, rgba(255,255,255,0)) left/40px 100% no-repeat,
+            linear-gradient(to left,  white 30%, rgba(255,255,255,0)) right/40px 100% no-repeat,
+            linear-gradient(to right, rgba(0,0,0,.08) 0%, transparent 100%) left/8px 100% no-repeat,
+            linear-gradient(to left,  rgba(0,0,0,.08) 0%, transparent 100%) right/8px 100% no-repeat;
+        background-attachment: local, local, scroll, scroll;
+    }
+
+    /* Shrink the description column so more months are visible */
+    .cfp-th-desc,
+    .cfp-td-desc,
+    .cfp-td-sublabel {
+        min-width: 130px;
+        max-width: 160px;
+        font-size: 0.78rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Tighten month column widths */
+    .cfp-th-month,
+    .cfp-td-amt {
+        min-width: 72px;
+        padding: 6px 6px;
+        font-size: 0.78rem;
+    }
+
+    /* Shrink header typography */
+    .cfp-th {
+        font-size: 0.72rem;
+        padding: 6px 6px;
+    }
+
+    /* Tighten group headers */
+    .cfp-group-hdr-cell {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+
+    /* Reduce controls font */
+    .cfp-controls-row label,
+    .cfp-controls-row select,
+    .cfp-controls-row input {
+        font-size: 0.875rem;
+    }
+
+    /* Hide month columns beyond index 2 (keep 3 months visible initially) */
+    .cfp-th-month[data-col-idx]:not([data-col-idx="0"]):not([data-col-idx="1"]):not([data-col-idx="2"]),
+    .cfp-td-amt[data-col-idx]:not([data-col-idx="0"]):not([data-col-idx="1"]):not([data-col-idx="2"]) {
+        display: none;
+    }
+
+    /* When user opts into showing all months */
+    .cfp-table-wrapper.show-all-months .cfp-th-month[data-col-idx],
+    .cfp-table-wrapper.show-all-months .cfp-td-amt[data-col-idx] {
+        display: table-cell;
+    }
+}
+
+/* Toggle button to show all months on mobile */
+.cfp-show-months-toggle {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .cfp-show-months-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: var(--color-primary-bg);
+        color: var(--color-primary);
+        border: 1px solid var(--color-primary-light);
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        cursor: pointer;
+        margin-bottom: 0.75rem;
+    }
+
+    .cfp-show-months-toggle:hover {
+        background: var(--color-primary-bg);
+        border-color: var(--color-primary);
+    }
+}

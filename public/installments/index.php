@@ -214,7 +214,7 @@ require_once '../../includes/header.php';
             </div>
         <?php else: ?>
             <!-- Plans Table -->
-            <div class="plans-section">
+            <div class="plans-section transactions-table mobile-cards">
                 <table class="table plans-table">
                     <thead>
                         <tr>
@@ -238,7 +238,7 @@ require_once '../../includes/header.php';
                             $remaining = floatval($plan['remaining_amount'] ?? 0);
                             ?>
                             <tr class="plan-row plan-status-<?= strtolower($plan['status']) ?>">
-                                <td>
+                                <td data-label="Description">
                                     <a href="view.php?ledger=<?= $ledger_uuid ?>&plan=<?= $plan['uuid'] ?>" class="plan-name">
                                         <strong><?= htmlspecialchars($plan['description']) ?></strong>
                                     </a>
@@ -246,22 +246,22 @@ require_once '../../includes/header.php';
                                         Purchase: <?= date('M j, Y', strtotime($plan['purchase_date'])) ?>
                                     </small>
                                 </td>
-                                <td><?= htmlspecialchars($plan['credit_card_name']) ?></td>
-                                <td>
+                                <td data-label="Credit Card"><?= htmlspecialchars($plan['credit_card_name']) ?></td>
+                                <td data-label="Category">
                                     <?php if ($plan['category_name']): ?>
                                         <?= htmlspecialchars($plan['category_name']) ?>
                                     <?php else: ?>
                                         <span class="text-muted">Not assigned</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="amount"><?= formatCurrency($plan['purchase_amount']) ?></td>
-                                <td>
+                                <td class="amount" data-label="Total"><?= formatCurrency($plan['purchase_amount']) ?></td>
+                                <td data-label="Payment">
                                     <strong><?= formatCurrency($plan['installment_amount']) ?></strong>
                                     <br><small class="text-muted">
                                         <?= ucfirst($plan['frequency']) ?>
                                     </small>
                                 </td>
-                                <td>
+                                <td data-label="Progress">
                                     <div class="progress-info">
                                         <div class="progress-text">
                                             <?= $plan['completed_installments'] ?>/<?= $plan['number_of_installments'] ?>
@@ -277,7 +277,7 @@ require_once '../../includes/header.php';
                                         <?php endif; ?>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Next Due">
                                     <?php if ($plan['next_due_date']): ?>
                                         <?= date('M j, Y', strtotime($plan['next_due_date'])) ?>
                                         <?php
@@ -297,12 +297,12 @@ require_once '../../includes/header.php';
                                         <span class="text-muted">—</span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="status-badge status-<?= strtolower($plan['status']) ?>">
                                         <?= ucfirst($plan['status']) ?>
                                     </span>
                                 </td>
-                                <td class="actions">
+                                <td class="actions" data-label="Actions">
                                     <a href="view.php?ledger=<?= $ledger_uuid ?>&plan=<?= $plan['uuid'] ?>"
                                        class="btn-action" title="View Details">
                                         👁️ View
