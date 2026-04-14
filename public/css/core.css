@@ -2001,6 +2001,10 @@ td.balance-cell {
         --gray-500: #94a3b8;
         --gray-700: #cbd5e1;
         --gray-900: #f1f5f9;
+        /* Status row backgrounds — dark mode versions */
+        --success-50: #052e16;
+        --warning-50: #451a03;
+        --danger-50:  #450a0a;
     }
 
     body {
@@ -2019,6 +2023,10 @@ td.balance-cell {
         color: var(--color-text-primary);
     }
 
+    .table {
+        background: var(--color-surface);
+    }
+
     .table th,
     .table td {
         border-color: var(--color-border);
@@ -2026,6 +2034,10 @@ td.balance-cell {
     }
 
     .table thead th {
+        background-color: var(--color-surface-alt);
+    }
+
+    .table tbody tr:hover {
         background-color: var(--color-surface-alt);
     }
 

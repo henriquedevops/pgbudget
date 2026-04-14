@@ -912,6 +912,39 @@ require_once '../../includes/header.php';
     color: var(--color-text-primary);
     font-weight: 600;
 }
+
+@media (prefers-color-scheme: dark) {
+    .budget-summary-card {
+        background: var(--color-surface) !important;
+        border-color: var(--color-border);
+    }
+    .summary-amount.positive { color: #4ade80; }
+    .summary-amount.negative { color: #f87171; }
+    .summary-amount.zero     { color: var(--color-text-muted); }
+
+    .view-toggle {
+        background: var(--color-surface-alt);
+        border-color: var(--color-border);
+    }
+    .view-toggle-btn         { color: var(--color-text-muted); }
+    .view-toggle-btn:hover   { background: var(--color-border); color: var(--color-text-primary); }
+    .view-toggle-btn.active  { background: var(--color-surface); color: #60a5fa; box-shadow: none; }
+
+    .grouped-table .group-header-row {
+        background: var(--color-surface-alt);
+        border-color: var(--color-border);
+    }
+    .group-toggle-btn        { color: var(--color-text-muted); }
+    .no-groups-message       { background: var(--color-surface-alt); color: var(--color-text-muted); }
+
+    .cfp-widget {
+        background: var(--color-surface);
+        border-color: var(--color-border);
+    }
+    .cfp-widget-total { border-color: var(--color-border); }
+    .cfp-widget-total .positive { color: #4ade80; }
+    .cfp-widget-total .negative { color: #f87171; }
+}
 </style>
 
 <?php
