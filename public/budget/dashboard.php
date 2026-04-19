@@ -66,6 +66,7 @@ try {
         SELECT t.uuid, t.date, t.description, t.amount,
                ca.name as credit_account, da.name as debit_account,
                CASE
+                   WHEN t.transaction_type = 'transfer' THEN 'transfer'
                    WHEN da.name = 'Income' THEN 'inflow'
                    ELSE 'outflow'
                END as type
@@ -358,6 +359,8 @@ require_once '../../includes/header.php';
                         <tbody>
                             <?php foreach ($budget_status as $category): ?>
                                 <?php
+                                // Skip auto-created CC Payment categories (same as grouped view)
+                                if (strpos($category['category_name'], 'CC Payment: ') === 0) continue;
                                 $spent_percentage = 0;
                                 if ($category['budgeted'] > 0) {
                                     $spent_percentage = (abs($category['activity']) / $category['budgeted']) * 100;
@@ -643,8 +646,14 @@ require_once '../../includes/header.php';
                                     <div class="transaction-date"><?= date('M j', strtotime($txn['date'])) ?></div>
                                 </div>
                                 <div class="transaction-actions">
-                                    <div class="transaction-amount <?= $txn['type'] === 'inflow' ? 'positive' : 'negative' ?>">
-                                        <?= $txn['type'] === 'inflow' ? '+' : '-' ?><?= formatCurrency($txn['amount']) ?>
+                                    <div class="transaction-amount <?= $txn['type'] === 'inflow' ? 'positive' : ($txn['type'] === 'transfer' ? 'transfer' : 'negative') ?>">
+                                        <?php if ($txn['type'] === 'transfer'): ?>
+                                            ⇄ <?= formatCurrency($txn['amount']) ?>
+                                        <?php elseif ($txn['type'] === 'inflow'): ?>
+                                            +<?= formatCurrency($txn['amount']) ?>
+                                        <?php else: ?>
+                                            -<?= formatCurrency($txn['amount']) ?>
+                                        <?php endif; ?>
                                     </div>
                                     <a href="../transactions/edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>" class="btn btn-small btn-edit" title="Edit Transaction">✏️</a>
                                 </div>
@@ -692,6 +701,10 @@ require_once '../../includes/header.php';
 .summary-amount.zero {
     color: #4a5568;
 }
+.transaction-amount { font-weight: 600; }
+.transaction-amount.positive { color: #166534; }
+.transaction-amount.negative { color: #991b1b; }
+.transaction-amount.transfer { color: #6b21a8; }
 
 /* Category View Toggle Styles */
 .categories-header {
@@ -911,6 +924,8 @@ require_once '../../includes/header.php';
 .category-name {
     color: var(--color-text-primary);
     font-weight: 600;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -944,6 +959,7 @@ require_once '../../includes/header.php';
     .cfp-widget-total { border-color: var(--color-border); }
     .cfp-widget-total .positive { color: #4ade80; }
     .cfp-widget-total .negative { color: #f87171; }
+    .transaction-amount.transfer { color: #c084fc; }
 }
 </style>
 

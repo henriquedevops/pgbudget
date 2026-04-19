@@ -189,6 +189,7 @@ QuickAddModal = (function() {
         document.getElementById('qa-description').value = '';
         document.getElementById('qa-payee').value = '';
         document.getElementById('qa-save-and-add').checked = false;
+        document.getElementById('qa-destination').value = '';
 
         // Reset type to outflow
         setTransactionType('outflow');
@@ -217,22 +218,35 @@ QuickAddModal = (function() {
     }
 
     /**
-     * Update category label based on type
+     * Update category/destination visibility based on type
      */
     function updateCategoryLabel() {
         const type = document.getElementById('qa-type').value;
-        const categoryLabel = document.querySelector('label[for="qa-category"]');
-        const categoryHelp = document.getElementById('qa-category-help');
-        const categorySelect = document.getElementById('qa-category');
+        const categoryGroup      = document.getElementById('qa-category-group');
+        const categoryLabel      = document.querySelector('label[for="qa-category"]');
+        const categoryHelp       = document.getElementById('qa-category-help');
+        const categorySelect     = document.getElementById('qa-category');
+        const destinationGroup   = document.getElementById('qa-destination-group');
+        const destinationSelect  = document.getElementById('qa-destination');
 
-        if (type === 'inflow') {
-            categoryLabel.textContent = 'Category';
-            categoryHelp.textContent = 'Leave blank for Income account';
+        if (type === 'transfer') {
+            categoryGroup.style.display = 'none';
             categorySelect.required = false;
+            destinationGroup.style.display = 'block';
+            destinationSelect.required = true;
         } else {
-            categoryLabel.textContent = 'Category *';
-            categoryHelp.textContent = 'Choose the budget category for this expense';
-            categorySelect.required = true;
+            categoryGroup.style.display = 'block';
+            destinationGroup.style.display = 'none';
+            destinationSelect.required = false;
+            if (type === 'inflow') {
+                categoryLabel.textContent = 'Category';
+                categoryHelp.textContent = 'Leave blank for Income account';
+                categorySelect.required = false;
+            } else {
+                categoryLabel.textContent = 'Category *';
+                categoryHelp.textContent = 'Choose the budget category for this expense';
+                categorySelect.required = true;
+            }
         }
     }
 
@@ -326,21 +340,26 @@ QuickAddModal = (function() {
 
         // Get form data
         const formData = new FormData(form);
+        const type = formData.get('type');
         const data = {
-            ledger_uuid: formData.get('ledger_uuid'),
-            type: formData.get('type'),
-            amount: formData.get('amount'),
-            date: formData.get('date'),
-            description: formData.get('description'),
-            payee: formData.get('payee') || null,
-            account: formData.get('account'),
-            category: formData.get('category') || null
+            ledger_uuid:       formData.get('ledger_uuid'),
+            type:              type,
+            amount:            formData.get('amount'),
+            date:              formData.get('date'),
+            description:       formData.get('description'),
+            payee:             formData.get('payee') || null,
+            account:           formData.get('account'),
+            category:          formData.get('category') || null,
+            destination_account: formData.get('destination_account') || null,
+            source_account:    formData.get('account')
         };
 
         const saveAndAdd = document.getElementById('qa-save-and-add').checked;
 
-        // Check credit limit if this is a credit card outflow (Phase 5)
-        if (data.type === 'outflow') {
+        // Transfers skip credit-limit check
+        if (type === 'transfer') {
+            proceedWithSubmit(data, saveAndAdd);
+        } else if (type === 'outflow') {
             checkCreditLimit(data.account, data.amount, function(limitWarning) {
                 if (limitWarning) {
                     showLimitWarning(limitWarning, function(proceed) {
@@ -527,19 +546,19 @@ QuickAddModal = (function() {
      * Validate form
      */
     function validateForm() {
-        const amount = document.getElementById('qa-amount').value;
+        const amount      = document.getElementById('qa-amount').value;
         const description = document.getElementById('qa-description').value;
-        const account = document.getElementById('qa-account').value;
-        const date = document.getElementById('qa-date').value;
-        const type = document.getElementById('qa-type').value;
-        const category = document.getElementById('qa-category').value;
+        const account     = document.getElementById('qa-account').value;
+        const date        = document.getElementById('qa-date').value;
+        const type        = document.getElementById('qa-type').value;
+        const category    = document.getElementById('qa-category').value;
+        const destination = document.getElementById('qa-destination').value;
 
         if (!amount || !description || !account || !date) {
             showError('Please fill in all required fields.');
             return false;
         }
 
-        // Validate amount
         const normalizedAmount = amount.replace(',', '.');
         const numAmount = parseFloat(normalizedAmount);
         if (isNaN(numAmount) || numAmount <= 0) {
@@ -547,8 +566,16 @@ QuickAddModal = (function() {
             return false;
         }
 
-        // Validate category for outflows
-        if (type === 'outflow' && !category) {
+        if (type === 'transfer') {
+            if (!destination) {
+                showError('Please select a destination account.');
+                return false;
+            }
+            if (account === destination) {
+                showError('Source and destination accounts must be different.');
+                return false;
+            }
+        } else if (type === 'outflow' && !category) {
             showError('Please select a category for this expense.');
             return false;
         }
@@ -561,7 +588,10 @@ QuickAddModal = (function() {
      */
     function submitTransaction(data, callback) {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/pgbudget/api/quick-add-transaction.php', true);
+        const endpoint = data.type === 'transfer'
+            ? '/pgbudget/api/add-transfer.php'
+            : '/pgbudget/api/quick-add-transaction.php';
+        xhr.open('POST', endpoint, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
 
         xhr.onload = function() {
@@ -633,18 +663,21 @@ QuickAddModal = (function() {
     }
 
     /**
-     * Populate account select
+     * Populate account selects (source + destination)
      */
     function populateAccountSelect() {
-        const select = document.getElementById('qa-account');
-        select.innerHTML = '<option value="">Choose account...</option>';
+        const buildOptions = (select) => {
+            select.innerHTML = '<option value="">Choose account...</option>';
+            accounts.forEach(account => {
+                const option = document.createElement('option');
+                option.value = account.uuid;
+                option.textContent = `${account.name} (${account.type})`;
+                select.appendChild(option);
+            });
+        };
 
-        accounts.forEach(account => {
-            const option = document.createElement('option');
-            option.value = account.uuid;
-            option.textContent = `${account.name} (${account.type})`;
-            select.appendChild(option);
-        });
+        buildOptions(document.getElementById('qa-account'));
+        buildOptions(document.getElementById('qa-destination'));
     }
 
     /**

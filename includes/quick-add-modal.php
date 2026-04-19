@@ -15,6 +15,7 @@
                     <div class="type-toggle">
                         <button type="button" class="type-btn" data-type="outflow">Expense</button>
                         <button type="button" class="type-btn" data-type="inflow">Income</button>
+                        <button type="button" class="type-btn" data-type="transfer">Transfer</button>
                     </div>
                     <input type="hidden" id="qa-type" name="type" value="outflow">
                 </div>
@@ -62,12 +63,20 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="qa-category-group">
                     <label for="qa-category" class="form-label">Category</label>
                     <select id="qa-category" name="category" class="form-select">
                         <option value="">Choose category...</option>
                     </select>
                     <small class="form-help" id="qa-category-help">Leave blank for Income account</small>
+                </div>
+
+                <div class="form-group" id="qa-destination-group" style="display: none;">
+                    <label for="qa-destination" class="form-label">Destination Account *</label>
+                    <select id="qa-destination" name="destination_account" class="form-select">
+                        <option value="">Choose destination...</option>
+                    </select>
+                    <small class="form-help">Where the funds are going</small>
                 </div>
 
                 <div class="form-group checkbox-group">
@@ -103,11 +112,13 @@
     justify-content: center;
     z-index: 9999;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.2s ease;
 }
 
 .modal-overlay.active {
     opacity: 1;
+    pointer-events: auto;
 }
 
 /* Modal Container */
@@ -216,6 +227,12 @@
     border-color: #e53e3e;
     background: #fff5f5;
     color: #742a2a;
+}
+
+.type-btn[data-type="transfer"].active {
+    border-color: #805ad5;
+    background: #faf5ff;
+    color: #44337a;
 }
 
 /* Date Quick Select */
