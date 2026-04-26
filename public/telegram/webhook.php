@@ -425,10 +425,12 @@ function handle_record_transaction(int $chat_id, string $text, array $data, arra
     $category_uuid = !empty($data['category_uuid']) ? $data['category_uuid'] : null;
 
     try {
+        // Use utils.add_transaction with allow_overspending=true — the bot records
+        // real past transactions so budget category limits must not block them.
         $stmt = $db->prepare("
-            SELECT api.add_transaction(
+            SELECT utils.add_transaction(
                 ?::text, ?::date, ?::text, ?::text, ?::bigint, ?::text,
-                ?::text, NULL::text, NULL::text
+                ?::text, NULL::text, true::boolean
             )
         ");
         $stmt->execute([$ledger_uuid, $data['date'], $data['description'],
@@ -737,7 +739,7 @@ function fetch_categories(PDO $db, string $ledger_uuid): array {
             SELECT uuid, name, type
             FROM api.accounts
             WHERE ledger_uuid = ?
-              AND type IN ('equity', 'expense')
+              AND type = 'equity'
               AND name NOT LIKE 'CC Payment:%'
               AND name NOT IN ('Unassigned', 'Off-budget', 'temp', 'INSS', 'IRPF',
                                'Previdencia Privada', 'Interest', 'Taxes&amp;Interests')
