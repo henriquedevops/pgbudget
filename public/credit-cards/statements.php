@@ -279,11 +279,11 @@ require_once '../../includes/header.php';
                                 <span class="summary-label">Status</span>
                                 <span class="summary-value">
                                     <?php if ($isPastDue): ?>
-                                        <span style="color:#e53e3e;">⚠️ Past Due</span>
+                                        <span class="status-past-due">⚠️ Past Due</span>
                                     <?php elseif ($daysUntilDue <= 7): ?>
-                                        <span style="color:#dd6b20;">Due in <?= $daysUntilDue ?> day<?= $daysUntilDue !== 1 ? 's' : '' ?></span>
+                                        <span class="status-due-soon">Due in <?= $daysUntilDue ?> day<?= $daysUntilDue !== 1 ? 's' : '' ?></span>
                                     <?php else: ?>
-                                        <span style="color:#48bb78;">Due in <?= $daysUntilDue ?> days</span>
+                                        <span class="status-on-track">Due in <?= $daysUntilDue ?> days</span>
                                     <?php endif; ?>
                                 </span>
                             </div>
@@ -296,7 +296,7 @@ require_once '../../includes/header.php';
                                 <div class="transaction-summary-row <?= $tx['row_type'] === 'installment' ? 'installment-row' : '' ?>">
                                     <span>
                                         <?php if ($tx['row_type'] === 'installment'): ?>
-                                            <em style="color:#888;font-size:.8em;">installment</em>
+                                            <em class="installment-label">installment</em>
                                         <?php endif; ?>
                                         <?= date('M j', strtotime($tx['date'])) ?> — <?= htmlspecialchars($tx['description']) ?>
                                     </span>

@@ -379,7 +379,7 @@ require_once '../../includes/header.php';
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid var(--color-border);
 }
 
 .page-title h1 {
@@ -411,21 +411,22 @@ require_once '../../includes/header.php';
 }
 
 .btn-primary {
-    background: #3182ce;
+    background: var(--color-primary);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #2c5282;
+    background: var(--color-primary-hover);
 }
 
 .btn-secondary {
-    background: #e2e8f0;
+    background: var(--color-surface-alt);
     color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-    background: #cbd5e0;
+    background: var(--color-border);
 }
 
 .btn-success {
@@ -483,8 +484,8 @@ require_once '../../includes/header.php';
 .details-section,
 .progress-section,
 .schedule-section {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 24px;
     margin-bottom: 24px;
@@ -497,7 +498,7 @@ require_once '../../includes/header.php';
     margin-bottom: 20px;
     font-size: 1.25rem;
     color: var(--color-text-primary);
-    border-bottom: 2px solid #3182ce;
+    border-bottom: 2px solid var(--color-primary);
     padding-bottom: 8px;
 }
 
@@ -530,13 +531,14 @@ require_once '../../includes/header.php';
 .amount-large {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #3182ce;
+    color: var(--color-primary);
 }
 
 .detail-notes {
     margin-top: 20px;
     padding: 16px;
-    background: #f7fafc;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
 }
 
@@ -546,7 +548,7 @@ require_once '../../includes/header.php';
 
 .detail-notes p {
     margin: 8px 0 0 0;
-    color: #4a5568;
+    color: var(--color-text-muted);
 }
 
 .progress-cards {
@@ -557,8 +559,8 @@ require_once '../../includes/header.php';
 }
 
 .progress-card {
-    background: #f7fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 16px;
     text-align: center;
@@ -581,11 +583,11 @@ require_once '../../includes/header.php';
 }
 
 .amount-positive {
-    color: #48bb78;
+    color: #16a34a;
 }
 
 .amount-negative {
-    color: #e53e3e;
+    color: #dc2626;
 }
 
 .progress-card-hint {
@@ -608,7 +610,7 @@ require_once '../../includes/header.php';
 .progress-bar-container {
     width: 100%;
     height: 24px;
-    background: #e2e8f0;
+    background: var(--color-border);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -621,10 +623,10 @@ require_once '../../includes/header.php';
 
 .next-payment-info {
     padding: 16px;
-    background: #ebf8ff;
-    border: 2px solid #3182ce;
+    background: var(--color-primary-bg);
+    border: 2px solid var(--color-primary);
     border-radius: 8px;
-    color: #2c5282;
+    color: var(--color-text-primary);
     font-size: 14px;
 }
 
@@ -633,7 +635,7 @@ require_once '../../includes/header.php';
 }
 
 .text-danger {
-    color: #e53e3e;
+    color: #dc2626;
     font-weight: 600;
 }
 
@@ -647,8 +649,8 @@ require_once '../../includes/header.php';
 }
 
 .table thead {
-    background: #f7fafc;
-    border-bottom: 2px solid #e2e8f0;
+    background: var(--color-surface-alt);
+    border-bottom: 2px solid var(--color-border);
 }
 
 .table th {
@@ -663,11 +665,12 @@ require_once '../../includes/header.php';
 
 .table td {
     padding: 16px 12px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-primary);
 }
 
 .table tbody tr:hover {
-    background: #f7fafc;
+    background: var(--color-surface-alt);
 }
 
 .schedule-row.overdue {
@@ -676,7 +679,7 @@ require_once '../../includes/header.php';
 
 .installment-number {
     font-weight: 700;
-    color: #3182ce;
+    color: var(--color-primary);
 }
 
 .amount {
@@ -693,35 +696,12 @@ require_once '../../includes/header.php';
     letter-spacing: 0.5px;
 }
 
-.status-active {
-    background: #c6f6d5;
-    color: #22543d;
-}
-
-.status-completed {
-    background: #bee3f8;
-    color: #2c5282;
-}
-
-.status-cancelled {
-    background: #fed7d7;
-    color: #742a2a;
-}
-
-.status-scheduled {
-    background: #fef5e7;
-    color: #92400e;
-}
-
-.status-processed {
-    background: #c6f6d5;
-    color: #22543d;
-}
-
-.status-skipped {
-    background: #e2e8f0;
-    color: #4a5568;
-}
+.status-active    { background: #c6f6d5; color: #22543d; }
+.status-completed { background: #bee3f8; color: #2c5282; }
+.status-cancelled { background: #fed7d7; color: #742a2a; }
+.status-scheduled { background: #fef5e7; color: #92400e; }
+.status-processed { background: #c6f6d5; color: #22543d; }
+.status-skipped   { background: var(--color-surface-alt); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 
 .actions {
     white-space: nowrap;
@@ -729,7 +709,7 @@ require_once '../../includes/header.php';
 
 .btn-process {
     padding: 8px 16px;
-    background: #3182ce;
+    background: var(--color-primary);
     color: white;
     border: none;
     border-radius: 6px;
@@ -740,19 +720,19 @@ require_once '../../includes/header.php';
 }
 
 .btn-process:hover {
-    background: #2c5282;
+    background: var(--color-primary-hover);
 }
 
 .btn-process[data-overdue="true"] {
-    background: #e53e3e;
+    background: #dc2626;
 }
 
 .btn-process[data-overdue="true"]:hover {
-    background: #c53030;
+    background: #b91c1c;
 }
 
 .btn-link {
-    color: #3182ce;
+    color: var(--color-primary);
     text-decoration: none;
     font-size: 13px;
 }
@@ -802,6 +782,31 @@ require_once '../../includes/header.php';
     .table td {
         padding: 8px 6px;
     }
+}
+
+@media (prefers-color-scheme: dark) {
+    .alert-warning  { background: #451a03; border-color: #f59e0b; color: #fcd34d; }
+    .alert-success  { background: #052e16; border-color: #10b981; color: #4ade80; }
+    .alert-danger   { background: #450a0a; border-color: #ef4444; color: #fca5a5; }
+
+    .status-active    { background: #052e16; color: #4ade80; }
+    .status-completed { background: #1e3a5f; color: #93c5fd; }
+    .status-cancelled { background: #450a0a; color: #fca5a5; }
+    .status-scheduled { background: #451a03; color: #fcd34d; }
+    .status-processed { background: #052e16; color: #4ade80; }
+
+    .schedule-row.overdue { background: #450a0a; }
+
+    .amount-positive { color: #4ade80; }
+    .amount-negative { color: #f87171; }
+    .text-danger     { color: #f87171; }
+
+    .danger-zone {
+        background: #450a0a;
+        border-color: #f87171;
+    }
+    .danger-zone h3 { color: #fca5a5; }
+    .danger-zone p  { color: #fecaca; }
 }
 </style>
 

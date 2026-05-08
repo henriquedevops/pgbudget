@@ -171,9 +171,9 @@ require_once '../../includes/header.php';
                     </span>
                 </div>
                 <?php if ($cards_near_limit > 0): ?>
-                    <div class="credit-stat" style="border-left-color: #f56565;">
+                    <div class="credit-stat credit-stat--danger">
                         <span class="credit-stat-label">⚠️ Cards Near Limit</span>
-                        <span class="credit-stat-value" style="color: #e53e3e;"><?= $cards_near_limit ?></span>
+                        <span class="credit-stat-value credit-stat-value--danger"><?= $cards_near_limit ?></span>
                     </div>
                 <?php endif; ?>
             </div>

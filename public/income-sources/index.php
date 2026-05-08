@@ -343,39 +343,39 @@ require_once '../../includes/header.php';
 }
 
 .summary-card {
-    background: white;
+    background: var(--color-surface);
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     text-align: center;
 }
 
 .summary-card-label {
     font-size: 0.875rem;
-    color: #666;
+    color: var(--color-text-muted);
     margin-bottom: 0.5rem;
 }
 
 .summary-card-value {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #333;
+    color: var(--color-text-primary);
 }
 
-.summary-card-value.positive { color: #2e7d32; }
-.summary-card-value.negative { color: #d32f2f; }
+.summary-card-value.positive { color: #16a34a; }
+.summary-card-value.negative { color: #dc2626; }
 
 .tab-nav {
     display: flex;
     gap: 0;
     margin-bottom: 2rem;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--color-border);
 }
 
 .tab-link {
     padding: 0.75rem 1.5rem;
     text-decoration: none;
-    color: #666;
+    color: var(--color-text-muted);
     font-weight: 500;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
@@ -383,54 +383,56 @@ require_once '../../includes/header.php';
 }
 
 .tab-link:hover {
-    color: #333;
-    background: #f5f5f5;
+    color: var(--color-text-primary);
+    background: var(--color-surface-alt);
 }
 
 .tab-link.active {
-    color: #0066cc;
-    border-bottom-color: #0066cc;
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
 }
 
 .income-section {
-    background: white;
+    background: var(--color-surface);
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     margin-bottom: 1.5rem;
 }
 
 .section-header {
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--color-border);
 }
 
 .section-header h2 {
     margin: 0;
     font-size: 1.25rem;
-    color: #333;
+    color: var(--color-text-primary);
 }
 
 .income-table { width: 100%; }
 
 .income-table th {
-    background: #f5f5f5;
+    background: var(--color-surface-alt);
     font-weight: 600;
     padding: 0.75rem;
     text-align: left;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--color-border);
     font-size: 0.875rem;
+    color: var(--color-text-primary);
 }
 
 .income-table td {
     padding: 0.75rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border);
     font-size: 0.875rem;
+    color: var(--color-text-primary);
 }
 
-.income-table tr:hover { background: #f9f9f9; }
-.income-table tr.inactive { opacity: 0.6; }
+.income-table tr:hover { background: var(--color-surface-alt); }
+.income-table tr.inactive { opacity: 0.55; }
 
 .income-type-badge,
 .deduction-type-badge {
@@ -442,21 +444,23 @@ require_once '../../includes/header.php';
     white-space: nowrap;
 }
 
-.type-salary { background: #e8f5e9; color: #2e7d32; }
-.type-bonus { background: #fff3e0; color: #f57c00; }
-.type-benefit { background: #e3f2fd; color: #1976d2; }
-.type-freelance { background: #f3e5f5; color: #7b1fa2; }
-.type-rental { background: #e0f2f1; color: #00796b; }
-.type-investment { background: #fce4ec; color: #c2185b; }
-.type-other { background: #f5f5f5; color: #616161; }
+/* Income type badges — light mode */
+.type-salary      { background: #dcfce7; color: #166534; }
+.type-bonus       { background: #fff7ed; color: #c2410c; }
+.type-benefit     { background: #dbeafe; color: #1d4ed8; }
+.type-freelance   { background: #f3e8ff; color: #7e22ce; }
+.type-rental      { background: #ccfbf1; color: #0f766e; }
+.type-investment  { background: #fce7f3; color: #9d174d; }
+.type-other       { background: var(--color-surface-alt); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 
-.type-tax { background: #ffebee; color: #c62828; }
-.type-social_security { background: #e3f2fd; color: #1565c0; }
-.type-health_plan { background: #e8f5e9; color: #2e7d32; }
-.type-pension_fund { background: #f3e5f5; color: #7b1fa2; }
-.type-union_dues { background: #fff3e0; color: #ef6c00; }
-.type-donation { background: #e0f2f1; color: #00796b; }
-.type-loan_repayment { background: #fce4ec; color: #c2185b; }
+/* Deduction type badges — light mode */
+.type-tax              { background: #fee2e2; color: #991b1b; }
+.type-social_security  { background: #dbeafe; color: #1e40af; }
+.type-health_plan      { background: #dcfce7; color: #166534; }
+.type-pension_fund     { background: #f3e8ff; color: #7e22ce; }
+.type-union_dues       { background: #fff7ed; color: #c2410c; }
+.type-donation         { background: #ccfbf1; color: #0f766e; }
+.type-loan_repayment   { background: #fce7f3; color: #9d174d; }
 
 .status-badge {
     display: inline-block;
@@ -467,18 +471,18 @@ require_once '../../includes/header.php';
     white-space: nowrap;
 }
 
-.status-active { background: #e8f5e9; color: #2e7d32; }
-.status-inactive { background: #f5f5f5; color: #757575; }
+.status-active   { background: #dcfce7; color: #166534; }
+.status-inactive { background: var(--color-surface-alt); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 
 .actions-cell { white-space: nowrap; }
 
-.text-muted { color: #666; }
+.text-muted { color: var(--color-text-muted); }
 
 .account-link {
     display: inline-block;
     padding: 0.2rem 0.5rem;
-    background: #e8f0fe;
-    color: #1a56a4;
+    background: var(--color-primary-bg);
+    color: var(--color-primary);
     border-radius: 10px;
     font-size: 0.75rem;
     white-space: nowrap;
@@ -487,19 +491,43 @@ require_once '../../includes/header.php';
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
 }
 
-.empty-state h3 { color: #666; margin-bottom: 1rem; }
-.empty-state p { color: #999; margin-bottom: 1rem; }
+.empty-state h3 { color: var(--color-text-muted); margin-bottom: 1rem; }
+.empty-state p  { color: var(--color-text-muted); margin-bottom: 1rem; }
 .empty-state-hint { font-style: italic; }
 
 @media (max-width: 768px) {
     .income-summary-cards { grid-template-columns: repeat(2, 1fr); }
     .income-table-container { overflow-x: auto; }
     .tab-nav { overflow-x: auto; }
+}
+
+@media (prefers-color-scheme: dark) {
+    .summary-card-value.positive { color: #4ade80; }
+    .summary-card-value.negative { color: #f87171; }
+
+    /* Income type badges — dark mode */
+    .type-salary     { background: #052e16; color: #4ade80; }
+    .type-bonus      { background: #431407; color: #fb923c; }
+    .type-benefit    { background: #1e3a5f; color: #60a5fa; }
+    .type-freelance  { background: #3b0764; color: #c084fc; }
+    .type-rental     { background: #042f2e; color: #2dd4bf; }
+    .type-investment { background: #500724; color: #f9a8d4; }
+
+    /* Deduction type badges — dark mode */
+    .type-tax             { background: #450a0a; color: #fca5a5; }
+    .type-social_security { background: #1e3a5f; color: #93c5fd; }
+    .type-health_plan     { background: #052e16; color: #4ade80; }
+    .type-pension_fund    { background: #3b0764; color: #c084fc; }
+    .type-union_dues      { background: #431407; color: #fb923c; }
+    .type-donation        { background: #042f2e; color: #2dd4bf; }
+    .type-loan_repayment  { background: #500724; color: #f9a8d4; }
+
+    .status-active { background: #052e16; color: #4ade80; }
 }
 </style>
 

@@ -3,16 +3,14 @@
  * Phase 6.5: Offline support and caching
  */
 
-const CACHE_VERSION = 'pgbudget-v1.0.3';
+const CACHE_VERSION = 'pgbudget-v1.0.4';
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 const DATA_CACHE_NAME = `${CACHE_VERSION}-data`;
 
 // Only cache truly static assets — never PHP pages (they redirect based on auth state)
 const STATIC_CACHE_FILES = [
-    '/pgbudget/css/style.css',
-    '/pgbudget/css/mobile.css',
-    '/pgbudget/css/modals.css',
-    '/pgbudget/css/bulk-operations.css',
+    '/pgbudget/css/core.css',
+    '/pgbudget/css/components.css',
     '/pgbudget/js/main.js',
     '/pgbudget/js/confirm-modal.js',
     '/pgbudget/js/mobile-gestures.js',

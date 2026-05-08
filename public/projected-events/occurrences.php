@@ -336,50 +336,50 @@ require_once '../../includes/header.php';
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem;
-    background: white;
-    border: 1px solid #e0e0e0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 1.5rem 2rem;
     margin-bottom: 1.5rem;
 }
 .event-summary-item { display: flex; flex-direction: column; gap: 0.25rem; }
-.event-summary-item .label { font-size: 0.75rem; color: #666; text-transform: uppercase; letter-spacing: 0.05em; }
-.event-summary-item .value { font-size: 1rem; font-weight: 600; color: #333; }
-.event-summary-item .value.positive { color: #166534; }
-.event-summary-item .value.negative { color: #991b1b; }
+.event-summary-item .label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.event-summary-item .value { font-size: 1rem; font-weight: 600; color: var(--color-text-primary); }
+.event-summary-item .value.positive { color: #16a34a; }
+.event-summary-item .value.negative { color: #dc2626; }
 
-.occ-table-wrapper { background: white; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
+.occ-table-wrapper { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; }
 .occ-table { width: 100%; border-collapse: collapse; }
 .occ-table thead th {
-    background: #f8f9fa;
+    background: var(--color-surface-alt);
     padding: 0.75rem 1rem;
     text-align: left;
     font-size: 0.8rem;
-    color: #666;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-border);
 }
-.occ-td { padding: 0.85rem 1rem; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.occ-td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--color-border); vertical-align: middle; color: var(--color-text-primary); }
 .occ-row:last-child .occ-td { border-bottom: none; }
 .occ-row.row-realized { background: #f0fdf4; }
 .occ-row.row-past:not(.row-realized) { background: #fff8f0; }
 .occ-row.row-now { background: #eff6ff; }
 
-.occ-amount.positive { color: #166534; font-weight: 500; }
-.occ-amount.negative { color: #991b1b; font-weight: 500; }
+.occ-amount.positive { color: #16a34a; font-weight: 500; }
+.occ-amount.negative { color: #dc2626; font-weight: 500; }
 
-.badge-realized { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; background: #dcfce7; color: #166534; }
+.badge-realized  { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; background: #dcfce7; color: #166534; }
 .badge-projected { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; background: #e0e7ff; color: #3730a3; }
 .badge-overdue   { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; background: #fef3c7; color: #92400e; }
 .badge-now { margin-left: 0.4rem; padding: 0.1rem 0.4rem; border-radius: 99px; font-size: 0.7rem; background: #dbeafe; color: #1e40af; }
 
 .btn-sm { padding: 0.3rem 0.8rem; font-size: 0.85rem; }
 
-.occ-form-row td { padding: 0; border-bottom: 1px solid #e0e0e0; }
+.occ-form-row td { padding: 0; border-bottom: 1px solid var(--color-border); }
 .inline-realize-form {
     padding: 1rem 1.5rem;
-    background: #f8f9fa;
+    background: var(--color-surface-alt);
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
@@ -387,27 +387,50 @@ require_once '../../includes/header.php';
 }
 .form-fields { display: flex; flex-wrap: wrap; gap: 1rem; flex: 1; }
 .form-field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 180px; }
-.form-field label { font-size: 0.8rem; font-weight: 500; color: #555; }
-.form-field label small { font-weight: normal; color: #888; }
+.form-field label { font-size: 0.8rem; font-weight: 500; color: var(--color-text-muted); }
+.form-field label small { font-weight: normal; color: var(--color-text-muted); }
 .form-field input {
     padding: 0.45rem 0.65rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 0.9rem;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
 }
-.form-field input:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 2px rgba(0,102,204,0.12); }
+.form-field input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
 .realized-account-select {
     padding: 0.45rem 0.65rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 0.9rem;
-    background: white;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
     min-width: 220px;
 }
-.realized-account-select:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 2px rgba(0,102,204,0.12); }
+.realized-account-select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
 .form-btns { display: flex; gap: 0.5rem; align-items: flex-end; }
 .req { color: #dc2626; }
-.no-rows { padding: 2rem; text-align: center; color: #999; }
+.no-rows { padding: 2rem; text-align: center; color: var(--color-text-muted); }
+
+@media (prefers-color-scheme: dark) {
+    .alert-warning       { background: #422006; border-color: #d97706; color: #fde68a; }
+    .alert-warning-body  { color: #fde68a; }
+
+    .occ-row.row-realized              { background: #052e16; }
+    .occ-row.row-past:not(.row-realized) { background: #2d1a06; }
+    .occ-row.row-now                   { background: #1e3a5f; }
+
+    .occ-amount.positive { color: #4ade80; }
+    .occ-amount.negative { color: #f87171; }
+
+    .event-summary-item .value.positive { color: #4ade80; }
+    .event-summary-item .value.negative { color: #f87171; }
+
+    .badge-realized  { background: #052e16; color: #4ade80; }
+    .badge-projected { background: #2e1065; color: #c084fc; }
+    .badge-overdue   { background: #422006; color: #fcd34d; }
+    .badge-now       { background: #1e3a5f; color: #93c5fd; }
+}
 </style>
 
 <script>

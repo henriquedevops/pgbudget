@@ -311,7 +311,7 @@ require_once '../../includes/header.php';
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid var(--color-border);
 }
 
 .page-title h1 {
@@ -344,21 +344,22 @@ require_once '../../includes/header.php';
 }
 
 .btn-primary {
-    background: #3182ce;
+    background: var(--color-primary);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #2c5282;
+    background: var(--color-primary-hover);
 }
 
 .btn-secondary {
-    background: #e2e8f0;
+    background: var(--color-surface-alt);
     color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-    background: #cbd5e0;
+    background: var(--color-border);
 }
 
 .btn-large {
@@ -389,9 +390,9 @@ require_once '../../includes/header.php';
 }
 
 .alert-info {
-    background: #ebf8ff;
-    border-color: #3182ce;
-    color: #2c5282;
+    background: var(--color-primary-bg);
+    border-color: var(--color-primary);
+    color: var(--color-text-primary);
 }
 
 .content-grid {
@@ -403,8 +404,8 @@ require_once '../../includes/header.php';
 
 .details-section,
 .processing-section {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 24px;
 }
@@ -415,7 +416,7 @@ require_once '../../includes/header.php';
     margin-bottom: 20px;
     font-size: 1.25rem;
     color: var(--color-text-primary);
-    border-bottom: 2px solid #3182ce;
+    border-bottom: 2px solid var(--color-primary);
     padding-bottom: 8px;
 }
 
@@ -450,7 +451,7 @@ require_once '../../includes/header.php';
 .amount-large {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #3182ce;
+    color: var(--color-primary);
 }
 
 .text-muted {
@@ -460,7 +461,7 @@ require_once '../../includes/header.php';
 .progress-section {
     margin-top: 24px;
     padding-top: 20px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--color-border);
 }
 
 .progress-section h3 {
@@ -482,7 +483,7 @@ require_once '../../includes/header.php';
 .progress-bar-container {
     width: 100%;
     height: 20px;
-    background: #e2e8f0;
+    background: var(--color-border);
     border-radius: 10px;
     overflow: hidden;
 }
@@ -494,7 +495,8 @@ require_once '../../includes/header.php';
 }
 
 .installment-card {
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border);
+    background: var(--color-surface);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 24px;
@@ -507,7 +509,7 @@ require_once '../../includes/header.php';
 
 .installment-card.early {
     border-color: #90cdf4;
-    background: #ebf8ff;
+    background: var(--color-primary-bg);
 }
 
 .installment-card.on-time {
@@ -538,20 +540,9 @@ require_once '../../includes/header.php';
     letter-spacing: 0.5px;
 }
 
-.badge-danger {
-    background: #fed7d7;
-    color: #c53030;
-}
-
-.badge-info {
-    background: #bee3f8;
-    color: #2c5282;
-}
-
-.badge-success {
-    background: #c6f6d5;
-    color: #22543d;
-}
+.badge-danger  { background: #fed7d7; color: #c53030; }
+.badge-info    { background: #bee3f8; color: #2c5282; }
+.badge-success { background: #c6f6d5; color: #22543d; }
 
 .installment-details {
     display: flex;
@@ -578,12 +569,12 @@ require_once '../../includes/header.php';
 .amount-highlight {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #3182ce;
+    color: var(--color-primary);
 }
 
 .preview-box {
-    background: #f7fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 24px;
@@ -600,7 +591,8 @@ require_once '../../includes/header.php';
     gap: 16px;
     margin: 16px 0;
     padding: 16px;
-    background: white;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
 }
 
@@ -641,11 +633,11 @@ require_once '../../includes/header.php';
 }
 
 .transaction-entry.debit .entry-amount {
-    color: #e53e3e;
+    color: #dc2626;
 }
 
 .transaction-entry.credit .entry-amount {
-    color: #48bb78;
+    color: #16a34a;
 }
 
 .transaction-arrow {
@@ -657,11 +649,12 @@ require_once '../../includes/header.php';
 .budget-impact {
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--color-border);
 }
 
 .budget-impact p {
     margin-bottom: 8px;
+    color: var(--color-text-primary);
 }
 
 .budget-impact ul {
@@ -671,7 +664,7 @@ require_once '../../includes/header.php';
 
 .budget-impact li {
     margin-bottom: 8px;
-    color: #4a5568;
+    color: var(--color-text-muted);
 }
 
 .action-section {
@@ -724,6 +717,31 @@ require_once '../../includes/header.php';
         width: 100%;
         text-align: center;
     }
+}
+
+@media (prefers-color-scheme: dark) {
+    .alert-warning { background: #451a03; border-color: #f59e0b; color: #fcd34d; }
+
+    .installment-card.overdue { border-color: #f87171; background: #450a0a; }
+    .installment-card.early   { border-color: #60a5fa; }
+    .installment-card.on-time { border-color: #4ade80; background: #052e16; }
+
+    .badge-danger  { background: #450a0a; color: #fca5a5; }
+    .badge-info    { background: #1e3a5f; color: #93c5fd; }
+    .badge-success { background: #052e16; color: #4ade80; }
+
+    .transaction-entry.debit  { background: #450a0a; border-color: #f87171; }
+    .transaction-entry.credit { background: #052e16; border-color: #4ade80; }
+
+    .transaction-entry.debit .entry-amount  { color: #f87171; }
+    .transaction-entry.credit .entry-amount { color: #4ade80; }
+
+    .notes-section {
+        background: #451a03;
+        border-color: #d97706;
+    }
+    .notes-section strong { color: #fcd34d; }
+    .notes-section p      { color: #fde68a; }
 }
 </style>
 

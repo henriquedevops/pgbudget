@@ -320,18 +320,18 @@ require_once '../../includes/header.php';
 
 <style>
 .section-header { margin-bottom: 1rem; }
-.section-header h2 { font-size: 1.25rem; font-weight: 600; color: #333; }
+.section-header h2 { font-size: 1.25rem; font-weight: 600; color: var(--color-text-primary); }
 
 .installment-progress { display: flex; flex-direction: column; gap: 0.25rem; }
 .progress-bar-wrap {
-    background: #e0e0e0;
+    background: var(--color-border);
     border-radius: 4px;
     height: 6px;
     width: 120px;
     overflow: hidden;
 }
 .progress-bar-fill {
-    background: #1976d2;
+    background: var(--color-primary);
     height: 100%;
     border-radius: 4px;
     transition: width 0.3s;
@@ -345,55 +345,58 @@ require_once '../../includes/header.php';
 }
 
 .summary-card {
-    background: white;
+    background: var(--color-surface);
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     text-align: center;
 }
 
 .summary-card-label {
     font-size: 0.875rem;
-    color: #666;
+    color: var(--color-text-muted);
     margin-bottom: 0.5rem;
 }
 
 .summary-card-value {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #333;
+    color: var(--color-text-primary);
 }
 
-.summary-card-value.positive { color: #2e7d32; }
-.summary-card-value.negative { color: #d32f2f; }
+.summary-card-value.positive { color: #16a34a; }
+.summary-card-value.negative { color: #dc2626; }
 
 .events-table-container {
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
     overflow-x: auto;
+    margin-bottom: 2rem;
 }
 
 .events-table { width: 100%; }
 
 .events-table th {
-    background: #f5f5f5;
+    background: var(--color-surface-alt);
     font-weight: 600;
     padding: 0.75rem;
     text-align: left;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--color-border);
     font-size: 0.875rem;
     white-space: nowrap;
+    color: var(--color-text-primary);
 }
 
 .events-table td {
     padding: 0.75rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border);
     font-size: 0.875rem;
+    color: var(--color-text-primary);
 }
 
-.events-table tr:hover { background: #f9f9f9; }
-.events-table tr.realized { opacity: 0.6; }
+.events-table tr:hover { background: var(--color-surface-alt); }
+.events-table tr.realized { opacity: 0.55; }
 
 .event-type-badge {
     display: inline-block;
@@ -404,15 +407,16 @@ require_once '../../includes/header.php';
     white-space: nowrap;
 }
 
-.type-bonus          { background: #fff3e0; color: #f57c00; }
-.type-tax_refund     { background: #e8f5e9; color: #2e7d32; }
-.type-settlement     { background: #e3f2fd; color: #1976d2; }
-.type-asset_sale     { background: #f3e5f5; color: #7b1fa2; }
-.type-gift           { background: #fce4ec; color: #c2185b; }
-.type-large_purchase { background: #ffebee; color: #c62828; }
-.type-vacation       { background: #e0f2f1; color: #00796b; }
-.type-medical        { background: #fff8e1; color: #f9a825; }
-.type-other          { background: #f5f5f5; color: #616161; }
+/* Event type badges — light mode */
+.type-bonus          { background: #fff7ed; color: #c2410c; }
+.type-tax_refund     { background: #dcfce7; color: #166534; }
+.type-settlement     { background: #dbeafe; color: #1d4ed8; }
+.type-asset_sale     { background: #f3e8ff; color: #7e22ce; }
+.type-gift           { background: #fce7f3; color: #9d174d; }
+.type-large_purchase { background: #fee2e2; color: #991b1b; }
+.type-vacation       { background: #ccfbf1; color: #0f766e; }
+.type-medical        { background: #fef9c3; color: #854d0e; }
+.type-other          { background: var(--color-surface-alt); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 
 .direction-badge {
     display: inline-block;
@@ -423,8 +427,8 @@ require_once '../../includes/header.php';
     white-space: nowrap;
 }
 
-.direction-inflow  { background: #e8f5e9; color: #2e7d32; }
-.direction-outflow { background: #ffebee; color: #c62828; }
+.direction-inflow  { background: #dcfce7; color: #166534; }
+.direction-outflow { background: #fee2e2; color: #991b1b; }
 
 .status-badge {
     display: inline-block;
@@ -435,17 +439,17 @@ require_once '../../includes/header.php';
     white-space: nowrap;
 }
 
-.status-realized  { background: #e8f5e9; color: #2e7d32; }
+.status-realized  { background: #dcfce7; color: #166534; }
 .status-recurring { background: #ede9fe; color: #5b21b6; }
-.status-confirmed { background: #e3f2fd; color: #1565c0; }
-.status-upcoming  { background: #fff3e0; color: #ef6c00; }
-.status-overdue   { background: #ffebee; color: #c62828; }
+.status-confirmed { background: #dbeafe; color: #1e40af; }
+.status-upcoming  { background: #fff7ed; color: #c2410c; }
+.status-overdue   { background: #fee2e2; color: #991b1b; }
 
-.amount.positive { color: #2e7d32; }
-.amount.negative { color: #d32f2f; }
+.amount.positive { color: #16a34a; }
+.amount.negative { color: #dc2626; }
 
-.text-muted     { color: #666; }
-.text-linked    { color: #1976d2; font-style: italic; }
+.text-muted     { color: var(--color-text-muted); }
+.text-linked    { color: var(--color-primary); font-style: italic; }
 .text-recurring { color: #5b21b6; }
 
 .actions-cell { white-space: nowrap; }
@@ -453,17 +457,44 @@ require_once '../../includes/header.php';
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-border);
 }
 
-.empty-state h3 { color: #666; margin-bottom: 1rem; }
-.empty-state p { color: #999; margin-bottom: 1rem; }
+.empty-state h3 { color: var(--color-text-muted); margin-bottom: 1rem; }
+.empty-state p  { color: var(--color-text-muted); margin-bottom: 1rem; }
 .empty-state-hint { font-style: italic; }
 
 @media (max-width: 768px) {
     .event-summary-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (prefers-color-scheme: dark) {
+    .summary-card-value.positive { color: #4ade80; }
+    .summary-card-value.negative { color: #f87171; }
+    .amount.positive { color: #4ade80; }
+    .amount.negative { color: #f87171; }
+
+    .type-bonus          { background: #431407; color: #fb923c; }
+    .type-tax_refund     { background: #052e16; color: #4ade80; }
+    .type-settlement     { background: #1e3a5f; color: #60a5fa; }
+    .type-asset_sale     { background: #3b0764; color: #c084fc; }
+    .type-gift           { background: #500724; color: #f9a8d4; }
+    .type-large_purchase { background: #450a0a; color: #fca5a5; }
+    .type-vacation       { background: #042f2e; color: #2dd4bf; }
+    .type-medical        { background: #422006; color: #fde047; }
+
+    .direction-inflow  { background: #052e16; color: #4ade80; }
+    .direction-outflow { background: #450a0a; color: #fca5a5; }
+
+    .status-realized  { background: #052e16; color: #4ade80; }
+    .status-recurring { background: #2e1065; color: #c084fc; }
+    .status-confirmed { background: #1e3a5f; color: #93c5fd; }
+    .status-upcoming  { background: #431407; color: #fb923c; }
+    .status-overdue   { background: #450a0a; color: #fca5a5; }
+
+    .text-recurring { color: #c084fc; }
 }
 </style>
 

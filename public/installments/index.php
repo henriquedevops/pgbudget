@@ -337,7 +337,7 @@ require_once '../../includes/header.php';
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid var(--color-border);
 }
 
 .page-title h1 {
@@ -369,28 +369,29 @@ require_once '../../includes/header.php';
 }
 
 .btn-primary {
-    background: #3182ce;
+    background: var(--color-primary);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #2c5282;
+    background: var(--color-primary-hover);
 }
 
 .btn-secondary {
-    background: #e2e8f0;
+    background: var(--color-surface-alt);
     color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-    background: #cbd5e0;
+    background: var(--color-border);
 }
 
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    background: #f7fafc;
-    border: 2px dashed #cbd5e0;
+    background: var(--color-surface-alt);
+    border: 2px dashed var(--color-border);
     border-radius: 12px;
     margin-top: 40px;
 }
@@ -417,16 +418,16 @@ require_once '../../includes/header.php';
 }
 
 .stat-card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 20px;
     text-align: center;
 }
 
 .stat-card.highlight {
-    background: #ebf8ff;
-    border: 2px solid #3182ce;
+    background: var(--color-primary-bg);
+    border: 2px solid var(--color-primary);
 }
 
 .stat-label {
@@ -456,7 +457,8 @@ require_once '../../includes/header.php';
     gap: 20px;
     margin-bottom: 20px;
     padding: 16px;
-    background: #f7fafc;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
 }
 
@@ -468,23 +470,24 @@ require_once '../../includes/header.php';
 
 .filter-group label {
     font-weight: 600;
-    color: #4a5568;
+    color: var(--color-text-muted);
     font-size: 14px;
 }
 
 .filter-select {
     padding: 8px 12px;
-    border: 1px solid #cbd5e0;
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     font-size: 14px;
-    background: white;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
     cursor: pointer;
 }
 
 .btn-clear-filters {
     padding: 8px 16px;
-    background: #e2e8f0;
-    border: none;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
@@ -494,20 +497,21 @@ require_once '../../includes/header.php';
 }
 
 .btn-clear-filters:hover {
-    background: #cbd5e0;
+    background: var(--color-border);
 }
 
 .no-results {
     text-align: center;
     padding: 40px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
+    color: var(--color-text-primary);
 }
 
 .plans-section {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -518,8 +522,8 @@ require_once '../../includes/header.php';
 }
 
 .table thead {
-    background: #f7fafc;
-    border-bottom: 2px solid #e2e8f0;
+    background: var(--color-surface-alt);
+    border-bottom: 2px solid var(--color-border);
 }
 
 .table th {
@@ -534,15 +538,16 @@ require_once '../../includes/header.php';
 
 .table td {
     padding: 16px 12px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-primary);
 }
 
 .table tbody tr:hover {
-    background: #f7fafc;
+    background: var(--color-surface-alt);
 }
 
 .plan-name {
-    color: #3182ce;
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: 600;
 }
@@ -556,7 +561,7 @@ require_once '../../includes/header.php';
 }
 
 .text-danger {
-    color: #e53e3e;
+    color: #dc2626;
 }
 
 .amount {
@@ -572,12 +577,13 @@ require_once '../../includes/header.php';
     font-weight: 600;
     margin-bottom: 6px;
     font-size: 14px;
+    color: var(--color-text-primary);
 }
 
 .progress-bar-container {
     width: 100%;
     height: 8px;
-    background: #e2e8f0;
+    background: var(--color-border);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 4px;
@@ -621,8 +627,8 @@ require_once '../../includes/header.php';
 .btn-action {
     padding: 6px 12px;
     margin-right: 4px;
-    border: 1px solid #cbd5e0;
-    background: white;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
     border-radius: 4px;
     font-size: 12px;
     cursor: pointer;
@@ -632,7 +638,7 @@ require_once '../../includes/header.php';
 }
 
 .btn-action:hover {
-    background: #f7fafc;
+    background: var(--color-surface-alt);
 }
 
 .btn-danger {
@@ -667,6 +673,27 @@ require_once '../../includes/header.php';
     .table th,
     .table td {
         padding: 8px 6px;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .text-danger { color: #f87171; }
+
+    .status-active    { background: #052e16; color: #4ade80; }
+    .status-completed { background: #1e3a5f; color: #93c5fd; }
+    .status-cancelled { background: #450a0a; color: #fca5a5; }
+
+    .btn-danger {
+        border-color: #f87171;
+        color: #fca5a5;
+    }
+
+    .btn-danger:hover {
+        background: #450a0a;
+    }
+
+    .progress-bar {
+        background: linear-gradient(90deg, #22c55e, #16a34a);
     }
 }
 </style>

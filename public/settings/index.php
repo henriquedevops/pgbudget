@@ -151,10 +151,11 @@ require_once '../../includes/header.php';
 }
 
 .settings-card {
-    background: white;
+    background: var(--color-surface, white);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
+    border: 1px solid var(--color-border, #e2e8f0);
 }
 
 .card-content {
@@ -182,9 +183,9 @@ require_once '../../includes/header.php';
     align-items: center;
     padding: 1rem;
     margin-bottom: 0.5rem;
-    background: #f7fafc;
+    background: var(--gray-50, #f7fafc);
     border-radius: 6px;
-    border-left: 4px solid #3182ce;
+    border-left: 4px solid var(--color-primary, #3182ce);
 }
 
 .budget-info {
@@ -211,7 +212,7 @@ require_once '../../includes/header.php';
 .section-actions {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--color-border, #e2e8f0);
 }
 
 .user-info {
@@ -221,12 +222,12 @@ require_once '../../includes/header.php';
 .info-row {
     display: flex;
     padding: 0.75rem 0;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-border, #e2e8f0);
 }
 
 .info-label {
     font-weight: 600;
-    color: #4a5568;
+    color: var(--color-text-muted, #4a5568);
     width: 150px;
 }
 
@@ -237,7 +238,7 @@ require_once '../../includes/header.php';
 .empty-state {
     text-align: center;
     padding: 2rem;
-    background: #f7fafc;
+    background: var(--gray-50, #f7fafc);
     border-radius: 6px;
     margin: 1rem 0;
 }

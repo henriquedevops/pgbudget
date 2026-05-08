@@ -2005,6 +2005,10 @@ td.balance-cell {
         --success-50: #052e16;
         --warning-50: #451a03;
         --danger-50:  #450a0a;
+        /* Status text — must be light so amounts are readable on dark row backgrounds */
+        --success-700: #4ade80;
+        --warning-700: #fcd34d;
+        --danger-700:  #f87171;
     }
 
     body {

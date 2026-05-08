@@ -32,7 +32,7 @@
 }
 
 .statement-info-box {
-    background: #f7fafc;
+    background: var(--color-surface-alt);
     border-left: 4px solid #4299e1;
     padding: 1rem;
     border-radius: 6px;
@@ -125,11 +125,53 @@
 }
 
 .settings-section {
-    background: white;
+    background: var(--color-surface);
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2rem;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: 1px solid var(--color-border);
+}
+
+.credit-stat {
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-primary);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.credit-stat-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+.credit-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.credit-stat-value.warning {
+    color: #d97706;
+}
+
+.credit-stat-value.amount.negative {
+    color: #dc2626;
+}
+
+.credit-stat--danger {
+    border-left-color: #dc2626;
+}
+
+.credit-stat-value--danger {
+    color: #dc2626;
 }
 
 .settings-section h3 {
@@ -219,7 +261,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 1rem;
-    background: #f7fafc;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
 }
 
@@ -261,10 +304,11 @@
 }
 
 .statement-card {
-    background: white;
+    background: var(--color-surface);
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--color-border);
     border-left: 4px solid #4299e1;
     transition: all 0.3s ease;
 }
@@ -355,7 +399,8 @@
 }
 
 .statement-detail-section {
-    background: #f7fafc;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
     padding: 1rem;
     border-radius: 8px;
     margin-top: 1rem;
@@ -524,7 +569,7 @@
 }
 
 .limit-warning-content {
-    background: white;
+    background: var(--color-surface);
     border-radius: 16px;
     padding: 2rem;
     max-width: 500px;
@@ -547,7 +592,7 @@
 
 .warning-message {
     text-align: center;
-    color: #4a5568;
+    color: var(--color-text-muted);
     margin-bottom: 1.5rem;
     line-height: 1.6;
 }
@@ -556,4 +601,135 @@
     display: flex;
     gap: 1rem;
     justify-content: center;
+}
+
+/* Statement status text */
+.status-past-due  { color: #dc2626; font-weight: 600; }
+.status-due-soon  { color: #d97706; font-weight: 600; }
+.status-on-track  { color: #16a34a; font-weight: 600; }
+
+.installment-label {
+    color: var(--color-text-muted);
+    font-size: 0.8em;
+}
+
+/* =====================================================
+   Dark mode overrides
+   ===================================================== */
+@media (prefers-color-scheme: dark) {
+    .settings-section h3 {
+        border-bottom-color: var(--color-border);
+    }
+
+    .current-limit-display {
+        background: var(--color-surface-alt);
+    }
+
+    .limit-display-label {
+        color: var(--color-text-muted);
+    }
+
+    .limit-display-value {
+        color: var(--color-text-primary);
+    }
+
+    .statement-card.current-statement {
+        background: var(--color-surface);
+        border-left-color: #22c55e;
+    }
+
+    .statement-header {
+        border-bottom-color: var(--color-border);
+    }
+
+    .statement-period {
+        color: var(--color-text-primary);
+    }
+
+    .statement-status-badge.past {
+        background: var(--color-surface-alt);
+        color: var(--color-text-muted);
+    }
+
+    .statement-status-badge.current {
+        background: #052e16;
+        color: #4ade80;
+    }
+
+    .statement-detail-section h4 {
+        color: var(--color-text-muted);
+    }
+
+    .transaction-summary-row {
+        border-bottom-color: var(--color-border);
+    }
+
+    .payment-preview-box {
+        background: #052e16;
+        border-color: #22c55e;
+    }
+
+    .payment-preview-box h4 {
+        color: #4ade80;
+    }
+
+    .preview-row span:first-child {
+        color: #4ade80;
+    }
+
+    .preview-row span:last-child,
+    .preview-amount {
+        color: #bbf7d0 !important;
+    }
+
+    .auto-payment-settings {
+        background: #1e3a5f;
+        border-color: #3b82f6;
+    }
+
+    .auto-payment-settings h4 {
+        color: #93c5fd;
+    }
+
+    .card-info-display {
+        /* gradient already provides contrast, leave as-is */
+    }
+
+    .statement-info-row {
+        border-bottom-color: var(--color-border);
+    }
+
+    .statement-info-row span:first-child {
+        color: var(--color-text-muted);
+    }
+
+    .statement-info-row span:last-child {
+        color: var(--color-text-primary);
+    }
+
+    .credit-stat-value.warning {
+        color: #fcd34d;
+    }
+
+    .credit-stat-value.amount.negative {
+        color: #f87171;
+    }
+
+    .credit-stat--danger {
+        border-left-color: #f87171;
+    }
+
+    .credit-stat-value--danger {
+        color: #f87171;
+    }
+
+    .error-message {
+        background: #450a0a;
+        color: #fecaca;
+        border-left-color: #f87171;
+    }
+
+    .status-past-due { color: #f87171; }
+    .status-due-soon { color: #fcd34d; }
+    .status-on-track { color: #4ade80; }
 }

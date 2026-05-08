@@ -308,37 +308,40 @@ require_once '../../includes/header.php';
 
 <style>
 .form-container { max-width: 900px; margin: 0 auto; }
-.obligation-form { background: white; border-radius: 8px; border: 1px solid #e0e0e0; }
-.form-section { padding: 2rem; border-bottom: 1px solid #e0e0e0; }
+.obligation-form { background: var(--color-surface); border-radius: 8px; border: 1px solid var(--color-border); }
+.form-section { padding: 2rem; border-bottom: 1px solid var(--color-border); }
 .form-section:last-of-type { border-bottom: none; }
-.form-section h3 { margin-top: 0; margin-bottom: 1.5rem; color: #333; font-size: 1.25rem; }
+.form-section h3 { margin-top: 0; margin-bottom: 1.5rem; color: var(--color-text-primary); font-size: 1.25rem; }
 .form-group { margin-bottom: 1.5rem; }
-.form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; color: #333; }
+.form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--color-text-primary); }
 .form-group input[type="text"],
 .form-group input[type="number"],
 .form-group input[type="date"],
 .form-group select,
-.form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+.form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 4px; font-size: 1rem; background: var(--color-surface); color: var(--color-text-primary); }
 .form-group input:focus,
 .form-group select:focus,
-.form-group textarea:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1); }
-.form-hint { display: block; margin-top: 0.25rem; font-size: 0.875rem; color: #666; }
+.form-group textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+.form-hint { display: block; margin-top: 0.25rem; font-size: 0.875rem; color: var(--color-text-muted); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.checkbox-label { display: flex; align-items: center; font-weight: normal; cursor: pointer; }
+.checkbox-label { display: flex; align-items: center; font-weight: normal; cursor: pointer; color: var(--color-text-primary); }
 .checkbox-label input[type="checkbox"] { margin-right: 0.5rem; }
 .months-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 0.5rem; }
-.form-actions { padding: 2rem; background: #f9f9f9; border-top: 1px solid #e0e0e0; display: flex; gap: 1rem; justify-content: space-between; }
+.form-actions { padding: 2rem; background: var(--color-surface-alt); border-top: 1px solid var(--color-border); display: flex; gap: 1rem; justify-content: space-between; }
 .btn-lg { padding: 0.75rem 2rem; font-size: 1rem; }
-.warning-text { color: #d32f2f; font-weight: 500; }
+.warning-text { color: #dc2626; font-weight: 500; }
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal-content { background: white; padding: 2rem; border-radius: 8px; max-width: 500px; width: 90%; }
-.modal-content h2 { margin-top: 0; }
+.modal-content { background: var(--color-surface); padding: 2rem; border-radius: 8px; max-width: 500px; width: 90%; border: 1px solid var(--color-border); }
+.modal-content h2 { margin-top: 0; color: var(--color-text-primary); }
 .modal-actions { margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: flex-end; }
 @media (max-width: 768px) {
     .form-row { grid-template-columns: 1fr; }
     .months-grid { grid-template-columns: repeat(3, 1fr); }
     .form-actions { flex-direction: column; }
     .form-actions .btn { width: 100%; }
+}
+@media (prefers-color-scheme: dark) {
+    .warning-text { color: #f87171; }
 }
 </style>
 
