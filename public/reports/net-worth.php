@@ -43,6 +43,7 @@ try {
 
 require_once '../../includes/header.php';
 ?>
+<link rel="stylesheet" href="../css/reports.css">
 
 <div class="container">
     <div class="report-header">
@@ -74,11 +75,11 @@ require_once '../../includes/header.php';
                 </div>
             </div>
             <div class="quick-filters">
-                <button type="button" class="btn btn-small btn-secondary" onclick="setDateRange('last-3-months')">Last 3 Months</button>
-                <button type="button" class="btn btn-small btn-secondary" onclick="setDateRange('last-6-months')">Last 6 Months</button>
-                <button type="button" class="btn btn-small btn-secondary" onclick="setDateRange('last-12-months')">Last 12 Months</button>
-                <button type="button" class="btn btn-small btn-secondary" onclick="setDateRange('ytd')">Year to Date</button>
-                <button type="button" class="btn btn-small btn-secondary" onclick="setDateRange('all-time')">All Time</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="setDateRange('last-3-months')">Last 3 Months</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="setDateRange('last-6-months')">Last 6 Months</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="setDateRange('last-12-months')">Last 12 Months</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="setDateRange('ytd')">Year to Date</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="setDateRange('all-time')">All Time</button>
             </div>
         </form>
     </div>
@@ -114,7 +115,7 @@ require_once '../../includes/header.php';
                 <h3>Net Worth Over Time</h3>
                 <div class="chart-controls">
                     <a href="../api/get-net-worth-report.php?action=csv&ledger=<?= urlencode($ledger_uuid) ?>&start_date=<?= urlencode($start_date) ?>&end_date=<?= urlencode($end_date) ?>"
-                       class="btn btn-small btn-success">📥 Export CSV</a>
+                       class="btn btn-sm btn-secondary">Export CSV</a>
                 </div>
             </div>
             <div class="chart-container">
@@ -222,17 +223,17 @@ const NetWorthReport = {
         // Update card colors based on growth
         const growthCard = document.querySelector('.growth-card');
         if (percentChange > 0) {
-            growthCard.style.background = 'linear-gradient(135deg, #38a169 0%, #48bb78 100%)';
+            growthCard.classList.replace('growth-card', 'assets-card');
         } else if (percentChange < 0) {
-            growthCard.style.background = 'linear-gradient(135deg, #fc8181 0%, #f56565 100%)';
+            growthCard.classList.replace('growth-card', 'expense-card');
         }
 
         // Update net worth card color
         const networthCard = document.querySelector('.networth-card');
         if (summary.current_net_worth > 0) {
-            networthCard.style.background = 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)';
+            networthCard.classList.replace('networth-card', 'assets-card');
         } else if (summary.current_net_worth < 0) {
-            networthCard.style.background = 'linear-gradient(135deg, #fc8181 0%, #f56565 100%)';
+            networthCard.classList.replace('networth-card', 'expense-card');
         }
     },
 
@@ -532,81 +533,5 @@ document.addEventListener('DOMContentLoaded', () => {
     NetWorthReport.init();
 });
 </script>
-
-<!-- Include reports.css for consistent styling -->
-<link rel="stylesheet" href="../css/reports.css">
-
-<style>
-.networth-card {
-    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-}
-
-.assets-card {
-    background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
-}
-
-.liabilities-card {
-    background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
-}
-
-.growth-card {
-    background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
-}
-
-.summary-sublabel {
-    font-size: 0.875rem;
-    opacity: 0.9;
-    margin-top: 0.5rem;
-}
-
-.insights-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-top: 2rem;
-}
-
-.insights-card h3 {
-    margin-top: 0;
-}
-
-.insights-card ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.insights-card li {
-    padding: 1rem;
-    margin-bottom: 0.75rem;
-    border-radius: 8px;
-    line-height: 1.6;
-}
-
-.insight-positive {
-    background-color: #f0fff4;
-    border-left: 4px solid #48bb78;
-    color: #22543d;
-}
-
-.insight-negative {
-    background-color: #fff5f5;
-    border-left: 4px solid #fc8181;
-    color: #742a2a;
-}
-
-.insight-warning {
-    background-color: #fffbeb;
-    border-left: 4px solid #f6ad55;
-    color: #744210;
-}
-
-.insight-neutral {
-    background-color: #ebf8ff;
-    border-left: 4px solid #4299e1;
-    color: #2c5282;
-}
-</style>
 
 <?php require_once '../../includes/footer.php'; ?>

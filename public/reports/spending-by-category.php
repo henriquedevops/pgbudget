@@ -43,6 +43,7 @@ try {
 
 require_once '../../includes/header.php';
 ?>
+<link rel="stylesheet" href="../css/reports.css">
 
 <div class="container">
     <div class="report-header">
@@ -74,10 +75,10 @@ require_once '../../includes/header.php';
                 </div>
             </div>
             <div class="quick-filters">
-                <button type="button" class="btn btn-small btn-secondary" onclick="setDateRange('this-month')">This Month</button>
-                <button type="button" class="btn btn-small btn-secondary" onclick="setDateRange('last-month')">Last Month</button>
-                <button type="button" class="btn btn-small btn-secondary" onclick="setDateRange('last-3-months')">Last 3 Months</button>
-                <button type="button" class="btn btn-small btn-secondary" onclick="setDateRange('ytd')">Year to Date</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="setDateRange('this-month')">This Month</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="setDateRange('last-month')">Last Month</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="setDateRange('last-3-months')">Last 3 Months</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="setDateRange('ytd')">Year to Date</button>
             </div>
         </form>
     </div>
@@ -108,7 +109,7 @@ require_once '../../includes/header.php';
             <div class="chart-header">
                 <h3>Spending Breakdown</h3>
                 <div class="chart-controls">
-                    <button class="btn btn-small" id="toggle-chart-type">
+                    <button class="btn btn-sm" id="toggle-chart-type">
                         <span id="chart-type-icon">📊</span> <span id="chart-type-label">Switch to Bar Chart</span>
                     </button>
                 </div>
@@ -124,7 +125,7 @@ require_once '../../includes/header.php';
         <div class="table-header">
             <h3>Spending Details</h3>
             <a href="../api/get-spending-report.php?action=csv&ledger=<?= urlencode($ledger_uuid) ?>&start_date=<?= urlencode($start_date) ?>&end_date=<?= urlencode($end_date) ?>"
-               class="btn btn-small btn-success">📥 Export CSV</a>
+               class="btn btn-sm btn-secondary">Export CSV</a>
         </div>
         <div id="spending-table" class="table-responsive">
             <p class="loading-text">Loading data...</p>
@@ -250,13 +251,13 @@ const SpendingReport = {
 
     renderTable() {
         const tableHtml = `
-            <table class="table">
+            <table class="tbl">
                 <thead>
                     <tr>
                         <th>Category</th>
-                        <th>Total Spent</th>
-                        <th>Transactions</th>
-                        <th>% of Total</th>
+                        <th class="num">Total Spent</th>
+                        <th class="num">Transactions</th>
+                        <th class="num">% of Total</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -264,11 +265,11 @@ const SpendingReport = {
                     ${this.spendingData.map(row => `
                         <tr>
                             <td><strong>${row.category_name}</strong></td>
-                            <td class="amount negative">${this.formatCurrency(row.total_spent)}</td>
-                            <td>${row.transaction_count}</td>
-                            <td>${row.percentage}%</td>
+                            <td class="num"><span class="money neg tnum">${this.formatCurrency(row.total_spent)}</span></td>
+                            <td class="num">${row.transaction_count}</td>
+                            <td class="num">${row.percentage}%</td>
                             <td>
-                                <button class="btn btn-small btn-secondary" onclick="SpendingReport.showTransactions(${JSON.stringify(row).replace(/"/g, '&quot;')})">
+                                <button class="btn btn-sm btn-secondary" onclick="SpendingReport.showTransactions(${JSON.stringify(row).replace(/"/g, '&quot;')})">
                                     View Transactions
                                 </button>
                             </td>
@@ -296,13 +297,13 @@ const SpendingReport = {
 
             if (data.success) {
                 const html = `
-                    <table class="table">
+                    <table class="tbl">
                         <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Description</th>
                                 <th>Account</th>
-                                <th>Amount</th>
+                                <th class="num">Amount</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -311,7 +312,7 @@ const SpendingReport = {
                                     <td>${new Date(t.transaction_date).toLocaleDateString()}</td>
                                     <td>${t.description}</td>
                                     <td>${t.other_account_name}</td>
-                                    <td class="amount negative">${this.formatCurrency(t.amount)}</td>
+                                    <td class="num"><span class="money neg tnum">${this.formatCurrency(t.amount)}</span></td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -392,220 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<style>
-.report-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
-}
-
-.report-header h1 {
-    margin: 0;
-    color: var(--color-text-primary);
-}
-
-.report-subtitle {
-    color: var(--color-text-muted);
-    margin: 0.5rem 0 0 0;
-}
-
-.filter-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 2rem;
-}
-
-.filter-card h3 {
-    margin-top: 0;
-}
-
-.date-filter-form .form-row {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
-}
-
-.form-group {
-    flex: 1;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.form-input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #cbd5e0;
-    border-radius: 4px;
-}
-
-.quick-filters {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-.summary-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.summary-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.summary-label {
-    font-size: 0.875rem;
-    opacity: 0.9;
-    margin-bottom: 0.5rem;
-}
-
-.summary-value {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.charts-section {
-    margin-bottom: 2rem;
-}
-
-.chart-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.chart-header h3 {
-    margin: 0;
-}
-
-.chart-container {
-    height: 400px;
-    position: relative;
-}
-
-.data-table-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.table-header h3 {
-    margin: 0;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal.active {
-    display: flex;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 12px;
-    max-width: 800px;
-    width: 90%;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.modal-header h2 {
-    margin: 0;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    cursor: pointer;
-    color: var(--color-text-muted);
-}
-
-.modal-body {
-    padding: 1.5rem;
-    overflow-y: auto;
-}
-
-.loading-text {
-    text-align: center;
-    color: var(--color-text-muted);
-    padding: 2rem;
-}
-
-.error-text {
-    text-align: center;
-    color: #e53e3e;
-    padding: 2rem;
-}
-
-@media (max-width: 768px) {
-    .report-header {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .date-filter-form .form-row {
-        flex-direction: column;
-    }
-
-    .quick-filters {
-        flex-wrap: wrap;
-    }
-
-    .chart-container {
-        height: 300px;
-    }
-}
-</style>
+<!-- styles provided by reports.css -->
 
 <?php require_once '../../includes/footer.php'; ?>

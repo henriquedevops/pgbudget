@@ -705,11 +705,11 @@ require_once '../../includes/header.php';
                     <label>Start Month</label>
                     <input type="month" name="start_month"
                            value="<?= (new DateTime($start_month))->format('Y-m') ?>"
-                           class="form-input">
+                           class="form-input input">
                 </div>
                 <div class="form-group">
                     <label>Horizon</label>
-                    <select name="months" class="form-input">
+                    <select name="months" class="form-input input">
                         <?php foreach ([12 => '1 Year', 24 => '2 Years', 36 => '3 Years', 60 => '5 Years', 120 => '10 Years'] as $m => $lbl): ?>
                             <option value="<?= $m ?>" <?= $months_ahead === $m ? 'selected' : '' ?>><?= $lbl ?></option>
                         <?php endforeach; ?>
@@ -717,7 +717,7 @@ require_once '../../includes/header.php';
                 </div>
                 <div class="form-group">
                     <label>View</label>
-                    <select name="view" class="form-input">
+                    <select name="view" class="form-input input">
                         <option value="monthly"   <?= $view_mode === 'monthly'   ? 'selected' : '' ?>>Monthly</option>
                         <option value="quarterly" <?= $view_mode === 'quarterly' ? 'selected' : '' ?>>Quarterly</option>
                         <option value="annual"    <?= $view_mode === 'annual'    ? 'selected' : '' ?>>Annual</option>
@@ -725,7 +725,7 @@ require_once '../../includes/header.php';
                 </div>
                 <div class="form-group">
                     <label>Grouping</label>
-                    <select name="group_mode" class="form-input">
+                    <select name="group_mode" class="form-input input">
                         <option value="detail"   <?= $group_mode === 'detail'   ? 'selected' : '' ?>>Detail</option>
                         <option value="category" <?= $group_mode === 'category' ? 'selected' : '' ?>>By Category</option>
                     </select>
