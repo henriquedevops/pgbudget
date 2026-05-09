@@ -1056,6 +1056,89 @@ body {
 .bar.over  > i { background: var(--danger-500); }
 .bar.under > i { background: var(--success-500); }
 
+/* ---- Design-kit table (.tbl) ---- */
+.tbl {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+.tbl th, .tbl td {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    font-size: var(--text-sm);
+}
+.tbl thead th {
+    background: var(--gray-50);
+    font-weight: 600;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-fg-muted);
+}
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl tbody tr:hover { background: var(--gray-50); }
+.tbl td.num, .tbl th.num {
+    text-align: right;
+    font-feature-settings: var(--font-feature-tnum);
+}
+.tbl tr.group-head td {
+    background: var(--gray-50);
+    font-weight: 600;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-fg-muted);
+    border-top: 2px solid var(--color-border);
+}
+
+/* ---- Setup checklist (.checklist / .check) ---- */
+.checklist { display: flex; flex-direction: column; gap: var(--space-2); }
+.check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font-size: var(--text-sm);
+}
+.check .dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    font-size: 12px;
+    line-height: 1;
+}
+.check.done .dot { background: var(--success-500); border-color: var(--success-500); color: #fff; }
+.check.done .label { color: var(--color-fg-muted); text-decoration: line-through; }
+.check .label { flex: 1; text-decoration: none; color: inherit; }
+.check a.label { color: var(--color-primary); }
+.check a.label:hover { text-decoration: underline; }
+
+/* ---- Account card (asset / liability list) ---- */
+.account-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+.account-card .meta { flex: 1; min-width: 0; }
+.account-card .name { font-weight: 600; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.account-card .type { font-size: var(--text-xs); color: var(--color-fg-muted); text-transform: capitalize; }
+
 /* =====================================================
    Utility classes — replace ad-hoc inline styles
    ===================================================== */
@@ -2278,6 +2361,14 @@ td.balance-cell {
     .btn-secondary { background-color: var(--color-surface); border-color: var(--color-border); color: var(--color-text-primary); }
     .btn-ghost     { color: var(--color-text-muted); }
     .btn-ghost:hover { background: var(--gray-50); color: var(--color-text-primary); }
+    .tbl { background: var(--color-surface); border-color: var(--color-border); }
+    .tbl th, .tbl td { border-color: var(--color-border); color: var(--color-text-primary); }
+    .tbl thead th { background: var(--color-surface-alt); }
+    .tbl tbody tr:hover { background: var(--color-surface-alt); }
+    .tbl tr.group-head td { background: var(--color-surface-alt); border-color: var(--color-border); }
+    .check { background: var(--color-surface); border-color: var(--color-border); }
+    .check .dot { border-color: var(--color-border); }
+    .account-card { background: var(--color-surface); border-color: var(--color-border); }
 
     .table {
         background: var(--color-surface);
