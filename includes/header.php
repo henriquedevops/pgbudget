@@ -163,6 +163,102 @@
             </ul>
         </div>
     </nav>
+
+    <?php if (isset($_SESSION['user_id'])): ?>
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <?php endif; ?>
+
+    <div class="app-body">
+
+    <?php if (isset($_SESSION['user_id'])): ?>
+    <!-- Left sidebar -->
+    <?php
+    $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? '');
+    $current_path   = $_SERVER['PHP_SELF'] ?? '';
+    function pgb_sidebar_active(string $segment): string {
+        global $current_path;
+        return str_contains($current_path, $segment) ? ' active' : '';
+    }
+    $user_initials = strtoupper(substr($_SESSION['user_id'], 0, 2));
+    ?>
+    <aside class="app-sidebar" id="app-sidebar">
+        <a href="/pgbudget/" class="sidebar-brand">
+            <div class="sidebar-brand-mark">P</div>
+            PgBudget
+        </a>
+
+        <?php if (!empty($current_ledger)): ?>
+        <a href="/pgbudget/ledgers/" class="sidebar-ledger-link">
+            <div>
+                <div class="sidebar-ledger-label">Ledger</div>
+                <div class="sidebar-ledger-name"><?= htmlspecialchars(isset($ledger['name']) ? $ledger['name'] : $current_ledger) ?></div>
+            </div>
+            <i data-lucide="chevron-down" style="width:16px;height:16px;flex-shrink:0;"></i>
+        </a>
+        <?php endif; ?>
+
+        <nav class="sidebar-nav">
+            <a href="/pgbudget/" class="sidebar-nav-item<?= pgb_sidebar_active('/index') ?>">
+                <i data-lucide="home"></i> Dashboard
+            </a>
+            <?php if (!empty($current_ledger)): ?>
+            <a href="/pgbudget/budget/dashboard.php?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/budget/') ?>">
+                <i data-lucide="pie-chart"></i> Budget
+            </a>
+            <a href="/pgbudget/transactions/list.php?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/transactions/') ?>">
+                <i data-lucide="list"></i> Transactions
+            </a>
+            <a href="/pgbudget/reports/cash-flow-projection.php?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/reports/') ?>">
+                <i data-lucide="bar-chart-2"></i> Reports
+            </a>
+            <a href="/pgbudget/accounts/list.php?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/accounts/') ?>">
+                <i data-lucide="wallet"></i> Accounts
+            </a>
+            <?php endif; ?>
+        </nav>
+
+        <?php if (!empty($current_ledger)): ?>
+        <div class="sidebar-group-label">Plan</div>
+        <nav class="sidebar-nav">
+            <a href="/pgbudget/obligations/?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/obligations/') ?>">
+                <i data-lucide="repeat"></i> Bills
+            </a>
+            <a href="/pgbudget/loans/?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/loans/') ?>">
+                <i data-lucide="book"></i> Loans
+            </a>
+            <a href="/pgbudget/installments/?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/installments/') ?>">
+                <i data-lucide="credit-card"></i> Installments
+            </a>
+            <a href="/pgbudget/income-sources/?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/income-sources/') ?>">
+                <i data-lucide="trending-up"></i> Income Sources
+            </a>
+            <a href="/pgbudget/projected-events/?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/projected-events/') ?>">
+                <i data-lucide="calendar"></i> Projected Events
+            </a>
+        </nav>
+        <?php endif; ?>
+
+        <div class="sidebar-spacer"></div>
+
+        <nav class="sidebar-nav">
+            <a href="/pgbudget/settings/" class="sidebar-nav-item<?= pgb_sidebar_active('/settings/') ?>">
+                <i data-lucide="settings"></i> Settings
+            </a>
+            <a href="/pgbudget/auth/logout.php" class="sidebar-nav-item">
+                <i data-lucide="log-out"></i> Logout
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="sidebar-user-avatar"><?= htmlspecialchars($user_initials) ?></div>
+            <div style="min-width:0;flex:1;">
+                <div class="sidebar-user-name"><?= htmlspecialchars($_SESSION['user_id']) ?></div>
+            </div>
+        </div>
+    </aside>
+    <?php endif; ?>
+
     <main class="main-content" id="main-content"><?php
 // Include enhanced error handler
 require_once __DIR__ . '/error-handler.php';

@@ -2,7 +2,7 @@
 
 **Source:** `public/ui_kits/web/` (React prototype from claude.ai/design)  
 **Date:** 2026-05-09  
-**Status:** Phase 1 complete — foundation CSS done. Phases 2–5 pending.
+**Status:** Phase 1 complete — foundation CSS done. Phase 2 complete — layout shell live. Phases 3–5 pending.
 
 ---
 

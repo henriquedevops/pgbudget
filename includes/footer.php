@@ -1,5 +1,13 @@
     </main>
 
+    <?php
+    // Include rail for authenticated ledger-scoped pages when DB is available
+    if (isset($_SESSION['user_id']) && !empty($current_ledger) && isset($db)) {
+        require_once __DIR__ . '/rail.php';
+    }
+    ?>
+    </div><!-- /.app-body -->
+
     <!-- Mobile Bottom Navigation -->
     <?php if (isset($_SESSION['user_id'])): ?>
     <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>

@@ -60,15 +60,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Mobile hamburger toggle
-    const mobileToggle = document.querySelector('.mobile-menu-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    if (mobileToggle && navMenu) {
+    // Mobile hamburger — opens sidebar drawer on ≤1023px, nav-menu on wider
+    const mobileToggle  = document.querySelector('.mobile-menu-toggle');
+    const appSidebar    = document.getElementById('app-sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const navMenu       = document.querySelector('.nav-menu');
+
+    function closeSidebar() {
+        if (appSidebar)    appSidebar.classList.remove('open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+        if (mobileToggle)  mobileToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    if (mobileToggle && appSidebar) {
+        mobileToggle.addEventListener('click', function() {
+            if (window.innerWidth <= 1023) {
+                const isOpen = appSidebar.classList.toggle('open');
+                sidebarOverlay && sidebarOverlay.classList.toggle('open', isOpen);
+                mobileToggle.setAttribute('aria-expanded', isOpen);
+            } else if (navMenu) {
+                const isOpen = navMenu.classList.toggle('active');
+                mobileToggle.setAttribute('aria-expanded', isOpen);
+            }
+        });
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', closeSidebar);
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSidebar();
+        });
+    } else if (mobileToggle && navMenu) {
+        // Fallback for non-authenticated pages (no sidebar rendered)
         mobileToggle.addEventListener('click', function() {
             const isOpen = navMenu.classList.toggle('active');
             mobileToggle.setAttribute('aria-expanded', isOpen);
         });
-        // Close on outside click
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.navbar')) {
                 navMenu.classList.remove('active');
