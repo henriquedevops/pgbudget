@@ -298,11 +298,13 @@ require_once '../../includes/header.php';
 
 <style>
 .transaction-original {
-    background: #f7fafc;
+    background: var(--color-surface-alt);
     padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 2rem;
-    border-left: 4px solid #3182ce;
+    border-left: 4px solid var(--color-primary);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-primary);
 }
 
 .transaction-original h3 {
@@ -335,11 +337,11 @@ require_once '../../includes/header.php';
 }
 
 .transaction-type.inflow {
-    color: #38a169;
+    color: var(--success-700);
 }
 
 .transaction-type.outflow {
-    color: #e53e3e;
+    color: var(--danger-700);
 }
 
 .edit-forms {
@@ -349,23 +351,28 @@ require_once '../../includes/header.php';
 }
 
 .form-section {
-    background: white;
+    background: var(--color-surface);
     padding: 2rem;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border);
+}
+
+.form-section h3 {
+    color: var(--color-text-primary);
+    margin-top: 0;
 }
 
 .danger-section {
-    border-left: 4px solid #e53e3e;
-    background: #fef5e7;
+    border-left: 4px solid var(--danger-500);
+    background: var(--danger-50);
 }
 
 .danger-warning {
-    color: #c53030;
+    color: var(--danger-700);
     font-weight: 500;
     margin-bottom: 1rem;
     padding: 0.75rem;
-    background: #fed7d7;
+    border: 1px solid var(--danger-500);
     border-radius: 4px;
 }
 
@@ -390,17 +397,19 @@ require_once '../../includes/header.php';
 .form-group select {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-size: 1rem;
     transition: border-color 0.2s;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
 }
 
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #3182ce;
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 .form-actions {
@@ -410,7 +419,7 @@ require_once '../../includes/header.php';
 }
 
 .btn-danger {
-    background-color: #e53e3e;
+    background-color: var(--danger-500);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -422,7 +431,7 @@ require_once '../../includes/header.php';
 }
 
 .btn-danger:hover {
-    background-color: #c53030;
+    background-color: var(--danger-700);
 }
 
 @media (max-width: 768px) {

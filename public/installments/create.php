@@ -73,7 +73,7 @@ try {
         FROM data.transactions t
         JOIN data.ledgers l ON t.ledger_id = l.id
         JOIN data.accounts ca ON t.credit_account_id = ca.id
-        LEFT JOIN data.transaction_log tl ON t.id = tl.original_transaction_id AND tl.mutation_type = 'deletion'
+        LEFT JOIN data.transaction_log tl ON t.id = tl.original_transaction_id
         WHERE l.uuid = ?
         AND ca.type = 'liability'
         AND t.deleted_at IS NULL
