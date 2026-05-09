@@ -1056,6 +1056,57 @@ body {
 .bar.over  > i { background: var(--danger-500); }
 .bar.under > i { background: var(--success-500); }
 
+/* ---- Search input wrapper ---- */
+.search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.search-wrap .search-icon {
+    position: absolute;
+    left: var(--space-3);
+    width: 16px;
+    height: 16px;
+    color: var(--color-fg-muted);
+    pointer-events: none;
+    flex-shrink: 0;
+}
+.search-wrap .search-input {
+    width: 100%;
+    padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 16px + var(--space-2));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+.search-wrap .search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+.search-wrap .search-input::placeholder { color: var(--color-fg-muted); }
+
+/* ---- Generic form input / select ---- */
+.input {
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+.input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
 /* ---- Design-kit table (.tbl) ---- */
 .tbl {
     width: 100%;
@@ -2353,6 +2404,8 @@ td.balance-cell {
     }
 
     /* Design-kit components — dark mode */
+    .search-wrap .search-input { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text-primary); }
+    .input { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text-primary); }
     .badge-neutral { background: var(--gray-100); color: var(--gray-700); }
     .cat-icon      { background: var(--gray-100); color: var(--gray-700); }
     .seg-toggle    { background: var(--gray-50); border-color: var(--color-border); }

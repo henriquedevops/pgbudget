@@ -191,41 +191,59 @@ try {
     header('Location: ../index.php');
     exit;
 }
+
+// Build base URL params (without type/page) for seg-toggle links
+$base_params = array_filter([
+    'ledger'     => $ledger_uuid,
+    'search'     => $search,
+    'account'    => $account_filter,
+    'category'   => $category_filter,
+    'date_from'  => $date_from,
+    'date_to'    => $date_to,
+    'amount_min' => $amount_min,
+    'amount_max' => $amount_max,
+    'sort_by'    => $sort_by !== 'date_desc' ? $sort_by : '',
+]);
+function type_url(array $base, string $type): string {
+    $p = $base;
+    if ($type !== '') $p['type'] = $type; else unset($p['type']);
+    return '?' . http_build_query($p);
+}
 ?>
 
-<div class="container">
-    <div class="header">
-        <h1>All Transactions</h1>
-        <p>Complete transaction history for <strong><?= htmlspecialchars($ledger['name']) ?></strong></p>
+<div class="container" style="display:flex;flex-direction:column;gap:var(--space-5);">
+
+    <!-- Page header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-3);">
+        <div>
+            <div class="eyebrow"><?= htmlspecialchars($ledger['name']) ?></div>
+            <h1 style="margin:0;font-size:var(--text-2xl);font-weight:700;">Transactions</h1>
+        </div>
+        <a href="../transactions/add.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-primary">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i> Add Transaction
+        </a>
     </div>
 
-    <!-- Search and Filters -->
-    <div class="filters-section">
-        <form method="GET" class="filters-form">
+    <!-- Filters card -->
+    <div class="card">
+        <form method="GET" id="filter-form" style="display:flex;flex-direction:column;gap:var(--space-4);">
             <input type="hidden" name="ledger" value="<?= htmlspecialchars($ledger_uuid) ?>">
 
-            <div class="filters-row">
-                <div class="filter-group">
-                    <label for="search">Search Description</label>
-                    <input type="text"
-                           id="search"
-                           name="search"
-                           value="<?= htmlspecialchars($search) ?>"
-                           placeholder="Search transactions...">
-                </div>
+            <!-- Search bar -->
+            <div class="search-wrap">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text"
+                       name="search"
+                       class="search-input"
+                       value="<?= htmlspecialchars($search) ?>"
+                       placeholder="Search transactions…">
+            </div>
 
-                <div class="filter-group">
-                    <label for="type">Transaction Type</label>
-                    <select id="type" name="type">
-                        <option value="">All Types</option>
-                        <option value="inflow" <?= $type_filter === 'inflow' ? 'selected' : '' ?>>Income (Inflow)</option>
-                        <option value="outflow" <?= $type_filter === 'outflow' ? 'selected' : '' ?>>Expense (Outflow)</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="account">Account</label>
-                    <select id="account" name="account">
+            <!-- Filter row 1 -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-3);">
+                <div style="display:flex;flex-direction:column;gap:var(--space-1);">
+                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="account">Account</label>
+                    <select id="account" name="account" class="input">
                         <option value="">All Accounts</option>
                         <?php foreach ($accounts as $account): ?>
                             <?php if ($account['type'] !== 'equity'): ?>
@@ -236,12 +254,10 @@ try {
                         <?php endforeach; ?>
                     </select>
                 </div>
-            </div>
 
-            <div class="filters-row">
-                <div class="filter-group">
-                    <label for="category">Category</label>
-                    <select id="category" name="category">
+                <div style="display:flex;flex-direction:column;gap:var(--space-1);">
+                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="category">Category</label>
+                    <select id="category" name="category" class="input">
                         <option value="">All Categories</option>
                         <?php foreach ($accounts as $account): ?>
                             <?php if ($account['type'] === 'equity'): ?>
@@ -253,43 +269,32 @@ try {
                     </select>
                 </div>
 
-                <div class="filter-group">
-                    <label for="date_from">From Date</label>
-                    <input type="date" id="date_from" name="date_from" value="<?= htmlspecialchars($date_from) ?>">
+                <div style="display:flex;flex-direction:column;gap:var(--space-1);">
+                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="date_from">From Date</label>
+                    <input type="date" id="date_from" name="date_from" class="input" value="<?= htmlspecialchars($date_from) ?>">
                 </div>
 
-                <div class="filter-group">
-                    <label for="date_to">To Date</label>
-                    <input type="date" id="date_to" name="date_to" value="<?= htmlspecialchars($date_to) ?>">
+                <div style="display:flex;flex-direction:column;gap:var(--space-1);">
+                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="date_to">To Date</label>
+                    <input type="date" id="date_to" name="date_to" class="input" value="<?= htmlspecialchars($date_to) ?>">
                 </div>
             </div>
 
-            <div class="filters-row">
-                <div class="filter-group">
-                    <label for="amount_min">Min Amount ($)</label>
-                    <input type="number"
-                           id="amount_min"
-                           name="amount_min"
-                           step="0.01"
-                           min="0"
-                           value="<?= htmlspecialchars($amount_min) ?>"
-                           placeholder="0.00">
+            <!-- Filter row 2 -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-3);">
+                <div style="display:flex;flex-direction:column;gap:var(--space-1);">
+                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="amount_min">Min Amount ($)</label>
+                    <input type="number" id="amount_min" name="amount_min" class="input" step="0.01" min="0" value="<?= htmlspecialchars($amount_min) ?>" placeholder="0.00">
                 </div>
 
-                <div class="filter-group">
-                    <label for="amount_max">Max Amount ($)</label>
-                    <input type="number"
-                           id="amount_max"
-                           name="amount_max"
-                           step="0.01"
-                           min="0"
-                           value="<?= htmlspecialchars($amount_max) ?>"
-                           placeholder="0.00">
+                <div style="display:flex;flex-direction:column;gap:var(--space-1);">
+                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="amount_max">Max Amount ($)</label>
+                    <input type="number" id="amount_max" name="amount_max" class="input" step="0.01" min="0" value="<?= htmlspecialchars($amount_max) ?>" placeholder="0.00">
                 </div>
 
-                <div class="filter-group">
-                    <label for="sort_by">Sort By</label>
-                    <select id="sort_by" name="sort_by">
+                <div style="display:flex;flex-direction:column;gap:var(--space-1);">
+                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="sort_by">Sort By</label>
+                    <select id="sort_by" name="sort_by" class="input">
                         <option value="date_desc" <?= $sort_by === 'date_desc' ? 'selected' : '' ?>>Date (Newest First)</option>
                         <option value="date_asc" <?= $sort_by === 'date_asc' ? 'selected' : '' ?>>Date (Oldest First)</option>
                         <option value="amount_desc" <?= $sort_by === 'amount_desc' ? 'selected' : '' ?>>Amount (High to Low)</option>
@@ -297,176 +302,176 @@ try {
                         <option value="description" <?= $sort_by === 'description' ? 'selected' : '' ?>>Description (A-Z)</option>
                     </select>
                 </div>
-            </div>
 
-            <div class="filters-actions">
-                <button type="submit" class="btn btn-primary">Apply Filters</button>
-                <a href="list.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">Clear All</a>
+                <div style="display:flex;align-items:flex-end;gap:var(--space-2);">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">Apply</button>
+                    <a href="list.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-ghost">Clear</a>
+                </div>
             </div>
         </form>
     </div>
 
-    <!-- Results Summary -->
-    <div class="results-summary">
-        <div class="results-info">
-            Showing <?= number_format($total_transactions) ?> transactions
-            <?php if ($total_transactions > $per_page): ?>
-                (Page <?= $page ?> of <?= $total_pages ?>)
-            <?php endif; ?>
+    <!-- Type filter + results count -->
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-3);">
+        <div class="seg-toggle">
+            <a href="<?= htmlspecialchars(type_url($base_params, '')) ?>"
+               class="seg-btn <?= !$type_filter ? 'active' : '' ?>">All</a>
+            <a href="<?= htmlspecialchars(type_url($base_params, 'inflow')) ?>"
+               class="seg-btn <?= $type_filter === 'inflow' ? 'active' : '' ?>">Income</a>
+            <a href="<?= htmlspecialchars(type_url($base_params, 'outflow')) ?>"
+               class="seg-btn <?= $type_filter === 'outflow' ? 'active' : '' ?>">Expenses</a>
         </div>
-
-        <div class="results-actions">
-            <a href="../transactions/add.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-primary">+ Add Transaction</a>
-            <a href="../budget/dashboard.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">Back to Dashboard</a>
-        </div>
+        <span style="font-size:var(--text-sm);color:var(--color-fg-muted);">
+            <?= number_format($total_transactions) ?> transaction<?= $total_transactions !== 1 ? 's' : '' ?>
+            <?php if ($total_pages > 1): ?> &mdash; page <?= $page ?> of <?= $total_pages ?><?php endif; ?>
+        </span>
     </div>
 
-    <!-- Bulk Action Bar (hidden by default) -->
+    <!-- Bulk action bar -->
     <div id="bulk-action-bar" class="hidden">
         <div class="bulk-action-info">
             <span id="selected-count">0</span> transaction(s) selected
         </div>
         <div class="bulk-action-buttons">
-            <button id="bulk-categorize-btn" class="bulk-action-btn">
-                📂 Categorize
-            </button>
-            <button id="bulk-edit-date-btn" class="bulk-action-btn">
-                📅 Edit Date
-            </button>
-            <button id="bulk-edit-account-btn" class="bulk-action-btn">
-                💳 Change Account
-            </button>
-            <button id="bulk-delete-btn" class="bulk-action-btn danger">
-                🗑️ Delete
-            </button>
-            <button onclick="window.bulkOps.clearSelection()" class="bulk-action-btn bulk-action-clear">
-                ✕ Clear Selection
-            </button>
+            <button id="bulk-categorize-btn" class="bulk-action-btn">📂 Categorize</button>
+            <button id="bulk-edit-date-btn" class="bulk-action-btn">📅 Edit Date</button>
+            <button id="bulk-edit-account-btn" class="bulk-action-btn">💳 Change Account</button>
+            <button id="bulk-delete-btn" class="bulk-action-btn danger">🗑️ Delete</button>
+            <button onclick="window.bulkOps.clearSelection()" class="bulk-action-btn bulk-action-clear">✕ Clear</button>
         </div>
     </div>
 
     <?php if (empty($transactions)): ?>
-        <div class="empty-state">
-            <span class="empty-state-icon" aria-hidden="true">📋</span>
-            <h3>No transactions found</h3>
+        <div style="text-align:center;padding:var(--space-12);color:var(--color-fg-muted);">
+            <div style="font-size:2rem;margin-bottom:var(--space-3);">📋</div>
+            <div style="font-weight:600;font-size:var(--text-lg);margin-bottom:var(--space-2);">No transactions found</div>
             <?php if (!empty($search) || !empty($account_filter) || !empty($category_filter) || !empty($type_filter) || !empty($date_from) || !empty($date_to) || !empty($amount_min) || !empty($amount_max)): ?>
-                <p>No transactions match your current filters. Try adjusting your search criteria.</p>
+                <p style="margin-bottom:var(--space-4);">No transactions match your filters.</p>
                 <a href="list.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-secondary">Clear Filters</a>
             <?php else: ?>
-                <p>No transactions have been recorded yet. Start by adding your first transaction.</p>
+                <p style="margin-bottom:var(--space-4);">No transactions yet.</p>
                 <a href="../transactions/add.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-primary">Add First Transaction</a>
             <?php endif; ?>
         </div>
     <?php else: ?>
-        <!-- Transactions Table -->
-        <div class="transactions-table mobile-cards">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="transaction-checkbox-col">
-                            <input type="checkbox" id="select-all-transactions" title="Select All">
-                        </th>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Type</th>
-                        <th>From Account</th>
-                        <th>To Account</th>
-                        <th>Amount</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($transactions as $txn): ?>
-                        <tr class="transaction-row swipeable">
-                            <td class="transaction-checkbox-col" data-label="">
-                                <input type="checkbox"
-                                       class="transaction-checkbox"
-                                       data-transaction-uuid="<?= htmlspecialchars($txn['uuid']) ?>">
-                            </td>
-                            <td class="date-cell" data-label="Date">
-                                <?= date('M j, Y', strtotime($txn['date'])) ?>
-                                <small><?= date('g:i A', strtotime($txn['created_at'])) ?></small>
-                            </td>
-                            <td class="description-cell" data-label="Description" title="<?= htmlspecialchars($txn['description']) ?>">
-                                <?= htmlspecialchars($txn['description']) ?>
-                                <?php if (!empty($txn['installment_plan_uuid'])): ?>
-                                    <a href="../installments/view.php?ledger=<?= urlencode($ledger_uuid) ?>&plan=<?= urlencode($txn['installment_plan_uuid']) ?>"
-                                       class="installment-indicator"
-                                       title="Installment Plan: <?= htmlspecialchars($txn['installment_plan_description']) ?> (<?= $txn['completed_installments'] ?>/<?= $txn['number_of_installments'] ?> completed)">
-                                        💳 Installment Plan
-                                    </a>
-                                <?php endif; ?>
-                                <?php if (!empty($txn['obligation_payment_uuid'])): ?>
-                                    <a href="../obligations/view.php?ledger=<?= urlencode($ledger_uuid) ?>&obligation=<?= urlencode($txn['obligation_uuid']) ?>"
-                                       class="obligation-indicator"
-                                       title="Bill Payment: <?= htmlspecialchars($txn['obligation_name']) ?> - <?= htmlspecialchars($txn['obligation_payee']) ?> (Due: <?= date('M j, Y', strtotime($txn['obligation_due_date'])) ?>)">
-                                        📋 <?= htmlspecialchars($txn['obligation_name']) ?>
-                                    </a>
-                                <?php endif; ?>
-                            </td>
-                            <td class="type-cell" data-label="Type">
-                                <span class="transaction-type <?= $txn['type'] ?>">
-                                    <?= ucfirst($txn['type']) ?>
-                                </span>
-                            </td>
-                            <td class="account-cell" data-label="From">
-                                <span class="account-name"><?= htmlspecialchars($txn['debit_account']) ?></span>
-                                <small class="account-type"><?= ucfirst($txn['debit_type']) ?></small>
-                            </td>
-                            <td class="account-cell" data-label="To">
-                                <span class="account-name"><?= htmlspecialchars($txn['credit_account']) ?></span>
-                                <small class="account-type"><?= ucfirst($txn['credit_type']) ?></small>
-                            </td>
-                            <td class="amount-cell" data-label="Amount">
-                                <span class="amount <?= $txn['type'] === 'inflow' ? 'positive' : 'negative' ?>">
-                                    <?= formatCurrency($txn['amount']) ?>
-                                </span>
-                            </td>
-                            <td class="actions-cell" data-label="Actions">
-                                <a href="edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
-                                   class="btn btn-small btn-edit" title="Edit Transaction">✏️</a>
-                                <button class="btn btn-small btn-delete-txn"
-                                        title="Delete Transaction"
-                                        onclick="deleteSingleTransaction('<?= htmlspecialchars($txn['uuid']) ?>', <?= json_encode($txn['description']) ?>)">🗑️</button>
-                                <?php
-                                // Show "Create Installment Plan" button for credit card transactions without existing plans
-                                $is_cc_transaction = ($txn['credit_type'] === 'liability' || $txn['debit_type'] === 'liability');
-                                $has_no_plan = empty($txn['installment_plan_uuid']);
-                                if ($is_cc_transaction && $has_no_plan):
-                                ?>
-                                    <a href="../installments/create.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
-                                       class="btn btn-small btn-create-installment"
-                                       title="Create Installment Plan">💳</a>
-                                <?php endif; ?>
-                                <?php if (!empty($unrealized_events)): ?>
-                                    <button class="btn btn-small btn-link-event"
-                                            title="Link to Projected Event"
-                                            onclick="openLinkModal('<?= htmlspecialchars($txn['uuid']) ?>', <?= json_encode($txn['description']) ?>, <?= (int)$txn['amount'] ?>)">🔗</button>
-                                <?php endif; ?>
-                            </td>
+
+        <!-- Transactions table -->
+        <div class="card" style="padding:0;overflow:hidden;">
+            <div style="overflow-x:auto;">
+                <table class="tbl" style="border-radius:0;border:0;">
+                    <thead>
+                        <tr>
+                            <th style="width:36px;">
+                                <input type="checkbox" id="select-all-transactions" title="Select All">
+                            </th>
+                            <th>Date</th>
+                            <th>Payee</th>
+                            <th>Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th class="num">Amount</th>
+                            <th style="width:120px;"></th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($transactions as $txn): ?>
+                            <tr class="transaction-row swipeable">
+                                <td data-label="">
+                                    <input type="checkbox"
+                                           class="transaction-checkbox"
+                                           data-transaction-uuid="<?= htmlspecialchars($txn['uuid']) ?>">
+                                </td>
+                                <td data-label="Date">
+                                    <div style="font-size:var(--text-sm);font-weight:500;"><?= date('M j, Y', strtotime($txn['date'])) ?></div>
+                                    <div style="font-size:var(--text-xs);color:var(--color-fg-muted);"><?= date('g:i A', strtotime($txn['created_at'])) ?></div>
+                                </td>
+                                <td data-label="Payee" style="max-width:220px;">
+                                    <div style="display:flex;align-items:center;gap:var(--space-2);">
+                                        <div class="cat-icon" style="width:28px;height:28px;font-size:12px;flex-shrink:0;">
+                                            <?= htmlspecialchars(strtoupper(substr($txn['description'] ?: '?', 0, 1))) ?>
+                                        </div>
+                                        <div style="min-width:0;">
+                                            <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--text-sm);">
+                                                <?= htmlspecialchars($txn['description']) ?>
+                                            </div>
+                                            <?php if (!empty($txn['installment_plan_uuid'])): ?>
+                                                <a href="../installments/view.php?ledger=<?= urlencode($ledger_uuid) ?>&plan=<?= urlencode($txn['installment_plan_uuid']) ?>"
+                                                   class="badge badge-warning" style="text-decoration:none;margin-top:2px;"
+                                                   title="Installment Plan: <?= htmlspecialchars($txn['installment_plan_description']) ?> (<?= $txn['completed_installments'] ?>/<?= $txn['number_of_installments'] ?>)">
+                                                    💳 Installment
+                                                </a>
+                                            <?php endif; ?>
+                                            <?php if (!empty($txn['obligation_payment_uuid'])): ?>
+                                                <a href="../obligations/view.php?ledger=<?= urlencode($ledger_uuid) ?>&obligation=<?= urlencode($txn['obligation_uuid']) ?>"
+                                                   class="badge badge-success" style="text-decoration:none;margin-top:2px;"
+                                                   title="Bill: <?= htmlspecialchars($txn['obligation_name']) ?>">
+                                                    📋 <?= htmlspecialchars($txn['obligation_name']) ?>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Type">
+                                    <?php if ($txn['type'] === 'inflow'): ?>
+                                        <span class="badge badge-success">Income</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-neutral">Expense</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td data-label="From">
+                                    <div style="font-size:var(--text-sm);font-weight:500;"><?= htmlspecialchars($txn['debit_account']) ?></div>
+                                    <div style="font-size:var(--text-xs);color:var(--color-fg-muted);"><?= ucfirst($txn['debit_type']) ?></div>
+                                </td>
+                                <td data-label="To">
+                                    <div style="font-size:var(--text-sm);font-weight:500;"><?= htmlspecialchars($txn['credit_account']) ?></div>
+                                    <div style="font-size:var(--text-xs);color:var(--color-fg-muted);"><?= ucfirst($txn['credit_type']) ?></div>
+                                </td>
+                                <td class="num" data-label="Amount">
+                                    <span class="money <?= $txn['type'] === 'inflow' ? 'pos' : 'neg' ?> tnum">
+                                        <?= $txn['type'] === 'inflow' ? '+' : '−' ?><?= formatCurrency($txn['amount']) ?>
+                                    </span>
+                                </td>
+                                <td style="text-align:right;white-space:nowrap;">
+                                    <a href="edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
+                                       class="btn btn-sm btn-ghost" title="Edit">✏️</a>
+                                    <button class="btn btn-sm btn-ghost" style="color:var(--danger-500);"
+                                            title="Delete"
+                                            onclick="deleteSingleTransaction('<?= htmlspecialchars($txn['uuid']) ?>', <?= json_encode($txn['description']) ?>)">🗑️</button>
+                                    <?php
+                                    $is_cc_transaction = ($txn['credit_type'] === 'liability' || $txn['debit_type'] === 'liability');
+                                    $has_no_plan = empty($txn['installment_plan_uuid']);
+                                    if ($is_cc_transaction && $has_no_plan):
+                                    ?>
+                                        <a href="../installments/create.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
+                                           class="btn btn-sm btn-ghost" title="Create Installment Plan">💳</a>
+                                    <?php endif; ?>
+                                    <?php if (!empty($unrealized_events)): ?>
+                                        <button class="btn btn-sm btn-ghost"
+                                                title="Link to Projected Event"
+                                                onclick="openLinkModal('<?= htmlspecialchars($txn['uuid']) ?>', <?= json_encode($txn['description']) ?>, <?= (int)$txn['amount'] ?>)">🔗</button>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Pagination -->
         <?php if ($total_pages > 1): ?>
-            <div class="pagination">
+            <div style="display:flex;justify-content:center;align-items:center;gap:var(--space-3);">
                 <?php if ($page > 1): ?>
-                    <a href="?ledger=<?= urlencode($ledger_uuid) ?>&page=<?= $page - 1 ?>&<?= http_build_query($_GET) ?>" class="btn btn-secondary">Previous</a>
+                    <a href="?ledger=<?= urlencode($ledger_uuid) ?>&page=<?= $page - 1 ?>&<?= http_build_query($_GET) ?>" class="btn btn-secondary btn-sm">Previous</a>
                 <?php endif; ?>
 
-                <div class="page-numbers">
+                <div style="display:flex;gap:var(--space-1);">
                     <?php
                     $start_page = max(1, $page - 2);
                     $end_page = min($total_pages, $page + 2);
-
                     if ($start_page > 1): ?>
                         <a href="?ledger=<?= urlencode($ledger_uuid) ?>&page=1&<?= http_build_query(array_diff_key($_GET, ['page' => ''])) ?>" class="page-link">1</a>
-                        <?php if ($start_page > 2): ?>
-                            <span class="page-ellipsis">...</span>
-                        <?php endif; ?>
+                        <?php if ($start_page > 2): ?><span class="page-ellipsis">…</span><?php endif; ?>
                     <?php endif; ?>
 
                     <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
@@ -478,457 +483,51 @@ try {
                     <?php endfor; ?>
 
                     <?php if ($end_page < $total_pages): ?>
-                        <?php if ($end_page < $total_pages - 1): ?>
-                            <span class="page-ellipsis">...</span>
-                        <?php endif; ?>
+                        <?php if ($end_page < $total_pages - 1): ?><span class="page-ellipsis">…</span><?php endif; ?>
                         <a href="?ledger=<?= urlencode($ledger_uuid) ?>&page=<?= $total_pages ?>&<?= http_build_query(array_diff_key($_GET, ['page' => ''])) ?>" class="page-link"><?= $total_pages ?></a>
                     <?php endif; ?>
                 </div>
 
                 <?php if ($page < $total_pages): ?>
-                    <a href="?ledger=<?= urlencode($ledger_uuid) ?>&page=<?= $page + 1 ?>&<?= http_build_query($_GET) ?>" class="btn btn-secondary">Next</a>
+                    <a href="?ledger=<?= urlencode($ledger_uuid) ?>&page=<?= $page + 1 ?>&<?= http_build_query($_GET) ?>" class="btn btn-secondary btn-sm">Next</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
+
     <?php endif; ?>
 </div>
 
 <style>
-.container {
-    max-width: 1400px;
-}
-
-.filters-section {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    margin: 2rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.filters-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.filters-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.filter-group label {
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    font-size: 0.875rem;
-}
-
-.filter-group input,
-.filter-group select {
-    padding: 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
-    font-size: 0.875rem;
-}
-
-.filter-group input:focus,
-.filter-group select:focus {
-    outline: none;
-    border-color: #3182ce;
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
-}
-
-.filters-actions {
-    display: flex;
-    gap: 1rem;
-}
-
-.results-summary {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 1rem 0;
-    padding: 1rem;
-    background: white;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.results-info {
-    color: #4a5568;
-    font-weight: 500;
-}
-
-.results-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.transactions-table {
-    background: white;
-    border-radius: 8px;
-    overflow-x: auto;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin: 1rem 0;
-}
-
-.transactions-table table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.transactions-table th,
-.transactions-table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.transactions-table th {
-    background: #f7fafc;
-    font-weight: 600;
-    color: #4a5568;
-    font-size: 0.875rem;
-}
-
-.transaction-row:hover {
-    background: #f7fafc;
-}
-
-.date-cell small {
-    display: block;
-    color: var(--color-text-muted);
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
-}
-
-.description-cell {
-    font-weight: 500;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.transaction-type {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.transaction-type.inflow {
-    background: #c6f6d5;
-    color: #2f855a;
-}
-
-.transaction-type.outflow {
-    background: #fed7d7;
-    color: #c53030;
-}
-
-.account-cell .account-name {
-    display: block;
-    font-weight: 500;
-}
-
-.account-cell .account-type {
-    color: var(--color-text-muted);
-    font-size: 0.75rem;
-}
-
-.amount-cell .amount {
-    font-weight: 600;
-    font-size: 1.1rem;
-}
-
-.amount-cell .amount.positive {
-    color: #38a169;
-}
-
-.amount-cell .amount.negative {
-    color: #e53e3e;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin: 2rem 0;
-}
-
-.page-numbers {
-    display: flex;
-    gap: 0.25rem;
-}
-
 .page-link {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #4a5568;
-    transition: all 0.2s;
-}
-
-.page-link:hover {
-    background: #f7fafc;
-    border-color: #cbd5e0;
-}
-
-.page-link.current {
-    background: #3182ce;
-    color: white;
-    border-color: #3182ce;
-}
-
-.page-ellipsis {
-    padding: 0.5rem 0.25rem;
-    color: var(--color-text-muted);
-}
-
-.empty-state {
-    text-align: center;
-    padding: 3rem;
-    background: #f7fafc;
-    border-radius: 8px;
-    margin: 2rem 0;
-}
-
-.empty-state h3 {
-    color: #4a5568;
-    margin-bottom: 1rem;
-}
-
-.empty-state p {
-    color: var(--color-text-muted);
-    margin-bottom: 2rem;
-}
-
-.btn-info {
-    background: #3182ce;
-    color: white;
-    border: 1px solid #3182ce;
-}
-
-.btn-info:hover {
-    background: #2c5aa0;
-    border-color: #2c5aa0;
-}
-
-/* Filter Summary Banner */
-.filter-summary-banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    margin: 1rem 0;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-}
-
-.filter-summary-content {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.filter-summary-label {
-    font-weight: 600;
-    opacity: 0.9;
-}
-
-.filter-summary-text {
-    opacity: 0.95;
-}
-
-@media (max-width: 768px) {
-    .filters-row {
-        grid-template-columns: 1fr;
-    }
-
-    .filters-actions {
-        flex-direction: column;
-    }
-
-    .results-summary {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-
-    .results-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .transactions-table {
-        overflow-x: auto;
-    }
-
-    .description-cell {
-        max-width: 150px;
-    }
-
-    .pagination {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .filter-summary-content {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-/* Installment Plan Indicator */
-.installment-indicator {
-    display: inline-block;
-    margin-top: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border: 1px solid #f59e0b;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #92400e;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
     text-decoration: none;
-    transition: all 0.2s;
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+    transition: background var(--duration-fast) var(--ease-out);
 }
-
-.installment-indicator:hover {
-    background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
-}
-
-/* Obligation Indicator */
-.obligation-indicator {
-    display: inline-block;
-    margin-top: 0.25rem;
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%);
-    border: 1px solid #10b981;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #065f46;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-
-.obligation-indicator:hover {
-    background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
-}
-
-/* Delete Transaction Button */
-.btn-delete-txn {
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-    border: 1px solid #ef4444;
-    color: #991b1b;
-    margin-left: 0.25rem;
-}
-
-.btn-delete-txn:hover {
-    background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
-    border-color: #dc2626;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
-}
-
-/* Create Installment Plan Button */
-.btn-create-installment {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border: 1px solid #f59e0b;
-    color: #92400e;
-    margin-left: 0.25rem;
-}
-
-.btn-create-installment:hover {
-    background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
-    border-color: #d97706;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
-}
-
-.actions-cell {
-    white-space: nowrap;
-    min-width: 120px;
-}
-
-/* Link to Projected Event Button */
-.btn-link-event {
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-    border: 1px solid #6366f1;
-    color: #3730a3;
-    margin-left: 0.25rem;
-}
-
-.btn-link-event:hover {
-    background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
-    border-color: #4f46e5;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
-}
-
-/* Link Event Modal */
-#link-event-modal .bulk-modal-content {
-    max-width: 520px;
-}
-
-#link-event-modal .txn-summary {
-    background: #f7fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.25rem;
-    font-size: 0.875rem;
-    color: #4a5568;
-}
-
-#link-event-modal .txn-summary strong {
-    display: block;
-    color: var(--color-text-primary);
-    font-size: 0.95rem;
-    margin-bottom: 0.25rem;
-}
-
-#link-event-modal select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
-    font-size: 0.875rem;
-}
+.page-link:hover { background: var(--gray-50); }
+.page-link.current { background: var(--color-primary); color: #fff; border-color: var(--color-primary); font-weight: 600; }
+.page-ellipsis { display: inline-flex; align-items: center; padding: 0 var(--space-1); color: var(--color-fg-muted); font-size: var(--text-sm); }
 </style>
 
 <!-- Bulk Categorize Modal -->
 <div id="bulk-categorize-modal" class="bulk-modal hidden">
     <div class="bulk-modal-content">
-        <div class="bulk-modal-header">
-            <h2>Categorize Transactions</h2>
-        </div>
+        <div class="bulk-modal-header"><h2>Categorize Transactions</h2></div>
         <div class="bulk-modal-body">
             <label for="bulk-category-select">Select Category:</label>
             <select id="bulk-category-select">
                 <option value="">-- Select a category --</option>
                 <?php foreach ($accounts as $account): ?>
                     <?php if ($account['type'] === 'equity'): ?>
-                        <option value="<?= $account['uuid'] ?>">
-                            <?= htmlspecialchars($account['name']) ?>
-                        </option>
+                        <option value="<?= $account['uuid'] ?>"><?= htmlspecialchars($account['name']) ?></option>
                     <?php endif; ?>
                 <?php endforeach; ?>
             </select>
@@ -943,9 +542,7 @@ try {
 <!-- Bulk Edit Date Modal -->
 <div id="bulk-edit-date-modal" class="bulk-modal hidden">
     <div class="bulk-modal-content">
-        <div class="bulk-modal-header">
-            <h2>Edit Transaction Date</h2>
-        </div>
+        <div class="bulk-modal-header"><h2>Edit Transaction Date</h2></div>
         <div class="bulk-modal-body">
             <label for="bulk-date-input">Select New Date:</label>
             <input type="date" id="bulk-date-input" value="<?= date('Y-m-d') ?>">
@@ -960,18 +557,14 @@ try {
 <!-- Bulk Edit Account Modal -->
 <div id="bulk-edit-account-modal" class="bulk-modal hidden">
     <div class="bulk-modal-content">
-        <div class="bulk-modal-header">
-            <h2>Change Account</h2>
-        </div>
+        <div class="bulk-modal-header"><h2>Change Account</h2></div>
         <div class="bulk-modal-body">
             <label for="bulk-account-select">Select Account:</label>
             <select id="bulk-account-select">
                 <option value="">-- Select an account --</option>
                 <?php foreach ($accounts as $account): ?>
                     <?php if ($account['type'] !== 'equity'): ?>
-                        <option value="<?= $account['uuid'] ?>">
-                            <?= htmlspecialchars($account['name']) ?> (<?= ucfirst($account['type']) ?>)
-                        </option>
+                        <option value="<?= $account['uuid'] ?>"><?= htmlspecialchars($account['name']) ?> (<?= ucfirst($account['type']) ?>)</option>
                     <?php endif; ?>
                 <?php endforeach; ?>
             </select>
@@ -985,17 +578,15 @@ try {
 
 <!-- Link to Projected Event Modal -->
 <div id="link-event-modal" class="bulk-modal hidden">
-    <div class="bulk-modal-content">
-        <div class="bulk-modal-header">
-            <h2>Link to Projected Event</h2>
-        </div>
+    <div class="bulk-modal-content" style="max-width:520px;">
+        <div class="bulk-modal-header"><h2>Link to Projected Event</h2></div>
         <div class="bulk-modal-body">
-            <div class="txn-summary">
-                <strong id="link-modal-txn-desc"></strong>
-                <span id="link-modal-txn-amount"></span>
+            <div style="background:var(--gray-50);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-4);font-size:var(--text-sm);">
+                <strong id="link-modal-txn-desc" style="display:block;margin-bottom:var(--space-1);"></strong>
+                <span id="link-modal-txn-amount" style="color:var(--color-fg-muted);"></span>
             </div>
-            <label for="link-event-select">Select Projected Event:</label>
-            <select id="link-event-select">
+            <label for="link-event-select" style="display:block;margin-bottom:var(--space-2);font-size:var(--text-sm);font-weight:600;">Select Projected Event:</label>
+            <select id="link-event-select" class="input">
                 <option value="">— Select an event —</option>
                 <?php foreach ($unrealized_events as $ev): ?>
                     <option value="<?= htmlspecialchars($ev['uuid']) ?>">
@@ -1013,11 +604,8 @@ try {
     </div>
 </div>
 
-<!-- Include bulk operations CSS and JavaScript -->
 <link rel="stylesheet" href="../css/bulk-operations.css">
 <script src="../js/bulk-operations.js"></script>
-
-<!-- Include search-filter JavaScript -->
 <script src="../js/search-filter.js"></script>
 
 <script>
@@ -1034,31 +622,18 @@ function openLinkModal(txnUuid, txnDescription, txnAmountCents) {
 
 async function submitLinkEvent() {
     const eventUuid = document.getElementById('link-event-select').value;
-    if (!eventUuid) {
-        alert('Please select a projected event.');
-        return;
-    }
+    if (!eventUuid) { alert('Please select a projected event.'); return; }
     const formData = new FormData();
     formData.append('action', 'update');
     formData.append('event_uuid', eventUuid);
     formData.append('is_realized', '1');
     formData.append('linked_transaction_uuid', _linkTxnUuid);
-
     try {
-        const response = await fetch('/pgbudget/api/projected-events.php', {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch('/pgbudget/api/projected-events.php', { method: 'POST', body: formData });
         const data = await response.json();
-        if (data.success) {
-            closeBulkModal('link-event-modal');
-            window.location.reload();
-        } else {
-            alert('Error linking: ' + (data.error || 'Unknown error'));
-        }
-    } catch (err) {
-        alert('Error: ' + err.message);
-    }
+        if (data.success) { closeBulkModal('link-event-modal'); window.location.reload(); }
+        else { alert('Error linking: ' + (data.error || 'Unknown error')); }
+    } catch (err) { alert('Error: ' + err.message); }
 }
 
 async function deleteSingleTransaction(uuid, description) {
@@ -1069,18 +644,11 @@ async function deleteSingleTransaction(uuid, description) {
         confirmClass: 'btn-danger',
         onConfirm:    async () => {
             try {
-                const response = await fetch(`/pgbudget/api/delete-transaction.php?uuid=${encodeURIComponent(uuid)}`, {
-                    method: 'DELETE'
-                });
+                const response = await fetch(`/pgbudget/api/delete-transaction.php?uuid=${encodeURIComponent(uuid)}`, { method: 'DELETE' });
                 const data = await response.json();
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert('Error deleting transaction: ' + (data.error || 'Unknown error'));
-                }
-            } catch (err) {
-                alert('Error deleting transaction: ' + err.message);
-            }
+                if (data.success) { window.location.reload(); }
+                else { alert('Error deleting transaction: ' + (data.error || 'Unknown error')); }
+            } catch (err) { alert('Error deleting transaction: ' + err.message); }
         }
     });
 }
