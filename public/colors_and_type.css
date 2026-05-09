@@ -1,0 +1,257 @@
+/* =====================================================================
+   PgBudget Design System — Colors & Typography
+   Tokens lifted from public/css/core.css (henriquedevops/pgbudget@main)
+   and extended for components used across the app.
+   ===================================================================== */
+
+:root {
+  /* ---------------------------------------------------------------
+     COLORS — Brand (blue) — matches --color-primary in core.css
+     --------------------------------------------------------------- */
+  --color-primary:        #2563eb;
+  --color-primary-hover:  #1d4ed8;
+  --color-primary-light:  #3b82f6;
+  --color-primary-bg:     #eff6ff;
+  --color-primary-700:    #1d4ed8;
+  --color-primary-900:    #1e3a8a;
+
+  /* Surface & border tokens (verbatim from core.css) */
+  --color-surface:        #ffffff;
+  --color-surface-alt:    #f8fafc;
+  --color-bg-page:        #f7fafc;     /* body bg */
+  --color-border:         #e2e8f0;
+  --color-text-primary:   #0f172a;
+  --color-text-muted:     #475569;
+
+  /* ---------------------------------------------------------------
+     Status scales (Tailwind-style, verbatim from core.css)
+     --------------------------------------------------------------- */
+  --success-50:  #f0fdf4;
+  --success-500: #22c55e;
+  --success-700: #15803d;
+
+  --warning-50:  #fffbeb;
+  --warning-500: #f59e0b;
+  --warning-700: #b45309;
+
+  --danger-50:   #fef2f2;
+  --danger-500:  #ef4444;
+  --danger-700:  #b91c1c;
+
+  --info-50:     #eff6ff;
+  --info-500:    #3b82f6;
+  --info-700:    #1d4ed8;
+
+  /* ---------------------------------------------------------------
+     Money semantics — derived from status scales above.
+     The real app uses .positive / .negative / .zero on .summary-amount.
+     --------------------------------------------------------------- */
+  --color-money-positive: var(--success-700);  /* income, positive balance */
+  --color-money-negative: var(--danger-700);   /* outflow, overspent */
+  --color-money-zero:     var(--color-text-muted);
+
+  /* Surfaces tinted by status for badges / banners */
+  --color-money-positive-bg: var(--success-50);
+  --color-money-negative-bg: var(--danger-50);
+
+  /* ---------------------------------------------------------------
+     Neutral / gray scale (verbatim from core.css)
+     --------------------------------------------------------------- */
+  --gray-50:  #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-300: #d1d5db;
+  --gray-400: #6b7280;   /* WCAG-safe muted, 4.54:1 on white */
+  --gray-500: #6b7280;
+  --gray-700: #374151;
+  --gray-900: #111827;
+
+  /* ---------------------------------------------------------------
+     SEMANTIC ALIASES — use these in components, not the raw scales.
+     --------------------------------------------------------------- */
+  --color-fg:           var(--color-text-primary);
+  --color-fg-muted:     var(--color-text-muted);
+  --color-fg-subtle:    var(--gray-400);
+  --color-fg-on-primary: #ffffff;
+
+  --color-action:       var(--color-primary);
+  --color-action-hover: var(--color-primary-hover);
+  --color-action-bg:    var(--color-primary-bg);
+
+  --color-focus-ring:   rgba(37, 99, 235, 0.40);
+
+  /* ---------------------------------------------------------------
+     TYPOGRAPHY — Family
+     The codebase uses the system stack. We stick with it for
+     trustworthy, native-feel rendering.
+     --------------------------------------------------------------- */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+               Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Roboto Mono', monospace;
+
+  /* Tabular numerals — apply to elements holding money */
+  --font-feature-tnum: "tnum" 1, "lnum" 1;
+
+  /* ---------------------------------------------------------------
+     TYPOGRAPHY — Scale (verbatim from core.css, plus display)
+     --------------------------------------------------------------- */
+  --text-xs:    0.75rem;   /* 12 */
+  --text-sm:    0.875rem;  /* 14 */
+  --text-base:  1rem;      /* 16 */
+  --text-lg:    1.125rem;  /* 18 */
+  --text-xl:    1.25rem;   /* 20 */
+  --text-2xl:   1.5rem;    /* 24 */
+  --text-3xl:   2rem;      /* 32 */
+  --text-display: 3rem;    /* 48 — hero "Available to Budget" */
+
+  --leading-tight: 1.25;
+  --leading-snug:  1.4;
+  --leading-base:  1.6;     /* matches body line-height in core.css */
+
+  --tracking-tight:  -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide:    0.02em;
+
+  /* ---------------------------------------------------------------
+     SPACING (rem-based, matches core.css usage 0.25/0.5/1/1.5/2/3rem)
+     --------------------------------------------------------------- */
+  --space-1:  0.25rem;   /* 4  */
+  --space-2:  0.5rem;    /* 8  */
+  --space-3:  0.75rem;   /* 12 */
+  --space-4:  1rem;      /* 16 */
+  --space-5:  1.25rem;   /* 20 */
+  --space-6:  1.5rem;    /* 24 */
+  --space-8:  2rem;      /* 32 */
+  --space-12: 3rem;      /* 48 */
+  --space-16: 4rem;      /* 64 */
+
+  /* ---------------------------------------------------------------
+     RADII (verbatim from core.css)
+     --------------------------------------------------------------- */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-pill: 9999px;
+
+  /* ---------------------------------------------------------------
+     SHADOWS — match the soft drop shadow used on cards in core.css
+     (.welcome-card / .ledger-card use 0 4px 6px rgba(0,0,0,0.1)).
+     We add a softer e1 for dense content cards.
+     --------------------------------------------------------------- */
+  --shadow-e1:    0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-e1-hover: 0 2px 6px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-e2:    0 4px 6px rgba(0, 0, 0, 0.10);   /* matches core.css cards */
+  --shadow-e3:    0 10px 25px rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.08);
+
+  /* ---------------------------------------------------------------
+     Z-INDEX (verbatim from core.css)
+     --------------------------------------------------------------- */
+  --z-table-sticky: 2;
+  --z-table-head:   4;
+  --z-dropdown:   100;
+  --z-sticky:     200;
+  --z-navbar:     300;
+  --z-sidebar:    400;
+  --z-overlay:    500;
+  --z-modal:      600;
+  --z-toast:      700;
+  --z-tooltip:    800;
+  --z-dialog:     900;
+
+  /* ---------------------------------------------------------------
+     MOTION
+     --------------------------------------------------------------- */
+  --duration-fast: 120ms;
+  --duration:      200ms;     /* matches core.css transitions */
+  --duration-slow: 300ms;
+  --ease-out:      cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ---------------------------------------------------------------
+     BREAKPOINTS (verbatim from core.css)
+     --------------------------------------------------------------- */
+  --screen-sm:  480px;
+  --screen-md:  768px;
+  --screen-lg:  1024px;
+  --screen-xl:  1280px;
+  --screen-2xl: 1536px;
+}
+
+/* =====================================================================
+   BASE RESET — mirrors core.css body
+   ===================================================================== */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--color-fg);
+  background-color: var(--color-bg-page);
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+
+/* =====================================================================
+   SEMANTIC TYPE STYLES
+   Use as classes (e.g. <h1 class="t-display">…</h1>) or read variables
+   directly inside component CSS.
+   ===================================================================== */
+
+.t-display {
+  font-size: var(--text-display);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  font-feature-settings: var(--font-feature-tnum);
+}
+
+.t-h1 {
+  font-size: var(--text-3xl);
+  line-height: var(--leading-tight);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+}
+
+.t-h2 {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);
+  font-weight: 600;
+}
+
+.t-h3 {
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+  font-weight: 600;
+}
+
+.t-card-title {
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  font-weight: 600;
+}
+
+.t-body {
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  font-weight: 400;
+}
+
+.t-label {
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--color-fg-muted);
+}
+
+.t-caption {
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: var(--color-fg-muted);
+}
+
+.t-mono { font-family: var(--font-mono); font-feature-settings: var(--font-feature-tnum); }
+
+.t-money-positive { color: var(--color-money-positive); }
+.t-money-negative { color: var(--color-money-negative); }
+.t-money-zero     { color: var(--color-money-zero); }

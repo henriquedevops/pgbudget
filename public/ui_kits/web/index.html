@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>PgBudget — Web UI Kit</title>
+<link rel="stylesheet" href="app.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="Data.js"></script>
+<script type="text/babel" src="Primitives.jsx"></script>
+<script type="text/babel" src="Charts.jsx"></script>
+<script type="text/babel" src="Sidebar.jsx"></script>
+<script type="text/babel" src="Rail.jsx"></script>
+<script type="text/babel" src="Dashboard.jsx"></script>
+<script type="text/babel" src="Budget.jsx"></script>
+<script type="text/babel" src="Transactions.jsx"></script>
+<script type="text/babel" src="Analytics.jsx"></script>
+
+<script type="text/babel">
+const App = () => {
+  const [screen, setScreen] = React.useState('dashboard');
+  const Screen = {
+    dashboard:    window.Dashboard,
+    budget:       window.Budget,
+    transactions: window.Transactions,
+    analytics:    window.Analytics,
+    accounts:     window.Dashboard,
+    settings:     window.Dashboard,
+    goals:        window.Budget,
+    recurring:    window.Transactions,
+    loans:        window.Transactions,
+  }[screen] || window.Dashboard;
+
+  const titles = {
+    dashboard:    { h: 'Good morning, Alex',  s: 'April 2026 \u00b7 30 days into the month' },
+    budget:       { h: 'Budget',              s: 'Assign every dollar a job.' },
+    transactions: { h: 'Transactions',        s: 'All accounts \u00b7 April 2026' },
+    analytics:    { h: 'Analytics',           s: 'Your money over time' },
+    accounts:     { h: 'Accounts',            s: 'Assets & liabilities' },
+    settings:     { h: 'Settings',            s: 'Workspace, ledger, and account preferences' },
+    goals:        { h: 'Goals',               s: 'Things you\u2019re saving for' },
+    recurring:    { h: 'Recurring',           s: 'Scheduled inflows and outflows' },
+    loans:        { h: 'Loans',               s: 'Liability accounts and payment schedules' },
+  };
+  const t = titles[screen] || titles.dashboard;
+
+  return (
+    <div className="app" data-screen-label={screen}>
+      <Sidebar active={screen} onNavigate={setScreen}/>
+      <main className="main">
+        <div className="main-head">
+          <div>
+            <h1>{t.h}</h1>
+            {t.s && <div className="sub">{t.s}</div>}
+          </div>
+          <div style={{display:'flex', gap: 'var(--space-2)', alignItems:'center'}}>
+            <div className="search" style={{width: 240}}>
+              <Icon name="search" size={16}/>
+              <input placeholder="Search anything"/>
+            </div>
+            <button className="btn btn-ghost btn-icon" aria-label="Notifications"><Icon name="bell"/></button>
+            <button className="btn btn-primary"><Icon name="plus" size={14}/> Add transaction</button>
+          </div>
+        </div>
+        <Screen onNavigate={setScreen}/>
+      </main>
+      <aside className="rail">
+        <Rail/>
+      </aside>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

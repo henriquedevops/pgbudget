@@ -1,9 +1,9 @@
 :root {
     /* ---- Brand / Primary ---- */
-    --color-primary:       #2b6cb0;
-    --color-primary-hover: #245a9c;
-    --color-primary-light: #3182ce;
-    --color-primary-bg:    #ebf8ff;
+    --color-primary:       #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-primary-light: #3b82f6;
+    --color-primary-bg:    #eff6ff;
 
     /* ---- Border Radius Scale ---- */
     --radius-sm:   4px;
@@ -81,7 +81,7 @@ body {
 
 /* Navigation */
 .navbar {
-    background-color: #2b6cb0;
+    background-color: var(--color-primary);
     color: white;
     padding: 1rem 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -207,7 +207,7 @@ body {
 .header h1 {
     font-size: 3rem;
     margin-bottom: 0.5rem;
-    color: #2b6cb0;
+    color: var(--color-primary);
 }
 
 .header p {
@@ -238,7 +238,7 @@ body {
 }
 
 .ledger-card h3 a {
-    color: #2b6cb0;
+    color: var(--color-primary);
     text-decoration: none;
 }
 
@@ -359,7 +359,7 @@ body {
 .form-select:focus,
 .form-textarea:focus {
     outline: none;
-    border-color: #3182ce;
+    border-color: var(--color-primary-light);
     box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
 }
 
@@ -610,8 +610,8 @@ body {
 }
 
 .message-info {
-    background: #ebf8ff;
-    border-left: 4px solid #3182ce;
+    background: var(--color-primary-bg);
+    border-left: 4px solid var(--color-primary-light);
     color: #2c5aa0;
 }
 
@@ -747,7 +747,7 @@ body {
 
 .period-form select:focus {
     outline: none;
-    border-color: #3182ce;
+    border-color: var(--color-primary-light);
     box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
 }
 
