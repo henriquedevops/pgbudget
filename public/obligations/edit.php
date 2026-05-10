@@ -236,7 +236,7 @@ require_once '../../includes/header.php';
                             $<?= number_format((float)$future_val, 2) ?> starting <?= $eff_date ?>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-small btn-danger" id="clearFutureAmountBtn">
+                    <button type="button" class="btn btn-sm btn-danger" id="clearFutureAmountBtn">
                         Remove scheduled change
                     </button>
                 </div>

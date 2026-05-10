@@ -268,7 +268,7 @@ require_once '../../includes/header.php';
                                             <span class="text-muted">(<?= number_format($progress_percent, 0) ?>%)</span>
                                         </div>
                                         <div class="progress-bar-container">
-                                            <div class="progress-bar" style="width: <?= $progress_percent ?>%"></div>
+                                            <div class="progress-bar bar" style="width: <?= $progress_percent ?>%"></div>
                                         </div>
                                         <?php if ($remaining > 0): ?>
                                             <small class="text-muted">
@@ -298,7 +298,7 @@ require_once '../../includes/header.php';
                                     <?php endif; ?>
                                 </td>
                                 <td data-label="Status">
-                                    <span class="status-badge status-<?= strtolower($plan['status']) ?>">
+                                    <span class="badge status-badge status-<?= strtolower($plan['status']) ?>">
                                         <?= ucfirst($plan['status']) ?>
                                     </span>
                                 </td>

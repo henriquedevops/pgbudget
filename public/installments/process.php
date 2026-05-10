@@ -204,7 +204,7 @@ require_once '../../includes/header.php';
                     <span><?= number_format($progress_percent, 1) ?>%</span>
                 </div>
                 <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: <?= $progress_percent ?>%"></div>
+                    <div class="progress-bar bar" style="width: <?= $progress_percent ?>%"></div>
                 </div>
                 <p class="text-muted" style="margin-top: 8px;">
                     <?= $remaining_installments ?> installment<?= $remaining_installments != 1 ? 's' : '' ?> remaining

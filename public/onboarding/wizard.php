@@ -56,7 +56,7 @@ require_once '../../includes/header.php';
 <div class="onboarding-container">
     <!-- Progress indicator -->
     <div class="onboarding-progress">
-        <div class="progress-bar">
+        <div class="progress-bar bar">
             <div class="progress-fill" style="width: <?= ($currentStep / 5) * 100 ?>%"></div>
         </div>
         <div class="progress-text">Step <?= $currentStep ?> of 5</div>

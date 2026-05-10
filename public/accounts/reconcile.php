@@ -140,8 +140,8 @@ require_once '../../includes/header.php';
         </p>
 
         <div class="transactions-actions">
-            <button type="button" id="select-all-btn" class="btn btn-small btn-secondary">Select All</button>
-            <button type="button" id="deselect-all-btn" class="btn btn-small btn-secondary">Deselect All</button>
+            <button type="button" id="select-all-btn" class="btn btn-sm btn-secondary">Select All</button>
+            <button type="button" id="deselect-all-btn" class="btn btn-sm btn-secondary">Deselect All</button>
             <span class="transactions-count">
                 <span id="selected-count">0</span> of <span id="total-count">0</span> selected
             </span>

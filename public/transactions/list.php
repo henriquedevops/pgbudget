@@ -242,7 +242,7 @@ function type_url(array $base, string $type): string {
             <!-- Filter row 1 -->
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-3);">
                 <div style="display:flex;flex-direction:column;gap:var(--space-1);">
-                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="account">Account</label>
+                    <label class="eyebrow" for="account">Account</label>
                     <select id="account" name="account" class="input">
                         <option value="">All Accounts</option>
                         <?php foreach ($accounts as $account): ?>
@@ -256,7 +256,7 @@ function type_url(array $base, string $type): string {
                 </div>
 
                 <div style="display:flex;flex-direction:column;gap:var(--space-1);">
-                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="category">Category</label>
+                    <label class="eyebrow" for="category">Category</label>
                     <select id="category" name="category" class="input">
                         <option value="">All Categories</option>
                         <?php foreach ($accounts as $account): ?>
@@ -270,12 +270,12 @@ function type_url(array $base, string $type): string {
                 </div>
 
                 <div style="display:flex;flex-direction:column;gap:var(--space-1);">
-                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="date_from">From Date</label>
+                    <label class="eyebrow" for="date_from">From Date</label>
                     <input type="date" id="date_from" name="date_from" class="input" value="<?= htmlspecialchars($date_from) ?>">
                 </div>
 
                 <div style="display:flex;flex-direction:column;gap:var(--space-1);">
-                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="date_to">To Date</label>
+                    <label class="eyebrow" for="date_to">To Date</label>
                     <input type="date" id="date_to" name="date_to" class="input" value="<?= htmlspecialchars($date_to) ?>">
                 </div>
             </div>
@@ -283,17 +283,17 @@ function type_url(array $base, string $type): string {
             <!-- Filter row 2 -->
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-3);">
                 <div style="display:flex;flex-direction:column;gap:var(--space-1);">
-                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="amount_min">Min Amount ($)</label>
+                    <label class="eyebrow" for="amount_min">Min Amount ($)</label>
                     <input type="number" id="amount_min" name="amount_min" class="input" step="0.01" min="0" value="<?= htmlspecialchars($amount_min) ?>" placeholder="0.00">
                 </div>
 
                 <div style="display:flex;flex-direction:column;gap:var(--space-1);">
-                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="amount_max">Max Amount ($)</label>
+                    <label class="eyebrow" for="amount_max">Max Amount ($)</label>
                     <input type="number" id="amount_max" name="amount_max" class="input" step="0.01" min="0" value="<?= htmlspecialchars($amount_max) ?>" placeholder="0.00">
                 </div>
 
                 <div style="display:flex;flex-direction:column;gap:var(--space-1);">
-                    <label style="font-size:var(--text-xs);font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:0.06em;" for="sort_by">Sort By</label>
+                    <label class="eyebrow" for="sort_by">Sort By</label>
                     <select id="sort_by" name="sort_by" class="input">
                         <option value="date_desc" <?= $sort_by === 'date_desc' ? 'selected' : '' ?>>Date (Newest First)</option>
                         <option value="date_asc" <?= $sort_by === 'date_asc' ? 'selected' : '' ?>>Date (Oldest First)</option>

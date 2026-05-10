@@ -203,7 +203,7 @@ require_once '../../includes/header.php';
             </div>
             <div class="detail-item">
                 <span class="detail-label">Status</span>
-                <span class="status-badge status-<?= strtolower($plan['status']) ?>">
+                <span class="badge status-badge status-<?= strtolower($plan['status']) ?>">
                     <?= ucfirst($plan['status']) ?>
                 </span>
             </div>
@@ -256,7 +256,7 @@ require_once '../../includes/header.php';
                 <span><?= number_format($percent_complete, 1) ?>%</span>
             </div>
             <div class="progress-bar-container">
-                <div class="progress-bar" style="width: <?= $percent_complete ?>%"></div>
+                <div class="progress-bar bar" style="width: <?= $percent_complete ?>%"></div>
             </div>
         </div>
 
@@ -326,7 +326,7 @@ require_once '../../includes/header.php';
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <span class="status-badge status-<?= $item['status'] ?>">
+                                <span class="badge status-badge status-<?= $item['status'] ?>">
                                     <?= ucfirst($item['status']) ?>
                                 </span>
                             </td>

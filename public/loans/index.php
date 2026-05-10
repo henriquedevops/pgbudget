@@ -176,7 +176,7 @@ require_once '../../includes/header.php';
                                     $percent_paid = (($loan['principal_amount'] - $loan['current_balance']) / $loan['principal_amount']) * 100;
                                     ?>
                                     <div class="progress-bar-container" title="<?= number_format($percent_paid, 1) ?>% paid">
-                                        <div class="progress-bar" style="width: <?= min(100, $percent_paid) ?>%"></div>
+                                        <div class="progress-bar bar" style="width: <?= min(100, $percent_paid) ?>%"></div>
                                     </div>
                                 <?php endif; ?>
                             </td>
@@ -201,7 +201,7 @@ require_once '../../includes/header.php';
                                 </small>
                             </td>
                             <td>
-                                <span class="status-badge status-<?= strtolower($loan['status']) ?>">
+                                <span class="badge status-badge status-<?= strtolower($loan['status']) ?>">
                                     <?php
                                     $status_labels = [
                                         'active' => '✓ Active',
@@ -215,12 +215,12 @@ require_once '../../includes/header.php';
                                 </span>
                             </td>
                             <td class="loan-actions">
-                                <a href="view.php?ledger=<?= $ledger_uuid ?>&loan=<?= $loan['uuid'] ?>" class="btn btn-small btn-primary">View</a>
+                                <a href="view.php?ledger=<?= $ledger_uuid ?>&loan=<?= $loan['uuid'] ?>" class="btn btn-sm btn-primary">View</a>
                                 <?php if ($loan['status'] === 'active'): ?>
-                                    <a href="record-payment.php?ledger=<?= $ledger_uuid ?>&loan=<?= $loan['uuid'] ?>" class="btn btn-small btn-success">💵 Pay</a>
+                                    <a href="record-payment.php?ledger=<?= $ledger_uuid ?>&loan=<?= $loan['uuid'] ?>" class="btn btn-sm btn-success">💵 Pay</a>
                                 <?php endif; ?>
-                                <a href="edit.php?ledger=<?= $ledger_uuid ?>&loan=<?= $loan['uuid'] ?>" class="btn btn-small btn-secondary">Edit</a>
-                                <button class="btn btn-small btn-danger delete-loan-btn"
+                                <a href="edit.php?ledger=<?= $ledger_uuid ?>&loan=<?= $loan['uuid'] ?>" class="btn btn-sm btn-secondary">Edit</a>
+                                <button class="btn btn-sm btn-danger delete-loan-btn"
                                         data-loan-uuid="<?= $loan['uuid'] ?>"
                                         data-loan-name="<?= htmlspecialchars($loan['lender_name']) ?>"
                                         data-ledger-uuid="<?= $ledger_uuid ?>"

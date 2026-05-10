@@ -157,7 +157,7 @@ try {
                                         <?= $txn['type'] === 'inflow' ? '+' : '-' ?><?= formatCurrency($txn['amount']) ?>
                                     </div>
                                     <a href="../transactions/edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($txn['uuid']) ?>"
-                                       class="btn btn-small btn-secondary">View</a>
+                                       class="btn btn-sm btn-secondary">View</a>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -186,7 +186,7 @@ try {
                                 </div>
                                 <div class="result-action">
                                     <a href="../transactions/account.php?ledger=<?= urlencode($ledger_uuid) ?>&account=<?= urlencode($acc['uuid']) ?>"
-                                       class="btn btn-small btn-secondary">View Transactions</a>
+                                       class="btn btn-sm btn-secondary">View Transactions</a>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -209,7 +209,7 @@ try {
                                 </div>
                                 <div class="result-action">
                                     <a href="../transactions/assign.php?ledger=<?= urlencode($ledger_uuid) ?>&category=<?= urlencode($cat['uuid']) ?>"
-                                       class="btn btn-small btn-secondary">Assign Budget</a>
+                                       class="btn btn-sm btn-secondary">Assign Budget</a>
                                 </div>
                             </div>
                         <?php endforeach; ?>

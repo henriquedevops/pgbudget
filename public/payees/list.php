@@ -77,8 +77,8 @@ require_once '../../includes/header.php';
                                 <?php endif; ?>
                             </td>
                             <td class="actions">
-                                <a href="edit.php?payee=<?= urlencode($payee['uuid']) ?>" class="btn btn-small btn-secondary">Edit</a>
-                                <a href="delete.php?payee=<?= urlencode($payee['uuid']) ?>" class="btn btn-small btn-danger"
+                                <a href="edit.php?payee=<?= urlencode($payee['uuid']) ?>" class="btn btn-sm btn-secondary">Edit</a>
+                                <a href="delete.php?payee=<?= urlencode($payee['uuid']) ?>" class="btn btn-sm btn-danger"
                                    onclick="return confirm('Are you sure you want to delete this payee? This will unlink it from <?= $payee['transaction_count'] ?> transaction(s).');">Delete</a>
                             </td>
                         </tr>

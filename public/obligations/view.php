@@ -166,11 +166,11 @@ require_once '../../includes/header.php';
                     <span class="detail-label">Status:</span>
                     <span class="detail-value">
                         <?php if ($obligation['is_paused']): ?>
-                            <span class="status-badge status-paused">⏸ Paused</span>
+                            <span class="badge badge-warning">⏸ Paused</span>
                         <?php elseif ($obligation['is_active']): ?>
-                            <span class="status-badge status-active">✓ Active</span>
+                            <span class="badge badge-success">✓ Active</span>
                         <?php else: ?>
-                            <span class="status-badge status-inactive">✗ Inactive</span>
+                            <span class="badge badge-neutral">✗ Inactive</span>
                         <?php endif; ?>
                     </span>
                 </div>
@@ -344,7 +344,7 @@ require_once '../../includes/header.php';
 
                         <div class="payment-actions">
                             <?php if ($payment['status'] === 'scheduled' || $payment['status'] === 'partial'): ?>
-                                <button class="btn btn-small btn-success mark-paid-btn"
+                                <button class="btn btn-sm btn-success mark-paid-btn"
                                         data-payment-uuid="<?= $payment['uuid'] ?>"
                                         data-payment-name="<?= htmlspecialchars($obligation['name']) ?>"
                                         data-payment-amount="<?= $payment['scheduled_amount'] ?>"
@@ -354,7 +354,7 @@ require_once '../../includes/header.php';
                             <?php endif; ?>
 
                             <?php if ($payment['status'] !== 'scheduled'): ?>
-                                <button class="btn btn-small btn-secondary edit-payment-btn"
+                                <button class="btn btn-sm btn-secondary edit-payment-btn"
                                         data-payment-uuid="<?= $payment['uuid'] ?>"
                                         data-payment-data='<?= htmlspecialchars(json_encode($payment)) ?>'>
                                     Edit Payment

@@ -210,7 +210,7 @@ try {
                                     </span>
                                 </td>
                                 <td class="actions-cell" data-label="Actions">
-                                    <a href="edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($transaction['uuid']) ?>" class="btn btn-small btn-edit" title="Edit Transaction">✏️</a>
+                                    <a href="edit.php?ledger=<?= urlencode($ledger_uuid) ?>&transaction=<?= urlencode($transaction['uuid']) ?>" class="btn btn-sm btn-edit" title="Edit Transaction">✏️</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

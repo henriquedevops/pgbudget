@@ -284,7 +284,7 @@ require_once '../../includes/header.php';
                                 <div class="obligation-amount overdue-amount">
                                     <?= formatLoanAmount($payment['amount']) ?>
                                 </div>
-                                <button class="btn btn-success btn-small mark-paid-btn"
+                                <button class="btn btn-success btn-sm mark-paid-btn"
                                         data-payment-uuid="<?= $payment['payment_uuid'] ?>"
                                         data-payment-name="<?= htmlspecialchars($payment['name']) ?>"
                                         data-payment-amount="<?= $payment['amount'] ?>"
@@ -332,7 +332,7 @@ require_once '../../includes/header.php';
                                 <div class="obligation-amount">
                                     <?= formatLoanAmount($payment['amount']) ?>
                                 </div>
-                                <button class="btn btn-success btn-small mark-paid-btn"
+                                <button class="btn btn-success btn-sm mark-paid-btn"
                                         data-payment-uuid="<?= $payment['payment_uuid'] ?>"
                                         data-payment-name="<?= htmlspecialchars($payment['name']) ?>"
                                         data-payment-amount="<?= $payment['amount'] ?>"
@@ -374,7 +374,7 @@ require_once '../../includes/header.php';
                                 <div class="obligation-amount">
                                     <?= formatLoanAmount($payment['amount']) ?>
                                 </div>
-                                <button class="btn btn-success btn-small mark-paid-btn"
+                                <button class="btn btn-success btn-sm mark-paid-btn"
                                         data-payment-uuid="<?= $payment['payment_uuid'] ?>"
                                         data-payment-name="<?= htmlspecialchars($payment['name']) ?>"
                                         data-payment-amount="<?= $payment['amount'] ?>"
@@ -450,18 +450,18 @@ require_once '../../includes/header.php';
                                 </td>
                                 <td>
                                     <?php if ($obligation['is_paused']): ?>
-                                        <span class="status-badge status-paused">⏸ Paused</span>
+                                        <span class="badge badge-warning">⏸ Paused</span>
                                     <?php elseif ($obligation['is_active']): ?>
-                                        <span class="status-badge status-active">✓ Active</span>
+                                        <span class="badge badge-success">✓ Active</span>
                                     <?php else: ?>
-                                        <span class="status-badge status-inactive">✗ Inactive</span>
+                                        <span class="badge badge-neutral">✗ Inactive</span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="obligation-actions-cell">
                                     <a href="view.php?ledger=<?= $ledger_uuid ?>&obligation=<?= $obligation['uuid'] ?>"
-                                       class="btn btn-small btn-primary">View</a>
+                                       class="btn btn-sm btn-primary">View</a>
                                     <a href="edit.php?ledger=<?= $ledger_uuid ?>&obligation=<?= $obligation['uuid'] ?>"
-                                       class="btn btn-small btn-secondary">Edit</a>
+                                       class="btn btn-sm btn-secondary">Edit</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

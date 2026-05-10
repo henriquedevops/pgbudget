@@ -667,7 +667,7 @@ async function loadUpcomingInstallments() {
                     <div class="installment-status">
                         <span class="status-badge ${statusClass}">${statusText}</span>
                         ${schedule.status !== 'processed' ? `
-                            <a href="../installments/process.php?ledger=${ledgerUuid}&plan=${schedule.plan_uuid}" class="btn btn-small btn-primary">Process</a>
+                            <a href="../installments/process.php?ledger=${ledgerUuid}&plan=${schedule.plan_uuid}" class="btn btn-sm btn-primary">Process</a>
                         ` : ''}
                     </div>
                 </div>

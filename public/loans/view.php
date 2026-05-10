@@ -189,7 +189,7 @@ require_once '../../includes/header.php';
             <span><?= number_format($percent_paid, 1) ?>% Paid</span>
         </div>
         <div class="progress-bar-container">
-            <div class="progress-bar" style="width: <?= min(100, $percent_paid) ?>%"></div>
+            <div class="progress-bar bar" style="width: <?= min(100, $percent_paid) ?>%"></div>
         </div>
         <div class="progress-details">
             <span>Paid: <?= formatCurrency($loan['principal_amount'] - $loan['current_balance']) ?></span>
@@ -236,7 +236,7 @@ require_once '../../includes/header.php';
             <div class="detail-item">
                 <span class="detail-label">Status:</span>
                 <span class="detail-value">
-                    <span class="status-badge status-<?= strtolower($loan['status']) ?>">
+                    <span class="badge status-badge status-<?= strtolower($loan['status']) ?>">
                         <?php
                         $status_labels = [
                             'active' => '✓ Active',

@@ -186,7 +186,7 @@ require_once '../../includes/header.php';
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="progress-bar">
+                                    <div class="progress-bar bar">
                                         <div class="progress-fill <?= $usage_percent > 100 ? 'overspent' : '' ?>"
                                              style="width: <?= min($usage_percent, 100) ?>%">
                                         </div>

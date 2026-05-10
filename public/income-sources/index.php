@@ -232,14 +232,14 @@ require_once '../../includes/header.php';
                                         <td><?= formatOccurrenceMonths($source['occurrence_months']) ?></td>
                                         <td>
                                             <?php if ($source['is_active']): ?>
-                                                <span class="status-badge status-active">Active</span>
+                                                <span class="badge badge-success">Active</span>
                                             <?php else: ?>
-                                                <span class="status-badge status-inactive">Inactive</span>
+                                                <span class="badge badge-neutral">Inactive</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="actions-cell">
                                             <a href="edit.php?ledger=<?= $ledger_uuid ?>&source=<?= $source['uuid'] ?>"
-                                               class="btn btn-small btn-secondary">Edit</a>
+                                               class="btn btn-sm btn-secondary">Edit</a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -314,14 +314,14 @@ require_once '../../includes/header.php';
                                         <td><?= ucfirst(str_replace('_', ' ', $ded['frequency'])) ?></td>
                                         <td>
                                             <?php if ($ded['is_active']): ?>
-                                                <span class="status-badge status-active">Active</span>
+                                                <span class="badge badge-success">Active</span>
                                             <?php else: ?>
-                                                <span class="status-badge status-inactive">Inactive</span>
+                                                <span class="badge badge-neutral">Inactive</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="actions-cell">
                                             <a href="../payroll-deductions/edit.php?ledger=<?= $ledger_uuid ?>&deduction=<?= $ded['uuid'] ?>"
-                                               class="btn btn-small btn-secondary">Edit</a>
+                                               class="btn btn-sm btn-secondary">Edit</a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

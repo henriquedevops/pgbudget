@@ -49,8 +49,8 @@ require_once '../../includes/header.php';
                                     <?php endif; ?>
                                 </div>
                                 <div class="budget-actions">
-                                    <a href="../budget/dashboard.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-small btn-primary">Open</a>
-                                    <a href="../accounts/list.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-small btn-secondary">Accounts</a>
+                                    <a href="../budget/dashboard.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-sm btn-primary">Open</a>
+                                    <a href="../accounts/list.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-sm btn-secondary">Accounts</a>
                                 </div>
                             </div>
                         <?php endforeach; ?>

@@ -57,7 +57,7 @@ require_once '../../includes/header.php';
     <div class="filter-card">
         <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:var(--space-4);align-items:flex-end;">
             <div>
-                <label style="display:block;font-size:var(--text-xs);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-fg-muted);margin-bottom:var(--space-1);">Category</label>
+                <label class="eyebrow" style="display:block;margin-bottom:var(--space-1);">Category</label>
                 <select id="category-select" class="input">
                     <option value="">-- Select a category --</option>
                     <?php foreach ($categories as $category): ?>
@@ -68,7 +68,7 @@ require_once '../../includes/header.php';
                 </select>
             </div>
             <div>
-                <label style="display:block;font-size:var(--text-xs);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-fg-muted);margin-bottom:var(--space-1);">Time Period</label>
+                <label class="eyebrow" style="display:block;margin-bottom:var(--space-1);">Time Period</label>
                 <select id="months-select" class="input">
                     <option value="3">Last 3 months</option>
                     <option value="6">Last 6 months</option>

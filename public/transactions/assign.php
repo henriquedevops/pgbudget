@@ -145,7 +145,7 @@ require_once '../../includes/header.php';
     <?php else: ?>
         <div class="alert alert-error">
             <strong>No funds available!</strong> You need to add income before you can assign money to categories.
-            <a href="../transactions/add.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary btn-small">Add Income</a>
+            <a href="../transactions/add.php?ledger=<?= $ledger_uuid ?>" class="btn btn-primary btn-sm">Add Income</a>
         </div>
     <?php endif; ?>
 
@@ -316,7 +316,7 @@ require_once '../../includes/header.php';
     border: 1px solid #81e6d9;
 }
 
-.btn-small {
+.btn-sm {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     margin-left: 1rem;

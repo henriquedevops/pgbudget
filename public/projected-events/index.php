@@ -222,7 +222,7 @@ require_once '../../includes/header.php';
                                 </span>
                             </td>
                             <td>
-                                <span class="status-badge status-<?= $status ?>">
+                                <span class="badge status-badge status-<?= $status ?>">
                                     <?= match($status) {
                                         'realized'  => 'Realized',
                                         'recurring' => 'Recurring',
@@ -235,12 +235,12 @@ require_once '../../includes/header.php';
                             </td>
                             <td class="actions-cell">
                                 <a href="edit.php?ledger=<?= $ledger_uuid ?>&event=<?= $event['uuid'] ?>"
-                                   class="btn btn-small btn-secondary">Edit</a>
+                                   class="btn btn-sm btn-secondary">Edit</a>
                                 <?php if ($event['frequency'] !== 'one_time'): ?>
                                 <a href="occurrences.php?ledger=<?= $ledger_uuid ?>&event=<?= $event['uuid'] ?>"
-                                   class="btn btn-small btn-secondary">Manage</a>
+                                   class="btn btn-sm btn-secondary">Manage</a>
                                 <?php endif; ?>
-                                <button class="btn btn-small btn-danger"
+                                <button class="btn btn-sm btn-danger"
                                         onclick="deleteEvent('<?= $event['uuid'] ?>', '<?= htmlspecialchars(addslashes($event['name'])) ?>')">
                                     Delete
                                 </button>
@@ -300,7 +300,7 @@ require_once '../../includes/header.php';
                     </td>
                     <td>
                         <?php if ($plan['remaining_count'] > 0): ?>
-                            <span class="amount negative">-<?= formatCurrency($plan['total_remaining']) ?></span>
+                            <span class="amount negative money neg tnum">-<?= formatCurrency($plan['total_remaining']) ?></span>
                             <br><small class="text-muted"><?= $plan['remaining_count'] ?> installments</small>
                         <?php else: ?>
                             <span class="text-muted">—</span>
@@ -308,7 +308,7 @@ require_once '../../includes/header.php';
                     </td>
                     <td class="actions-cell">
                         <a href="../installments/view.php?ledger=<?= $ledger_uuid ?>&plan=<?= $plan['uuid'] ?>"
-                           class="btn btn-small btn-secondary">View</a>
+                           class="btn btn-sm btn-secondary">View</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>

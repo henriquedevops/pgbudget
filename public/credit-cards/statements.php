@@ -210,7 +210,7 @@ require_once '../../includes/header.php';
                             <?php endif; ?>
                         </div>
                         <div class="payment-status">
-                            <span class="status-badge status-<?= $payment['status'] ?>">
+                            <span class="badge status-badge status-<?= $payment['status'] ?>">
                                 <?= ucfirst($payment['status']) ?>
                             </span>
                             <?php if ($payment['actual_amount_paid']): ?>
@@ -279,11 +279,11 @@ require_once '../../includes/header.php';
                                 <span class="summary-label">Status</span>
                                 <span class="summary-value">
                                     <?php if ($isPastDue): ?>
-                                        <span class="status-past-due">⚠️ Past Due</span>
+                                        <span class="badge badge-danger">⚠️ Past Due</span>
                                     <?php elseif ($daysUntilDue <= 7): ?>
-                                        <span class="status-due-soon">Due in <?= $daysUntilDue ?> day<?= $daysUntilDue !== 1 ? 's' : '' ?></span>
+                                        <span class="badge badge-warning">Due in <?= $daysUntilDue ?> day<?= $daysUntilDue !== 1 ? 's' : '' ?></span>
                                     <?php else: ?>
-                                        <span class="status-on-track">Due in <?= $daysUntilDue ?> days</span>
+                                        <span class="badge badge-success">Due in <?= $daysUntilDue ?> days</span>
                                     <?php endif; ?>
                                 </span>
                             </div>

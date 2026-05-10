@@ -133,7 +133,7 @@ require_once '../../includes/header.php';
     <div class="data-table-card">
         <div class="table-header">
             <h3>Active Installment Plans</h3>
-            <a href="../installments/?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-small btn-primary">View All Plans</a>
+            <a href="../installments/?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-sm btn-primary">View All Plans</a>
         </div>
         <div id="plans-table" class="table-responsive">
             <p class="loading-text">Loading data...</p>
@@ -372,7 +372,7 @@ const InstallmentReport = {
                             </td>
                             <td>${plan.next_due_date ? new Date(plan.next_due_date).toLocaleDateString() : 'Completed'}</td>
                             <td>
-                                <a href="../installments/view.php?plan=${plan.plan_uuid}&ledger=${this.ledgerUuid}" class="btn btn-small btn-secondary">View</a>
+                                <a href="../installments/view.php?plan=${plan.plan_uuid}&ledger=${this.ledgerUuid}" class="btn btn-sm btn-secondary">View</a>
                             </td>
                         </tr>
                     `).join('')}

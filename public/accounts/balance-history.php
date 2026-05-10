@@ -220,7 +220,7 @@ try {
                         </div>
                     </div>
                 <?php endforeach; ?>
-                <a href="../transactions/account.php?ledger=<?= urlencode($ledger_uuid) ?>&account=<?= urlencode($account_uuid) ?>" class="btn btn-secondary btn-small">View All Transactions</a>
+                <a href="../transactions/account.php?ledger=<?= urlencode($ledger_uuid) ?>&account=<?= urlencode($account_uuid) ?>" class="btn btn-secondary btn-sm">View All Transactions</a>
             </div>
         </div>
     <?php endif; ?>

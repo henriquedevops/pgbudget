@@ -134,15 +134,15 @@ function renderGoalButton($category_uuid, $category_name) {
     if ($goal) {
         // Edit/Delete buttons
         return sprintf(
-            '<button type="button" class="btn btn-small btn-goal edit-goal-btn" data-goal-uuid="%s" title="Edit Goal" aria-label="Edit goal">🎯 Edit</button>' .
-            '<button type="button" class="btn btn-small btn-goal-delete delete-goal-btn" data-goal-uuid="%s" title="Delete Goal" aria-label="Delete goal">✕</button>',
+            '<button type="button" class="btn btn-sm btn-goal edit-goal-btn" data-goal-uuid="%s" title="Edit Goal" aria-label="Edit goal">🎯 Edit</button>' .
+            '<button type="button" class="btn btn-sm btn-goal-delete delete-goal-btn" data-goal-uuid="%s" title="Delete Goal" aria-label="Delete goal">✕</button>',
             htmlspecialchars($goal['goal_uuid']),
             htmlspecialchars($goal['goal_uuid'])
         );
     } else {
         // Set Goal button
         return sprintf(
-            '<button type="button" class="btn btn-small btn-goal set-goal-btn" data-category-uuid="%s" data-category-name="%s" title="Set Goal">🎯 Set Goal</button>',
+            '<button type="button" class="btn btn-sm btn-goal set-goal-btn" data-category-uuid="%s" data-category-name="%s" title="Set Goal">🎯 Set Goal</button>',
             htmlspecialchars($category_uuid),
             htmlspecialchars($category_name)
         );

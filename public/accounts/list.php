@@ -191,10 +191,10 @@ require_once '../../includes/header.php';
                                             </td>
                                         <?php endif; ?>
                                         <td class="account-actions">
-                                            <a href="../transactions/account.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-secondary">View</a>
-                                            <a href="balance-history.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-info" title="Balance History">📊</a>
+                                            <a href="../transactions/account.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-sm btn-secondary">View</a>
+                                            <a href="balance-history.php?ledger=<?= $ledger_uuid ?>&account=<?= $account['account_uuid'] ?>" class="btn btn-sm btn-info" title="Balance History">📊</a>
                                             <?php if ($account['account_type'] === 'asset' || $account['account_type'] === 'liability'): ?>
-                                                <a href="reconcile.php?account=<?= $account['account_uuid'] ?>" class="btn btn-small btn-warning" title="Reconcile Account">⚖️ Reconcile</a>
+                                                <a href="reconcile.php?account=<?= $account['account_uuid'] ?>" class="btn btn-sm btn-warning" title="Reconcile Account">⚖️ Reconcile</a>
                                             <?php endif; ?>
 
                                             <?php
@@ -202,7 +202,7 @@ require_once '../../includes/header.php';
                                             $is_special = in_array($account['account_name'], ['Income', 'Off-budget', 'Unassigned']) && $account['account_type'] === 'equity';
                                             if (!$is_special):
                                             ?>
-                                                <button class="btn btn-small btn-danger delete-account-btn"
+                                                <button class="btn btn-sm btn-danger delete-account-btn"
                                                         data-account-uuid="<?= $account['account_uuid'] ?>"
                                                         data-account-name="<?= htmlspecialchars($account['account_name']) ?>"
                                                         data-account-type="<?= $account['account_type'] ?>"
@@ -212,7 +212,7 @@ require_once '../../includes/header.php';
                                             <?php endif; ?>
 
                                             <?php if ($account['account_type'] === 'liability'): ?>
-                                                <button class="btn btn-small btn-success pay-cc-btn"
+                                                <button class="btn btn-sm btn-success pay-cc-btn"
                                                         data-cc-uuid="<?= $account['account_uuid'] ?>"
                                                         data-cc-name="<?= htmlspecialchars($account['account_name']) ?>"
                                                         data-cc-balance="<?= $account['current_balance'] ?>"
@@ -221,7 +221,7 @@ require_once '../../includes/header.php';
                                                         title="Pay Credit Card">💳 Pay</button>
                                             <?php endif; ?>
                                             <?php if ($account['account_type'] === 'equity' && !in_array($account['account_name'], ['Income', 'Off-budget', 'Unassigned'])): ?>
-                                                <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $account['account_uuid'] ?>" class="btn btn-small btn-primary">Assign</a>
+                                                <a href="../transactions/assign.php?ledger=<?= $ledger_uuid ?>&category=<?= $account['account_uuid'] ?>" class="btn btn-sm btn-primary">Assign</a>
                                                 <?php
                                                 // Check if it's not a CC payment category
                                                 $is_cc_payment = false;
@@ -233,7 +233,7 @@ require_once '../../includes/header.php';
                                                 } catch (Exception $e) {}
 
                                                 if (!$is_cc_payment): ?>
-                                                    <button class="btn btn-small btn-danger delete-category-btn"
+                                                    <button class="btn btn-sm btn-danger delete-category-btn"
                                                             data-category-uuid="<?= $account['account_uuid'] ?>"
                                                             data-category-name="<?= htmlspecialchars($account['account_name']) ?>"
                                                             data-ledger-uuid="<?= $ledger_uuid ?>"
@@ -298,11 +298,11 @@ require_once '../../includes/header.php';
                                                     </div>
                                                     <div class="loan-info-actions">
                                                         <a href="../loans/view.php?ledger=<?= $ledger_uuid ?>&loan=<?= $account['loan']['loan_uuid'] ?>"
-                                                           class="btn btn-small btn-primary">
+                                                           class="btn btn-sm btn-primary">
                                                             View Loan Details
                                                         </a>
                                                         <a href="../loans/record-payment.php?ledger=<?= $ledger_uuid ?>&loan=<?= $account['loan']['loan_uuid'] ?>"
-                                                           class="btn btn-small btn-success">
+                                                           class="btn btn-sm btn-success">
                                                             💵 Record Payment
                                                         </a>
                                                     </div>
@@ -347,11 +347,11 @@ require_once '../../includes/header.php';
                                                     </div>
                                                     <div class="installment-info-actions">
                                                         <a href="../installments/?ledger=<?= $ledger_uuid ?>&card=<?= $account['account_uuid'] ?>"
-                                                           class="btn btn-small btn-primary">
+                                                           class="btn btn-sm btn-primary">
                                                             View All Plans
                                                         </a>
                                                         <a href="../installments/create.php?ledger=<?= $ledger_uuid ?>&credit_card=<?= $account['account_uuid'] ?>"
-                                                           class="btn btn-small btn-success">
+                                                           class="btn btn-sm btn-success">
                                                             💳 Create Plan
                                                         </a>
                                                     </div>
