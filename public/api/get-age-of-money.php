@@ -115,15 +115,13 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'Database error: ' . $e->getMessage(),
-        'trace' => $e->getTraceAsString()
+        'error' => 'Database error occurred'
     ]);
 } catch (Exception $e) {
     error_log('Age of Money Error: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString()
+        'error' => $e->getMessage()
     ]);
 }

@@ -36,10 +36,11 @@ $stmt = $db->prepare("
 $stmt->execute([$ledger_uuid]);
 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$page_title = 'Category Trends';
 require_once '../../includes/header.php';
 ?>
 <link rel="stylesheet" href="../css/reports.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/pgbudget/js/vendor/chart-4.4.0.umd.min.js"></script>
 
 <div class="container">
     <div class="report-header">

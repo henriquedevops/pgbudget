@@ -1,8 +1,5 @@
 <?php
 require_once '../../includes/session.php';
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
 
@@ -169,7 +166,7 @@ try {
     $setup_complete  = $has_accounts && $has_categories && $has_transactions;
 
 } catch (PDOException $e) {
-    $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+    error_log('Database error: ' . $e->getMessage()); $_SESSION['error'] = 'An unexpected database error occurred. Please try again or contact support if the problem persists.';
     header('Location: ../index.php');
     exit;
 }

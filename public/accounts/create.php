@@ -86,6 +86,7 @@ try {
     exit;
 }
 
+$page_title = 'Add Account';
 require_once '../../includes/header.php';
 ?>
 

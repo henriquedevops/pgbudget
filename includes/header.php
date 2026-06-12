@@ -10,7 +10,37 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PGBudget">
-    <title>PgBudget - Zero-Sum Budgeting</title>
+    <?php
+    // Page title: explicit $page_title (set before this include) wins;
+    // otherwise derive a section title from the URL path
+    if (!isset($page_title)) {
+        $pgb_section_titles = [
+            'budget'             => 'Budget',
+            'transactions'       => 'Transactions',
+            'accounts'           => 'Accounts',
+            'reports'            => 'Reports',
+            'categories'         => 'Categories',
+            'credit-cards'       => 'Credit Cards',
+            'loans'              => 'Loans',
+            'installments'       => 'Installments',
+            'obligations'        => 'Bills',
+            'income-sources'     => 'Income Sources',
+            'payroll-deductions' => 'Payroll Deductions',
+            'projected-events'   => 'Projected Events',
+            'recurring'          => 'Recurring Transactions',
+            'settings'           => 'Settings',
+            'search'             => 'Search',
+            'payees'             => 'Payees',
+            'ledgers'            => 'Budgets',
+            'onboarding'         => 'Welcome',
+            'auth'               => 'Sign In',
+        ];
+        $pgb_path_parts = explode('/', trim(dirname($_SERVER['PHP_SELF'] ?? ''), '/'));
+        $pgb_section    = end($pgb_path_parts);
+        $page_title     = $pgb_section_titles[$pgb_section] ?? null;
+    }
+    ?>
+    <title><?= !empty($page_title) ? htmlspecialchars($page_title) . ' — PgBudget' : 'PgBudget — Zero-Sum Budgeting' ?></title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/pgbudget/manifest.json">
@@ -20,13 +50,13 @@
     <link rel="stylesheet" href="/pgbudget/css/core.css?v=<?= $cv ?>">
     <link rel="stylesheet" href="/pgbudget/css/components.css?v=<?= $cv ?>">
 
-    <!-- Tooltip Library (Tippy.js) -->
-    <script src="https://unpkg.com/@popperjs/core@2"></script>
-    <script src="https://unpkg.com/tippy.js@6"></script>
-    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
+    <!-- Tooltip Library (Tippy.js) — vendored, pinned versions -->
+    <script src="/pgbudget/js/vendor/popper-2.11.8.min.js"></script>
+    <script src="/pgbudget/js/vendor/tippy-6.3.7.umd.min.js"></script>
+    <link rel="stylesheet" href="/pgbudget/css/vendor/tippy-light-6.3.7.css" />
 
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Lucide Icons — vendored, pinned version -->
+    <script src="/pgbudget/js/vendor/lucide-0.525.0.min.js"></script>
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/pgbudget/images/icon-192x192.png">
@@ -131,8 +161,12 @@
                                 Reports <span class="caret" aria-hidden="true">▾</span>
                             </button>
                             <ul class="nav-dropdown-menu" role="menu">
+                                <li><a href="/pgbudget/reports/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem"><strong>All Reports</strong></a></li>
                                 <li><a href="/pgbudget/reports/cash-flow-projection.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Cash Flow</a></li>
                                 <li><a href="/pgbudget/reports/what-if-projection.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">What-If</a></li>
+                                <li><a href="/pgbudget/reports/spending-by-category.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Spending by Category</a></li>
+                                <li><a href="/pgbudget/reports/net-worth.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Net Worth</a></li>
+                                <li><a href="/pgbudget/reports/income-vs-expense.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Income vs Expense</a></li>
                                 <li><a href="/pgbudget/projected-events/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Projected Events</a></li>
                             </ul>
                         </li>
@@ -209,7 +243,7 @@
             <a href="/pgbudget/transactions/list.php?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/transactions/') ?>">
                 <i data-lucide="list"></i> Transactions
             </a>
-            <a href="/pgbudget/reports/cash-flow-projection.php?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/reports/') ?>">
+            <a href="/pgbudget/reports/?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/reports/') ?>">
                 <i data-lucide="bar-chart-2"></i> Reports
             </a>
             <a href="/pgbudget/accounts/list.php?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/accounts/') ?>">

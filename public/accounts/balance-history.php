@@ -227,7 +227,7 @@ try {
 </div>
 
 <!-- Chart.js for balance visualization -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/pgbudget/js/vendor/chart-4.4.0.umd.min.js"></script>
 <script>
 <?php if (!empty($balance_history)): ?>
 // Prepare chart data

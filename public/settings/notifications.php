@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMessage = 'Failed to update notification preferences.';
         }
     } catch (PDOException $e) {
-        $errorMessage = 'Database error: ' . $e->getMessage();
+        error_log('Database error: ' . $e->getMessage()); $errorMessage = 'An unexpected database error occurred. Please try again.';
     }
 }
 
@@ -68,7 +68,7 @@ try {
     $mailEnabled = ($_ENV['MAIL_ENABLED'] ?? 'false') === 'true';
 
 } catch (PDOException $e) {
-    $errorMessage = 'Database error: ' . $e->getMessage();
+    error_log('Database error: ' . $e->getMessage()); $errorMessage = 'An unexpected database error occurred. Please try again.';
     $preferences = null;
     $userInfo = null;
     $mailEnabled = false;

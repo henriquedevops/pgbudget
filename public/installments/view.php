@@ -117,7 +117,7 @@ try {
     $percent_complete = $total_installments > 0 ? ($processed_count / $total_installments) * 100 : 0;
 
 } catch (PDOException $e) {
-    $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+    error_log('Database error: ' . $e->getMessage()); $_SESSION['error'] = 'An unexpected database error occurred. Please try again or contact support if the problem persists.';
     header('Location: ../index.php');
     exit;
 }

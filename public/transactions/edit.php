@@ -132,7 +132,7 @@ try {
                     $_SESSION['error'] = 'Failed to delete transaction. Please try again.';
                 }
             } catch (PDOException $e) {
-                $_SESSION['error'] = 'Failed to delete transaction: ' . $e->getMessage();
+                error_log('Failed to delete transaction: ' . $e->getMessage()); $_SESSION['error'] = 'Failed to delete the transaction. Please try again.';
                 error_log("Transaction deletion error: " . $e->getMessage());
             }
         }
@@ -166,6 +166,7 @@ try {
     exit;
 }
 
+$page_title = 'Edit Transaction';
 require_once '../../includes/header.php';
 ?>
 

@@ -567,8 +567,9 @@ try {
     }
 
 } catch (Exception $e) {
+    error_log('Database error occurred');
     http_response_code(500);
     echo json_encode([
-        'error' => 'Database error: ' . $e->getMessage()
+        'error' => 'Database error occurred'
     ]);
 }

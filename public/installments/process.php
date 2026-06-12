@@ -112,7 +112,7 @@ try {
     $remaining_installments = $schedule['number_of_installments'] - $schedule['completed_installments'];
 
 } catch (PDOException $e) {
-    $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+    error_log('Database error: ' . $e->getMessage()); $_SESSION['error'] = 'An unexpected database error occurred. Please try again or contact support if the problem persists.';
     header('Location: index.php?ledger=' . urlencode($ledger_uuid));
     exit;
 }

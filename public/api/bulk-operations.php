@@ -146,7 +146,7 @@ try {
 } catch (PDOException $e) {
     error_log("Bulk operations error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Database error occurred']);
 } catch (Exception $e) {
     error_log("Bulk operations error: " . $e->getMessage());
     http_response_code(500);

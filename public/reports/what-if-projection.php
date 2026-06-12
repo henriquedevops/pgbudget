@@ -83,7 +83,7 @@ try {
     $summary_rows = $stmt->fetchAll();
 
 } catch (PDOException $e) {
-    $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+    error_log('Database error: ' . $e->getMessage()); $_SESSION['error'] = 'An unexpected database error occurred. Please try again or contact support if the problem persists.';
     header('Location: ../index.php');
     exit;
 }
@@ -102,6 +102,7 @@ foreach ($obligations as $o) {
     $base_amounts[$o['uuid']] = (int)round((float)$o['amount'] * 100);
 }
 
+$page_title = 'What-If Scenarios';
 require_once '../../includes/header.php';
 ?>
 <link rel="stylesheet" href="/pgbudget/css/cash-flow-projection.css">

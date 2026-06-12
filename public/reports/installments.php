@@ -33,11 +33,12 @@ try {
     }
 
 } catch (PDOException $e) {
-    $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+    error_log('Database error: ' . $e->getMessage()); $_SESSION['error'] = 'An unexpected database error occurred. Please try again or contact support if the problem persists.';
     header('Location: ../index.php');
     exit;
 }
 
+$page_title = 'Installments Overview';
 require_once '../../includes/header.php';
 ?>
 
@@ -152,7 +153,7 @@ require_once '../../includes/header.php';
 </div>
 
 <!-- Chart.js from CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/pgbudget/js/vendor/chart-4.4.0.umd.min.js"></script>
 
 <!-- Custom JavaScript -->
 <script>

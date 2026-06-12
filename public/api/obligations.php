@@ -71,8 +71,7 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString() // Include trace in development
+        'error' => $e->getMessage()
     ]);
     exit;
 }
@@ -229,8 +228,7 @@ function createObligation($db) {
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString() // Include trace in development
+            'error' => $e->getMessage()
         ]);
     }
 }
@@ -426,8 +424,7 @@ function editPayment($db) {
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString() // Include trace in development
+            'error' => $e->getMessage()
         ]);
     }
 }
@@ -503,8 +500,7 @@ function markPaymentAsPaid($db) {
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString() // Include trace in development
+            'error' => $e->getMessage()
         ]);
     }
 }

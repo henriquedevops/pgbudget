@@ -42,6 +42,7 @@ if (count($ledgers) === 1) {
     exit;
 }
 
+$page_title = 'My Budgets';
 require_once '../includes/header.php';
 
 // Show success message if just completed onboarding

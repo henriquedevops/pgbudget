@@ -203,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['error'] = 'Validation error: ' . $e->getMessage();
                 }
             } else {
-                $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+                error_log('Database error: ' . $e->getMessage()); $_SESSION['error'] = 'An unexpected database error occurred. Please try again or contact support if the problem persists.';
             }
         }
     }
@@ -245,11 +245,12 @@ try {
     $categories = $stmt->fetchAll();
 
 } catch (PDOException $e) {
-    $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+    error_log('Database error: ' . $e->getMessage()); $_SESSION['error'] = 'An unexpected database error occurred. Please try again or contact support if the problem persists.';
     header('Location: ../index.php');
     exit;
 }
 
+$page_title = 'Add Transaction';
 require_once '../../includes/header.php';
 ?>
 

@@ -125,10 +125,11 @@ try {
         ]);
     } else {
         // Other database errors, return 500
+        error_log('Database error: ' . $error_message);
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'error' => 'Database error: ' . $error_message
+            'error' => 'Database error occurred'
         ]);
     }
 }

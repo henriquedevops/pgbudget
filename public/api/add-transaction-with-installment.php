@@ -302,6 +302,7 @@ try {
     }
 
 } catch (PDOException $e) {
+    error_log('Database error occurred');
     // Check if this is a user-defined validation error (SQLSTATE P0001)
     if (strpos($e->getCode(), 'P0001') !== false || strpos($e->getMessage(), 'SQLSTATE[P0001]') !== false) {
         // Extract user-friendly error message from the exception
@@ -331,7 +332,7 @@ try {
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'error' => 'Database error: ' . $e->getMessage()
+            'error' => 'Database error occurred'
         ]);
     }
 } catch (Exception $e) {

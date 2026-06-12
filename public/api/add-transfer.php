@@ -86,8 +86,9 @@ try {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => $msg]);
     } else {
+        error_log('Database error: ' . $msg);
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Database error: ' . $msg]);
+        echo json_encode(['success' => false, 'error' => 'Database error occurred']);
     }
 } catch (Exception $e) {
     http_response_code(500);
