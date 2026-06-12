@@ -4,6 +4,7 @@
 > **Método:** Avaliação heurística (Nielsen) por inspeção de código — páginas públicas (`public/`), includes compartilhados (`includes/`), CSS/JS (`css/`, `js/`)
 > **Complementa:** `USABILITY_IMPROVEMENT_PLAN.md`, `USABILITY_IMPROVEMENTS_STATUS.md`, `UX_MODERNIZATION_PLAN.md`
 > **Escopo:** usabilidade da interface web; não cobre Telegram bot, e-mails ou API
+> **Atualização 2026-06-12:** U1, U2 (moeda), U4, U8 e U9 resolvidos (commits `ae9825b` e `f8f1cbb`) — status por item nas seções 3 e 4
 
 ---
 
@@ -46,12 +47,14 @@ Os problemas restantes se concentram em **arquitetura de informação** (relató
 **Evidência:** `public/reports/` contém 10 relatórios (spending-by-category, net-worth, income-vs-expense, age-of-money, category-trends, installments, installment-impact, budget, cash-flow-projection, what-if-projection). O dropdown "Reports" da navbar lista apenas 3 (Cash Flow, What-If, Projected Events — `includes/header.php:129-138`); o item "Reports" da sidebar aponta direto para `cash-flow-projection.php` (`header.php:212`). Os relatórios não se cross-linkam entre si (verificado por grep).
 **Impacto:** funcionalidades inteiras (patrimônio líquido, gastos por categoria, idade do dinheiro) são inalcançáveis sem digitar a URL.
 **Recomendação:** criar um hub `reports/index.php` com cards para todos os relatórios e/ou abas compartilhadas entre as páginas de relatório; apontar sidebar e navbar para o hub.
+**Status:** ✅ **Resolvido em 2026-06-12** (commit `ae9825b`) — hub `reports/index.php` criado com cards para os 10 relatórios; sidebar e dropdown da navbar apontam para o hub.
 
 #### U2. Idioma e moeda fixos (inglês / US$) sem localização
 **Heurística:** Correspondência entre o sistema e o mundo real
 **Evidência:** toda a UI está em inglês hardcoded; `formatCurrency()` retorna `'$' . number_format($cents / 100, 2)` (`config/database.php:54-56`, duplicada em `includes/email/EmailService.php:337`). O campo de valor até aceita vírgula decimal ("0.00 or 0,00" em `transactions/add.php:281`), mas a exibição é sempre formato americano.
 **Impacto:** para usuários brasileiros (público real do projeto), todos os valores aparecem com símbolo e separadores errados — em um app financeiro, isso mina a confiança nos números.
 **Recomendação:** configuração de moeda/locale por ledger (símbolo + `NumberFormatter` do PHP intl); centralizar `formatCurrency` num único lugar; planejar i18n das strings (mesmo que a primeira entrega seja só pt-BR/en).
+**Status:** ✅ **Resolvido em 2026-06-12** (commit `f8f1cbb`) — moeda por ledger (USD/BRL/EUR/GBP) em `api.ledgers.metadata->>'currency'`; `formatCurrency` centralizado em `includes/currency.php` (mapa próprio, sem extensão intl) e `public/js/currency.js` + `window.PGB_CURRENCY` injetado no header; seletor em `ledgers/create.php` e em Settings; sweep completo dos formatadores hardcoded. Pendências: i18n das strings da UI e moeda nos e-mails de cron (seguem USD até o EmailService receber o ledger).
 
 #### U3. Navegação duplicada e dependente do parâmetro `?ledger=` na URL
 **Heurística:** Consistência e padrões / Prevenção de erros
@@ -64,6 +67,7 @@ Os problemas restantes se concentram em **arquitetura de informação** (relató
 **Evidência:** `budget/dashboard.php:172` — `$_SESSION['error'] = 'Database error: ' . $e->getMessage();` — exibe a mensagem crua do PDO, apesar de existir `handleDatabaseError()` com mensagens amigáveis em `error-handler.php:96`. `display_errors` também está ligado na própria página (`dashboard.php:3-5`).
 **Impacto:** mensagens incompreensíveis para o usuário e vazamento de detalhes internos (nomes de tabelas, SQL).
 **Recomendação:** padronizar `handleDatabaseError()` em todas as páginas; remover `ini_set('display_errors', 1)` de código de produção.
+**Status:** ✅ **Resolvido em 2026-06-12** (commit `ae9825b`) — páginas e endpoints da API logam via `error_log` e exibem mensagem genérica; removidos `display_errors`, vazamentos de stack trace e chaves `debug` no JSON; deletado o endpoint de debug `api/ledger-data-debug.php`. Exceções P0001 (validação do banco) seguem exibidas ao usuário, por design.
 
 ### 🟠 Altos
 
@@ -86,11 +90,13 @@ Os problemas restantes se concentram em **arquitetura de informação** (relató
 **Evidência:** `header.php:13` fixa `PgBudget - Zero-Sum Budgeting` para o site inteiro.
 **Impacto:** abas do navegador, histórico e favoritos ficam indistinguíveis; afeta também leitores de tela (o título é o primeiro anúncio da página).
 **Recomendação:** aceitar `$page_title` antes do include do header: `<title><?= $page_title ?? 'PgBudget' ?> — PgBudget</title>`.
+**Status:** ✅ **Resolvido em 2026-06-12** (commit `ae9825b`) — `$page_title` explícito por página, com fallback automático por seção da URL no `header.php`.
 
 #### U9. Dependência de CDN `unpkg` com versão flutuante
 **Evidência:** `header.php:24-29` carrega Popper, Tippy e **`lucide@latest`** do unpkg.
 **Impacto:** o app se declara PWA, mas todos os ícones e tooltips quebram offline ou se o unpkg sair do ar; `@latest` pode introduzir breaking changes silenciosamente (os ícones são criados via `lucide.createIcons()` — se falhar, a navegação fica sem ícones).
 **Recomendação:** servir as três libs localmente com versão pinada (são pequenas) e referenciá-las com o mesmo esquema de cache-busting `?v=` já usado no CSS.
+**Status:** ✅ **Resolvido em 2026-06-12** (commit `ae9825b`) — Popper 2.11.8, Tippy 6.3.7, Lucide 0.525.0 e Chart.js 4.4.0 vendorizados em `js/vendor/`/`css/vendor/`; zero referências a unpkg/jsdelivr.
 
 ### 🟡 Médios
 
@@ -119,20 +125,20 @@ Recomendação: `tabindex="0"` + handler de Enter nas células editáveis; `aria
 
 ## 4. Priorização Sugerida
 
-| # | Item | Esforço | Impacto |
-|---|---|---|---|
-| 1 | U1 — Hub de relatórios | Baixo (1 página + 2 links) | Alto |
-| 2 | U4 — Sanear mensagens de erro + display_errors | Baixo | Alto |
-| 3 | U8 — Títulos de página dinâmicos | Baixo | Médio |
-| 4 | U9 — Vendorizar libs do unpkg | Baixo | Médio |
-| 5 | U2 — Moeda/locale configurável | Médio | Alto |
-| 6 | U3 — Ledger na sessão + navegação única | Médio | Alto |
-| 7 | U5 — Substituir alert/confirm nativos | Médio (mecânico) | Médio |
-| 8 | U7 — Glossário de terminologia | Médio | Médio |
-| 9 | U6 — Refatorar add.php com progressive disclosure | Alto | Médio |
-| 10 | U12/U13/U14/U15 — Melhorias incrementais | Baixo cada | Baixo-Médio |
+| # | Item | Esforço | Impacto | Status |
+|---|---|---|---|---|
+| 1 | U1 — Hub de relatórios | Baixo (1 página + 2 links) | Alto | ✅ 2026-06-12 (`ae9825b`) |
+| 2 | U4 — Sanear mensagens de erro + display_errors | Baixo | Alto | ✅ 2026-06-12 (`ae9825b`) |
+| 3 | U8 — Títulos de página dinâmicos | Baixo | Médio | ✅ 2026-06-12 (`ae9825b`) |
+| 4 | U9 — Vendorizar libs do unpkg | Baixo | Médio | ✅ 2026-06-12 (`ae9825b`) |
+| 5 | U2 — Moeda/locale configurável | Médio | Alto | ✅ 2026-06-12 (`f8f1cbb`) — moeda; i18n de strings pendente |
+| 6 | U3 — Ledger na sessão + navegação única | Médio | Alto | Pendente |
+| 7 | U5 — Substituir alert/confirm nativos | Médio (mecânico) | Médio | Pendente |
+| 8 | U7 — Glossário de terminologia | Médio | Médio | Pendente |
+| 9 | U6 — Refatorar add.php com progressive disclosure | Alto | Médio | Pendente |
+| 10 | U12/U13/U14/U15 — Melhorias incrementais | Baixo cada | Baixo-Médio | Pendente |
 
-**Quick wins da semana:** itens 1–4 são essencialmente um dia de trabalho combinados e eliminam dois críticos.
+**Quick wins da semana:** ~~itens 1–4~~ ✅ concluídos em 2026-06-12, junto com o item 5 (U2). Os dois críticos restantes são U3 (navegação) e o i18n de strings remanescente de U2.
 
 ---
 
