@@ -772,7 +772,7 @@ function updateRecalculationPreview() {
 }
 
 function formatCurrency(amount) {
-    return '$' + (amount / 100).toFixed(2);
+    return window.pgbFormatCurrency(amount);
 }
 
 async function handleSubmit(event) {

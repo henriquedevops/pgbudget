@@ -602,11 +602,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalInterest = totalPaid - principal;
 
         document.getElementById('previewPayment').textContent =
-            '$' + monthlyPayment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            window.pgbFormatAmount(monthlyPayment);
         document.getElementById('previewInterest').textContent =
-            '$' + totalInterest.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            window.pgbFormatAmount(totalInterest);
         document.getElementById('previewTotal').textContent =
-            '$' + totalPaid.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            window.pgbFormatAmount(totalPaid);
     });
 
     // Toggle initial payment fields

@@ -65,7 +65,7 @@ class InstallmentCalculator {
      * @returns {string} Formatted currency string
      */
     static formatCurrency(amount) {
-        return '$' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        return window.pgbFormatAmount(amount);
     }
 
     /**

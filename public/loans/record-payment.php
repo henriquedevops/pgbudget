@@ -642,13 +642,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // For now, just show scheduled amounts
         // The API will calculate the actual split
         document.getElementById('previewPrincipal').textContent =
-            '$' + scheduledPrincipal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            window.pgbFormatAmount(scheduledPrincipal);
         document.getElementById('previewInterest').textContent =
-            '$' + scheduledInterest.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            window.pgbFormatAmount(scheduledInterest);
 
         const newBalance = Math.max(0, currentBalance - scheduledPrincipal);
         document.getElementById('previewBalance').textContent =
-            '$' + newBalance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            window.pgbFormatAmount(newBalance);
     });
 });
 </script>

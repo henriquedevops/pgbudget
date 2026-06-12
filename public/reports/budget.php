@@ -504,7 +504,7 @@ new Chart(ctx, {
                 beginAtZero: true,
                 ticks: {
                     callback: function(value) {
-                        return '$' + value.toFixed(0);
+                        return window.pgbCurrencySymbol() + Math.round(value);
                     }
                 }
             }

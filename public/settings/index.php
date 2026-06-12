@@ -9,8 +9,33 @@ requireAuth();
 $db = getDbConnection();
 setUserContext($db);
 
+// Handle currency change for a budget
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_currency'], $_POST['ledger_uuid'])) {
+    $currency = $_POST['currency'] ?? '';
+    if (!isset(pgb_currencies()[$currency])) {
+        $_SESSION['error'] = 'Invalid currency.';
+    } else {
+        try {
+            $stmt = $db->prepare("
+                UPDATE api.ledgers
+                SET metadata = jsonb_set(coalesce(metadata, '{}'::jsonb), '{currency}', to_jsonb(?::text))
+                WHERE uuid = ?
+            ");
+            $stmt->execute([$currency, $_POST['ledger_uuid']]);
+            $_SESSION['success'] = $stmt->rowCount() === 1
+                ? 'Currency updated.'
+                : 'Budget not found.';
+        } catch (PDOException $e) {
+            error_log('Database error: ' . $e->getMessage());
+            $_SESSION['error'] = 'An unexpected database error occurred. Please try again or contact support if the problem persists.';
+        }
+    }
+    header('Location: index.php');
+    exit;
+}
+
 // Get user's ledgers
-$stmt = $db->prepare("SELECT uuid, name, description FROM api.ledgers ORDER BY name");
+$stmt = $db->prepare("SELECT uuid, name, description, metadata->>'currency' AS currency FROM api.ledgers ORDER BY name");
 $stmt->execute();
 $ledgers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -49,6 +74,18 @@ require_once '../../includes/header.php';
                                     <?php endif; ?>
                                 </div>
                                 <div class="budget-actions">
+                                    <form method="POST" class="currency-form">
+                                        <input type="hidden" name="set_currency" value="1">
+                                        <input type="hidden" name="ledger_uuid" value="<?= htmlspecialchars($ledger['uuid']) ?>">
+                                        <label class="sr-only" for="currency-<?= htmlspecialchars($ledger['uuid']) ?>">Currency for <?= htmlspecialchars($ledger['name']) ?></label>
+                                        <select id="currency-<?= htmlspecialchars($ledger['uuid']) ?>" name="currency" class="form-input form-input-sm" onchange="this.form.submit()">
+                                            <?php foreach (pgb_currencies() as $code => $cfg): ?>
+                                                <option value="<?= $code ?>" <?= ($ledger['currency'] ?? 'USD') === $code ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($cfg['label']) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </form>
                                     <a href="../budget/dashboard.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-sm btn-primary">Open</a>
                                     <a href="../accounts/list.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-sm btn-secondary">Accounts</a>
                                 </div>
@@ -206,7 +243,17 @@ require_once '../../includes/header.php';
 
 .budget-actions {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
+}
+
+.currency-form .form-input-sm {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-radius: 6px;
+    background: var(--color-surface, #fff);
+    color: var(--color-text-primary, #2d3748);
 }
 
 .section-actions {

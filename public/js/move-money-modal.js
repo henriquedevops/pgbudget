@@ -536,12 +536,8 @@
      * Format currency for display
      */
     function formatCurrency(cents) {
-        if (!cents && cents !== 0) return '$0.00';
-        const dollars = cents / 100;
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(dollars);
+        if (!cents && cents !== 0) return window.pgbFormatCurrency(0);
+        return window.pgbFormatCurrency(cents);
     }
 
     /**

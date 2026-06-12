@@ -56,7 +56,7 @@ $rail_month_label = date('F');
                 <div class="rail-stat-label">Left to Budget</div>
                 <div class="rail-stat-value tnum"><?php
                     $ltb = $rail_totals['left_to_budget'] ?? 0;
-                    echo ($ltb >= 0 ? '' : '-') . '$' . number_format(abs($ltb) / 100, 2);
+                    echo ($ltb >= 0 ? '' : '-') . formatCurrency(abs($ltb));
                 ?></div>
             </div>
             <?php endif; ?>
@@ -89,7 +89,7 @@ $rail_month_label = date('F');
                 $rv_class = $rv > 0 ? 'pos' : ($rv < 0 ? 'neg' : 'zero');
                 ?>
                 <span class="money <?= $rv_class ?> tnum" style="font-size:var(--text-sm);flex-shrink:0;">
-                    <?= ($rv >= 0 ? '' : '-') . '$' . number_format(abs($rv) / 100, 2) ?>
+                    <?= ($rv >= 0 ? '' : '-') . formatCurrency(abs($rv)) ?>
                 </span>
             </div>
             <?php endforeach; ?>

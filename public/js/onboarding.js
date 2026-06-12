@@ -11,10 +11,9 @@
  * @returns {string} Formatted currency string
  */
 function formatCurrency(cents) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-    }).format(cents / 100);
+    return window.pgbFormatCurrency
+        ? window.pgbFormatCurrency(cents)
+        : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 }
 
 /**

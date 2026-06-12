@@ -315,7 +315,7 @@ const IncomeExpenseReport = {
                         beginAtZero: true,
                         ticks: {
                             callback: (value) => {
-                                return '$' + value.toLocaleString();
+                                return window.pgbFormatAmount(value);
                             }
                         },
                         grid: {
@@ -387,10 +387,7 @@ const IncomeExpenseReport = {
     },
 
     formatCurrency(cents) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(cents / 100);
+        return window.pgbFormatCurrency(cents);
     }
 };
 

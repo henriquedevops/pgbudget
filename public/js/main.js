@@ -153,15 +153,20 @@ function formatCurrencyInput(e) {
 }
 
 function formatCurrency(cents) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-    }).format(cents / 100);
+    return window.pgbFormatCurrency
+        ? window.pgbFormatCurrency(cents)
+        : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 }
 
 function parseCurrency(value) {
-    // Remove currency symbols and convert to cents
-    const cleaned = value.replace(/[^0-9.-]/g, '');
+    // Remove currency symbols; accept both '.' and ',' as decimal separator
+    // (mirrors parseCurrency() in includes/currency.php: the last one wins)
+    let cleaned = value.replace(/[^0-9.,-]/g, '');
+    if (cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')) {
+        cleaned = cleaned.replace(/\./g, '').replace(/,/g, '.');
+    } else {
+        cleaned = cleaned.replace(/,/g, '');
+    }
     return Math.round(parseFloat(cleaned) * 100);
 }
 

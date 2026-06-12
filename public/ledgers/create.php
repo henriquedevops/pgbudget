@@ -8,6 +8,10 @@ requireAuth();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = sanitizeInput($_POST['name']);
     $description = sanitizeInput($_POST['description']);
+    $currency = $_POST['currency'] ?? 'USD';
+    if (!isset(pgb_currencies()[$currency])) {
+        $currency = 'USD';
+    }
 
     if (empty($name)) {
         $_SESSION['error'] = 'Budget name is required.';
@@ -20,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$_SESSION['user_id']]);
 
             // Create ledger
-            $stmt = $db->prepare("INSERT INTO api.ledgers (name, description) VALUES (?, ?) RETURNING uuid");
-            $stmt->execute([$name, $description]);
+            $stmt = $db->prepare("INSERT INTO api.ledgers (name, description, metadata) VALUES (?, ?, jsonb_build_object('currency', ?::text)) RETURNING uuid");
+            $stmt->execute([$name, $description, $currency]);
             $result = $stmt->fetch();
 
             if ($result) {
@@ -59,6 +63,17 @@ require_once '../../includes/header.php';
                 <label for="description" class="form-label">Description</label>
                 <textarea id="description" name="description" class="form-textarea"
                           placeholder="Optional description for this budget"><?= isset($_POST['description']) ? htmlspecialchars($_POST['description']) : '' ?></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="currency" class="form-label">Currency</label>
+                <select id="currency" name="currency" class="form-input">
+                    <?php foreach (pgb_currencies() as $code => $cfg): ?>
+                        <option value="<?= $code ?>" <?= ($_POST['currency'] ?? 'USD') === $code ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($cfg['label']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
 
             <div class="form-actions">

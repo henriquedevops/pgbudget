@@ -462,7 +462,7 @@ tfoot .delta-neg { color: #f87171; }
     function fmt(cents) {
         if (cents === 0) return '—';
         var sign = cents < 0 ? '-' : '';
-        return sign + '$' + (Math.abs(cents) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return sign + window.pgbFormatCurrency(Math.abs(cents));
     }
 
     function cls(cents) {

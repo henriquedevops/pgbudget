@@ -233,7 +233,7 @@ require_once '../../includes/header.php';
                             $future_val = $obligation['future_fixed_amount'] ?? $obligation['future_estimated_amount'];
                             $eff_date   = date('F Y', strtotime($obligation['future_amount_effective_date']));
                             ?>
-                            $<?= number_format((float)$future_val, 2) ?> starting <?= $eff_date ?>
+                            <?= formatLoanAmount((float)$future_val) ?> starting <?= $eff_date ?>
                         </div>
                     </div>
                     <button type="button" class="btn btn-sm btn-danger" id="clearFutureAmountBtn">

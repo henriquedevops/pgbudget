@@ -262,7 +262,7 @@ const chart = new Chart(ctx, {
                 beginAtZero: false,
                 ticks: {
                     callback: function(value) {
-                        return '$' + value.toFixed(2);
+                        return window.pgbFormatAmount(value);
                     }
                 }
             }

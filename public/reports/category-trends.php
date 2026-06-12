@@ -268,7 +268,7 @@ const CategoryTrendReport = {
                     tooltip: { callbacks: { label: (c) => c.dataset.label + ': $' + c.parsed.y.toFixed(2) } }
                 },
                 scales: {
-                    y: { beginAtZero: true, ticks: { callback: (v) => '$' + v.toFixed(2) } }
+                    y: { beginAtZero: true, ticks: { callback: (v) => window.pgbFormatAmount(v) } }
                 }
             }
         });
@@ -329,7 +329,7 @@ const CategoryTrendReport = {
     },
 
     formatCurrency(cents) {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
+        return window.pgbFormatCurrency(cents);
     }
 };
 

@@ -245,7 +245,7 @@ const InstallmentReport = {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: (value) => '$' + value.toFixed(0)
+                            callback: (value) => window.pgbCurrencySymbol() + Math.round(value)
                         }
                     }
                 }
@@ -322,7 +322,7 @@ const InstallmentReport = {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: (value) => '$' + value.toFixed(0)
+                            callback: (value) => window.pgbCurrencySymbol() + Math.round(value)
                         }
                     }
                 }
@@ -426,11 +426,8 @@ const InstallmentReport = {
     },
 
     formatCurrency(cents) {
-        if (cents === null || cents === undefined) return '$0.00';
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(cents / 100);
+        if (cents === null || cents === undefined) return window.pgbFormatCurrency(0);
+        return window.pgbFormatCurrency(cents);
     },
 
     escapeHtml(text) {

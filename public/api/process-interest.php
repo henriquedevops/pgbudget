@@ -139,7 +139,7 @@ try {
                 'start_date' => $start_date ?? date('Y-m-d', strtotime('-90 days')),
                 'end_date' => $end_date ?? date('Y-m-d'),
                 'total_interest' => $total_interest,
-                'total_interest_display' => '$' . number_format($total_interest / 100, 2),
+                'total_interest_display' => formatCurrency($total_interest),
                 'charge_count' => count($interest_charges),
                 'charges' => $interest_charges
             ]

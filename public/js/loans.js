@@ -402,7 +402,7 @@ class LoanManager {
 
     // Format currency for display
     static formatCurrency(amount) {
-        return '$' + parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return window.pgbFormatAmount(parseFloat(amount));
     }
 
     // Format date for display

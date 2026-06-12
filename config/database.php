@@ -51,17 +51,7 @@ function getDbConnection() {
     return $pdo;
 }
 
-function formatCurrency($cents) {
-    return '$' . number_format($cents / 100, 2);
-}
-
-/**
- * Format loan amounts which are stored as numeric decimals (not cents)
- * Used for loans table which stores amounts as numeric(19,4)
- */
-function formatLoanAmount($amount) {
-    return '$' . number_format($amount, 2);
-}
+require_once __DIR__ . '/../includes/currency.php';
 
 function parseCurrency($amount) {
     // Remove currency symbols, keeping only digits, comma, and period

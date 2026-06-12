@@ -669,7 +669,7 @@ foreach ($pivot as $row) {
 function fmtCents(int $cents): string {
     if ($cents === 0) return '—';
     $sign = $cents < 0 ? '-' : '';
-    return $sign . '$' . number_format(abs($cents) / 100, 2);
+    return $sign . formatCurrency(abs($cents));
 }
 
 function cellClass(int $cents): string {
@@ -1084,7 +1084,7 @@ require_once '../../includes/header.php';
         <span class="cfp-alloc-count" id="cfp-alloc-count">0 items</span>
         <span class="cfp-alloc-sep">·</span>
         <span class="cfp-alloc-label">Selected:</span>
-        <strong class="cfp-alloc-amount" id="cfp-alloc-amount">$0.00</strong>
+        <strong class="cfp-alloc-amount" id="cfp-alloc-amount"><?= formatCurrency(0) ?></strong>
     </div>
     <div class="cfp-alloc-bar-actions">
         <button class="btn btn-secondary btn-sm" id="cfp-alloc-cancel" type="button">Cancel</button>

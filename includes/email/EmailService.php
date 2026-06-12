@@ -335,7 +335,10 @@ HTML;
      * Helper: Format currency
      */
     private function formatCurrency($cents) {
-        return '$' . number_format($cents / 100, 2);
+        if (!function_exists('formatCurrency')) {
+            require_once __DIR__ . '/../currency.php';
+        }
+        return \formatCurrency($cents);
     }
 
     /**

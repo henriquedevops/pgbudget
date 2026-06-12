@@ -139,11 +139,11 @@ const FilterFormHelper = {
 
         if (filters.amount_min || filters.amount_max) {
             if (filters.amount_min && filters.amount_max) {
-                parts.push(`$${filters.amount_min} - $${filters.amount_max}`);
+                parts.push(`${window.pgbCurrencySymbol()}${filters.amount_min} - ${window.pgbCurrencySymbol()}${filters.amount_max}`);
             } else if (filters.amount_min) {
-                parts.push(`Min: $${filters.amount_min}`);
+                parts.push(`Min: ${window.pgbCurrencySymbol()}${filters.amount_min}`);
             } else {
-                parts.push(`Max: $${filters.amount_max}`);
+                parts.push(`Max: ${window.pgbCurrencySymbol()}${filters.amount_max}`);
             }
         }
 

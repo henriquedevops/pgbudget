@@ -14,7 +14,7 @@ const IncomeExpenseReport = {
 
     async loadData() {
         try {
-            const summaryResp = await fetch(\`../api/get-income-expense-report.php?action=summary&ledger=\${this.ledgerUuid}&start_date=\${this.startDate}&end_date=\${this.endDate}\`);
+            const summaryResp = await fetch(`../api/get-income-expense-report.php?action=summary&ledger=${this.ledgerUuid}&start_date=${this.startDate}&end_date=${this.endDate}`);
             const summaryData = await summaryResp.json();
 
             if (summaryData.success && summaryData.summary) {
@@ -22,7 +22,7 @@ const IncomeExpenseReport = {
                 this.renderSummary(summaryData.summary);
             }
 
-            const monthlyResp = await fetch(\`../api/get-income-expense-report.php?action=monthly&ledger=\${this.ledgerUuid}&start_date=\${this.startDate}&end_date=\${this.endDate}\`);
+            const monthlyResp = await fetch(`../api/get-income-expense-report.php?action=monthly&ledger=${this.ledgerUuid}&start_date=${this.startDate}&end_date=${this.endDate}`);
             const monthlyData = await monthlyResp.json();
 
             if (monthlyData.success) {
@@ -124,9 +124,9 @@ const IncomeExpenseReport = {
                                 const value = IncomeExpenseReport.formatCurrency(context.parsed.y * 100);
                                 if (context.datasetIndex === 2) {
                                     const rate = IncomeExpenseReport.monthlyData[context.dataIndex].savings_rate;
-                                    return \`\${label}: \${value} (\${rate}% savings rate)\`;
+                                    return `${label}: ${value} (${rate}% savings rate)`;
                                 }
-                                return \`\${label}: \${value}\`;
+                                return `${label}: ${value}`;
                             }
                         }
                     }
@@ -136,7 +136,7 @@ const IncomeExpenseReport = {
                         beginAtZero: true,
                         ticks: {
                             callback: (value) => {
-                                return '$' + value.toLocaleString();
+                                return window.pgbFormatAmount(value);
                             }
                         },
                         grid: {
@@ -203,10 +203,7 @@ const IncomeExpenseReport = {
     },
 
     formatCurrency(cents) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(cents / 100);
+        return window.pgbFormatCurrency(cents);
     }
 };
 

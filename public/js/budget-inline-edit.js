@@ -359,8 +359,8 @@
      * Format currency for input field
      */
     function formatCurrencyForInput(cents) {
-        if (!cents) return '0.00';
-        return (cents / 100).toFixed(2);
+        if (!cents) return window.pgbFormatCurrencyInput(0);
+        return window.pgbFormatCurrencyInput(cents);
     }
 
     /**

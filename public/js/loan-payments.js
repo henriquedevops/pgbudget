@@ -332,7 +332,7 @@ class LoanPaymentHandler {
      * Format currency for display
      */
     formatCurrency(amount) {
-        return '$' + parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return window.pgbFormatAmount(parseFloat(amount));
     }
 
     /**

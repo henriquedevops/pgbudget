@@ -785,7 +785,7 @@ async function loadCashFlowProjection() {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value.toFixed(0);
+                                return window.pgbCurrencySymbol() + Math.round(value);
                             }
                         }
                     }
@@ -884,7 +884,7 @@ document.getElementById('what-if-form').addEventListener('submit', function(e) {
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return '$' + value.toFixed(0);
+                            return window.pgbCurrencySymbol() + Math.round(value);
                         }
                     }
                 }
@@ -904,7 +904,7 @@ document.getElementById('what-if-form').addEventListener('reset', function() {
 // Helper functions
 function formatCurrency(cents) {
     const dollars = cents / 100;
-    return '$' + dollars.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return window.pgbFormatAmount(dollars);
 }
 
 function escapeHtml(text) {

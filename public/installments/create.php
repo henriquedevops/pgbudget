@@ -141,7 +141,7 @@ require_once '../../includes/header.php';
                                     data-account="<?= $txn['account_uuid'] ?>">
                                 <?= date('Y-m-d', strtotime($txn['date'])) ?> -
                                 <?= htmlspecialchars($txn['description']) ?> -
-                                $<?= number_format($txn['amount'] / 100, 2) ?> -
+                                <?= formatCurrency($txn['amount']) ?> -
                                 <?= htmlspecialchars($txn['account_name']) ?>
                             </option>
                         <?php endforeach; ?>
@@ -282,7 +282,7 @@ require_once '../../includes/header.php';
                     <div class="summary-card">
                         <div class="summary-item">
                             <span class="summary-label">Total Purchase:</span>
-                            <span class="summary-value" id="preview-total">$0.00</span>
+                            <span class="summary-value" id="preview-total"><?= formatCurrency(0) ?></span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">Number of Payments:</span>
@@ -290,11 +290,11 @@ require_once '../../includes/header.php';
                         </div>
                         <div class="summary-item highlight">
                             <span class="summary-label">Each Payment:</span>
-                            <span class="summary-value" id="preview-payment">$0.00</span>
+                            <span class="summary-value" id="preview-payment"><?= formatCurrency(0) ?></span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">Last Payment:</span>
-                            <span class="summary-value" id="preview-last-payment">$0.00</span>
+                            <span class="summary-value" id="preview-last-payment"><?= formatCurrency(0) ?></span>
                         </div>
                     </div>
                 </div>
@@ -736,10 +736,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const lastInstallment = Math.round((amount - totalScheduled) * 100) / 100;
 
         // Update summary
-        document.getElementById('preview-total').textContent = '$' + amount.toFixed(2);
+        document.getElementById('preview-total').textContent = window.pgbFormatAmount(amount);
         document.getElementById('preview-count').textContent = numInstallments;
-        document.getElementById('preview-payment').textContent = '$' + installmentAmount.toFixed(2);
-        document.getElementById('preview-last-payment').textContent = '$' + lastInstallment.toFixed(2);
+        document.getElementById('preview-payment').textContent = window.pgbFormatAmount(installmentAmount);
+        document.getElementById('preview-last-payment').textContent = window.pgbFormatAmount(lastInstallment);
 
         // Generate schedule
         if (startDate && amount > 0) {

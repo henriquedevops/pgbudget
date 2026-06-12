@@ -297,7 +297,7 @@ class GoalsManager {
         }
 
         let text = '';
-        const formattedAmount = '$' + amount.toFixed(2);
+        const formattedAmount = window.pgbFormatAmount(amount);
 
         switch (goalType) {
             case 'monthly_funding':
@@ -402,7 +402,7 @@ class GoalsManager {
 
     // Format currency for display
     static formatCurrency(cents) {
-        return '$' + (cents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return window.pgbFormatCurrency(cents);
     }
 
     // Calculate progress percentage

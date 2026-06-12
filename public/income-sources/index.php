@@ -149,15 +149,15 @@ require_once '../../includes/header.php';
     <div class="income-summary-cards">
         <div class="summary-card">
             <div class="summary-card-label">Monthly Gross Income</div>
-            <div class="summary-card-value amount positive">$<?= number_format($monthly_gross, 2) ?></div>
+            <div class="summary-card-value amount positive"><?= formatLoanAmount($monthly_gross) ?></div>
         </div>
         <div class="summary-card">
             <div class="summary-card-label">Monthly Deductions</div>
-            <div class="summary-card-value amount negative">$<?= number_format($monthly_deductions, 2) ?></div>
+            <div class="summary-card-value amount negative"><?= formatLoanAmount($monthly_deductions) ?></div>
         </div>
         <div class="summary-card">
             <div class="summary-card-label">Est. Net Take-Home</div>
-            <div class="summary-card-value amount <?= $net_take_home >= 0 ? 'positive' : 'negative' ?>">$<?= number_format($net_take_home, 2) ?></div>
+            <div class="summary-card-value amount <?= $net_take_home >= 0 ? 'positive' : 'negative' ?>"><?= formatLoanAmount($net_take_home) ?></div>
         </div>
         <div class="summary-card">
             <div class="summary-card-label">Active Sources</div>

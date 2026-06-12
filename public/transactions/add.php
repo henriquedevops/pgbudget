@@ -368,15 +368,15 @@ require_once '../../includes/header.php';
                         <h4>Payment Details</h4>
                         <div class="detail-row">
                             <span>Scheduled Amount:</span>
-                            <span id="detail-scheduled-amount">$0.00</span>
+                            <span id="detail-scheduled-amount"><?= formatCurrency(0) ?></span>
                         </div>
                         <div class="detail-row">
                             <span>Principal:</span>
-                            <span id="detail-principal">$0.00</span>
+                            <span id="detail-principal"><?= formatCurrency(0) ?></span>
                         </div>
                         <div class="detail-row">
                             <span>Interest:</span>
-                            <span id="detail-interest">$0.00</span>
+                            <span id="detail-interest"><?= formatCurrency(0) ?></span>
                         </div>
                         <div class="detail-row">
                             <span>Due Date:</span>
@@ -438,7 +438,7 @@ require_once '../../includes/header.php';
                         </div>
                         <div class="detail-row">
                             <span>Scheduled Amount:</span>
-                            <span id="detail-obligation-amount">$0.00</span>
+                            <span id="detail-obligation-amount"><?= formatCurrency(0) ?></span>
                         </div>
                         <div class="detail-row">
                             <span>Due Date:</span>
@@ -548,15 +548,15 @@ require_once '../../includes/header.php';
                 <div class="split-summary">
                     <div class="split-summary-row">
                         <span>Total Amount:</span>
-                        <span id="split-total-amount">$0.00</span>
+                        <span id="split-total-amount"><?= formatCurrency(0) ?></span>
                     </div>
                     <div class="split-summary-row">
                         <span>Assigned:</span>
-                        <span id="split-assigned">$0.00</span>
+                        <span id="split-assigned"><?= formatCurrency(0) ?></span>
                     </div>
                     <div class="split-summary-row split-remaining">
                         <span>Remaining:</span>
-                        <span id="split-remaining">$0.00</span>
+                        <span id="split-remaining"><?= formatCurrency(0) ?></span>
                     </div>
                 </div>
 
@@ -2413,12 +2413,7 @@ function updateSplitSummary() {
     const remaining = totalAmount - assignedAmount;
 
     // Format currency
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount);
-    };
+    const formatCurrency = (amount) => window.pgbFormatAmount(amount);
 
     // Update display
     totalAmountText.textContent = formatCurrency(totalAmount);

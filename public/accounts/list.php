@@ -1457,7 +1457,7 @@ async function confirmDelete() {
 
 // Format money helper
 function formatMoney(cents) {
-    return '$' + (cents / 100).toFixed(2);
+    return window.pgbFormatCurrency(cents);
 }
 
 // Enable/disable reassign select based on strategy

@@ -590,7 +590,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="overspending-summary">
-                        <p><strong>${categoryName}</strong> is overspent by <span class="negative">$${overspentAmount.toFixed(2)}</span></p>
+                        <p><strong>${categoryName}</strong> is overspent by <span class="negative">${window.pgbFormatAmount(overspentAmount)}</span></p>
                         <p class="modal-description">Choose how you want to handle this overspending.</p>
                     </div>
 
@@ -657,9 +657,9 @@
                                 <p><strong>⏭️ Carrying Over to Next Month</strong></p>
                                 <p>When you choose this option:</p>
                                 <ul>
-                                    <li>The negative balance of <strong>$${overspentAmount.toFixed(2)}</strong> will remain in this category</li>
+                                    <li>The negative balance of <strong>${window.pgbFormatAmount(overspentAmount)}</strong> will remain in this category</li>
                                     <li>Next month, you'll need to budget extra to cover both this overspending and your regular budget</li>
-                                    <li>This category will start next month at <strong>-$${overspentAmount.toFixed(2)}</strong></li>
+                                    <li>This category will start next month at <strong>-${window.pgbFormatAmount(overspentAmount)}</strong></li>
                                     <li>Best for rare overspending situations or when you genuinely don't have funds to cover it now</li>
                                 </ul>
                                 <p class="warning-text">⚠️ Note: It's generally better to cover overspending immediately to maintain accurate budget awareness.</p>
@@ -774,7 +774,7 @@
 
             // Just acknowledge and close - the negative balance will naturally carry forward
             showNotification(
-                `Overspending of $${overspentAmount.toFixed(2)} in ${toCategoryName} will be handled next month. ` +
+                `Overspending of ${window.pgbFormatAmount(overspentAmount)} in ${toCategoryName} will be handled next month. ` +
                 `Remember to budget extra next month to cover this.`,
                 'info'
             );
@@ -988,12 +988,8 @@
      * Format currency for display
      */
     function formatCurrency(cents) {
-        if (!cents && cents !== 0) return '$0.00';
-        const dollars = cents / 100;
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(dollars);
+        if (!cents && cents !== 0) return window.pgbFormatCurrency(0);
+        return window.pgbFormatCurrency(cents);
     }
 
     /**

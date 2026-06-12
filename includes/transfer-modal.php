@@ -324,7 +324,7 @@
                 <!-- Amount Display -->
                 <div class="transfer-amount-display" id="amount-display" style="display: none;">
                     <div class="label">Transfer Amount</div>
-                    <div class="amount" id="visual-amount">$0.00</div>
+                    <div class="amount" id="visual-amount"><?= function_exists('formatCurrency') ? formatCurrency(0) : '$0.00' ?></div>
                 </div>
 
                 <!-- Date -->

@@ -58,6 +58,16 @@
     <!-- Lucide Icons — vendored, pinned version -->
     <script src="/pgbudget/js/vendor/lucide-0.525.0.min.js"></script>
 
+    <!-- Ledger currency (loaded in <head> so inline page scripts can format amounts) -->
+    <script>
+        window.PGB_CURRENCY = <?= json_encode(
+            function_exists('pgb_currency_config')
+                ? pgb_currency_config()
+                : ['code' => 'USD', 'symbol' => '$', 'decimal' => '.', 'thousands' => ',', 'position' => 'before', 'space' => false]
+        ) ?>;
+    </script>
+    <script src="/pgbudget/js/currency.js?v=<?= $cv ?>"></script>
+
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/pgbudget/images/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/pgbudget/images/icon-192x192.png">

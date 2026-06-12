@@ -436,7 +436,7 @@ TransferModal = (function() {
         if (value) {
             const amount = parseAmount(value);
             if (!isNaN(amount) && amount > 0) {
-                visualAmount.textContent = '$' + formatAmount(amount);
+                visualAmount.textContent = window.pgbFormatAmount(amount);
                 amountDisplay.style.display = 'block';
             } else {
                 amountDisplay.style.display = 'none';

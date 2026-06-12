@@ -563,7 +563,7 @@ require_once '../../includes/header.php';
                         $pct = (int)round(abs($net) / $max_abs * 100);
                         $lbl = (new DateTime($ps['month']))->format('M');
                         $bar_col = $net >= 0 ? 'var(--success-500,#22c55e)' : 'var(--danger-500,#ef4444)';
-                        $tip = $lbl . ': ' . ($net >= 0 ? '+' : '') . '$' . number_format(abs($net) / 100, 2);
+                        $tip = $lbl . ': ' . ($net >= 0 ? '+' : '') . formatCurrency(abs($net));
                     ?>
                     <div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;">
                         <div style="flex:1;display:flex;align-items:flex-end;width:100%;justify-content:center;">
@@ -578,7 +578,7 @@ require_once '../../includes/header.php';
                 $cum_cls    = $six_mo_net >= 0 ? 'pos' : 'neg';
                 ?>
                 <div style="font-size:var(--text-xs);color:var(--color-fg-muted);text-align:right;border-top:1px solid var(--color-border);padding-top:var(--space-2);">
-                    6-mo net: <span class="money <?= $cum_cls ?> tnum"><?= ($six_mo_net >= 0 ? '+' : '') . '$' . number_format(abs($six_mo_net) / 100, 2) ?></span>
+                    6-mo net: <span class="money <?= $cum_cls ?> tnum"><?= ($six_mo_net >= 0 ? '+' : '') . formatCurrency(abs($six_mo_net)) ?></span>
                 </div>
             <?php else: ?>
                 <div class="card-head">
@@ -604,7 +604,7 @@ require_once '../../includes/header.php';
                                 <div style="font-size:var(--text-xs);color:var(--color-fg-muted);"><?= date('M j', strtotime($txn['date'])) ?></div>
                             </div>
                             <span class="money <?= $tv_cls ?> tnum" style="font-size:var(--text-sm);flex-shrink:0;">
-                                <?= $prefix ?> $<?= number_format(abs((int)$txn['amount']) / 100, 2) ?>
+                                <?= $prefix ?> <?= formatCurrency(abs((int)$txn['amount'])) ?>
                             </span>
                         </div>
                         <?php endforeach; ?>
