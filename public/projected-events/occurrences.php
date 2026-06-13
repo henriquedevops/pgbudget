@@ -10,7 +10,7 @@ require_once '../../includes/auth.php';
 
 requireAuth();
 
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 $event_uuid  = $_GET['event']  ?? '';
 
 if (empty($ledger_uuid) || empty($event_uuid)) {

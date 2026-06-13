@@ -441,7 +441,8 @@ class KeyboardShortcuts {
 
     getCurrentLedger() {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('ledger');
+        // Fall back to the session ledger exposed by header.php on <body> (U3)
+        return urlParams.get('ledger') || document.body.dataset.ledgerUuid || null;
     }
 
     loadCustomShortcuts() {

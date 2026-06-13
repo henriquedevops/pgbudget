@@ -6,7 +6,7 @@ require_once '../../includes/auth.php';
 // Require authentication
 requireAuth();
 
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 $selected_period = $_GET['period'] ?? date('Ym'); // YYYYMM format; default to current month
 
 if (empty($ledger_uuid)) {

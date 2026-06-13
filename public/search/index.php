@@ -6,7 +6,7 @@ require_once '../../includes/header.php';
 // Require authentication
 requireAuth();
 
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 $query = $_GET['q'] ?? '';
 
 if (empty($ledger_uuid)) {

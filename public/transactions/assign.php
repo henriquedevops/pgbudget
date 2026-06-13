@@ -7,7 +7,7 @@ require_once '../../includes/help-icon.php';
 // Require authentication
 requireAuth();
 
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 $category_uuid = $_GET['category'] ?? '';
 
 if (empty($ledger_uuid)) {

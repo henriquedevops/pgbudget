@@ -6,7 +6,7 @@ require_once '../../includes/auth.php';
 requireAuth();
 
 $recurring_uuid = $_GET['uuid'] ?? '';
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 
 if (empty($recurring_uuid) || empty($ledger_uuid)) {
     $_SESSION['error'] = 'Invalid request.';

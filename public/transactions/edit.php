@@ -8,7 +8,7 @@ require_once '../../includes/error-handler.php';
 requireAuth();
 
 $transaction_uuid = $_GET['transaction'] ?? '';
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 
 if (empty($transaction_uuid) || empty($ledger_uuid)) {
     $_SESSION['error'] = 'Invalid transaction or budget specified.';

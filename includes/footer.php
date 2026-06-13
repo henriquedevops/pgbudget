@@ -10,9 +10,16 @@
 
     <!-- Mobile Bottom Navigation -->
     <?php if (isset($_SESSION['user_id'])): ?>
-    <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
+    <?php
+    // Session-aware current ledger (U3); header.php normally set it already
+    if (!isset($current_ledger)) {
+        $current_ledger = function_exists('pgb_current_ledger')
+            ? pgb_current_ledger($ledger_uuid ?? null)
+            : ($_GET['ledger'] ?? ($ledger_uuid ?? ''));
+    }
+    ?>
     <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
-        <a href="/pgbudget/" class="mobile-nav-item <?= !isset($_GET['ledger']) && basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : '' ?>">
+        <a href="/pgbudget/" class="mobile-nav-item <?= preg_match('#^/(pgbudget/)?index\.php$#', $_SERVER['PHP_SELF'] ?? '') ? 'active' : '' ?>">
             <span class="icon" aria-hidden="true">🏠</span>
             <span>Home</span>
         </a>

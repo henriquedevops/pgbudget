@@ -13,7 +13,7 @@ require_once '../../includes/auth.php';
 requireAuth();
 
 $schedule_uuid = $_GET['schedule'] ?? '';
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 
 if (empty($schedule_uuid) || empty($ledger_uuid)) {
     $_SESSION['error'] = 'Invalid request.';

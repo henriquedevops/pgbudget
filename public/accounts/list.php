@@ -7,7 +7,7 @@ require_once '../../includes/help-icon.php';
 // Require authentication
 requireAuth();
 
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 
 if (empty($ledger_uuid)) {
     $_SESSION['error'] = 'No budget specified.';

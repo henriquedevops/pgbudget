@@ -7,7 +7,7 @@ require_once '../../includes/header.php';
 // Require authentication
 requireAuth();
 
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 $search = $_GET['search'] ?? '';
 $account_filter = $_GET['account'] ?? '';
 $category_filter = $_GET['category'] ?? '';

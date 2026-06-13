@@ -6,7 +6,7 @@ require_once '../../includes/auth.php';
 // Require authentication
 requireAuth();
 
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 
 if (empty($ledger_uuid)) {
     // Get first ledger if none specified

@@ -11,7 +11,7 @@ require_once '../../includes/header.php';
 // Require authentication
 requireAuth();
 
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 $page = max(1, intval($_GET['page'] ?? 1));
 $per_page = 50;
 $offset = ($page - 1) * $per_page;

@@ -12,7 +12,7 @@ require_once '../../includes/auth.php';
 // Require authentication
 requireAuth();
 
-$ledger_uuid = $_GET['ledger'] ?? '';
+$ledger_uuid = pgb_current_ledger();
 $obligation_uuid = $_GET['obligation'] ?? '';
 
 if (empty($ledger_uuid) || empty($obligation_uuid)) {

@@ -53,6 +53,26 @@ function getDbConnection() {
 
 require_once __DIR__ . '/../includes/currency.php';
 
+/**
+ * Current ledger uuid for this request (usability item U3): an explicit
+ * ?ledger= always wins and is remembered in the session; otherwise the
+ * page-provided uuid, then the session fallback. Returns '' when unknown.
+ */
+function pgb_current_ledger($explicit = null) {
+    $uuid = $_GET['ledger'] ?? '';
+    if ($uuid === '' && !empty($explicit)) {
+        $uuid = $explicit;
+    }
+    $session_ok = session_status() === PHP_SESSION_ACTIVE;
+    if ($uuid !== '') {
+        if ($session_ok && ($_SESSION['current_ledger'] ?? null) !== $uuid) {
+            $_SESSION['current_ledger'] = $uuid;
+        }
+        return $uuid;
+    }
+    return $session_ok ? ($_SESSION['current_ledger'] ?? '') : '';
+}
+
 function parseCurrency($amount) {
     // Remove currency symbols, keeping only digits, comma, and period
     $amount = preg_replace('/[^0-9,.-]/', '', $amount);

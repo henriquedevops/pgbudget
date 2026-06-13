@@ -59,6 +59,11 @@ try {
         throw new Exception('Ledger deletion failed');
     }
 
+    // Forget the deleted ledger if it was the session's current one
+    if (($_SESSION['current_ledger'] ?? null) === $ledger_uuid) {
+        unset($_SESSION['current_ledger']);
+    }
+
     // Return success response
     http_response_code(200);
     echo json_encode([

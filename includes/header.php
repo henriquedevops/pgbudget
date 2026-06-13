@@ -98,7 +98,15 @@
         });
     </script>
 </head>
-<body>
+<?php
+// Current ledger: ?ledger= param, the page's $ledger_uuid, or the session
+// fallback — so navigation survives URLs without ?ledger= (U3). Exposed as
+// data-ledger-uuid so page scripts (quick add, shortcuts) can find it too.
+$current_ledger = function_exists('pgb_current_ledger')
+    ? pgb_current_ledger($ledger_uuid ?? null)
+    : ($_GET['ledger'] ?? ($ledger_uuid ?? ''));
+?>
+<body<?= $current_ledger !== '' ? ' data-ledger-uuid="' . htmlspecialchars($current_ledger) . '"' : '' ?>>
     <!-- Skip to content for accessibility -->
     <a href="#main-content" class="skip-to-content">Skip to content</a>
 
@@ -122,9 +130,8 @@
             </div>
             <?php endif; ?>
 
-            <?php if (isset($_SESSION['user_id']) && (isset($_GET['ledger']) || isset($ledger_uuid))): ?>
+            <?php if (isset($_SESSION['user_id']) && $current_ledger !== ''): ?>
                 <div class="nav-search">
-                    <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
                     <form action="/pgbudget/search/" method="GET" class="nav-search-form">
                         <input type="hidden" name="ledger" value="<?= htmlspecialchars($current_ledger) ?>">
                         <input type="text"
@@ -136,60 +143,15 @@
                     </form>
                 </div>
             <?php endif; ?>
+            <!-- Navbar is intentionally minimal (U3): the sidebar is the single
+                 navigation source; here only search, quick add and user actions -->
             <ul class="nav-menu">
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item">
-                        <a href="/pgbudget/" class="nav-link">Dashboard</a>
-                    </li>
-
-                    <?php if (isset($_GET['ledger']) || isset($ledger_uuid)): ?>
-                        <?php $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? ''); ?>
-
-                        <li class="nav-item">
-                            <a href="/pgbudget/accounts/list.php?ledger=<?= htmlspecialchars($current_ledger) ?>" class="nav-link">Accounts</a>
-                        </li>
-
-                        <!-- Finances dropdown -->
-                        <li class="nav-item nav-dropdown">
-                            <button class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-                                Finances <span class="caret" aria-hidden="true">▾</span>
-                            </button>
-                            <ul class="nav-dropdown-menu" role="menu">
-                                <li><a href="/pgbudget/transactions/list.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">All Transactions</a></li>
-                                <li><a href="/pgbudget/categories/manage.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Categories</a></li>
-                                <li><a href="/pgbudget/credit-cards/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Credit Cards</a></li>
-                                <li><a href="/pgbudget/loans/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Loans</a></li>
-                                <li><a href="/pgbudget/installments/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Installments</a></li>
-                                <li><a href="/pgbudget/obligations/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Bills</a></li>
-                                <li><a href="/pgbudget/income-sources/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Income Sources</a></li>
-                            </ul>
-                        </li>
-
-                        <!-- Reports dropdown -->
-                        <li class="nav-item nav-dropdown">
-                            <button class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-                                Reports <span class="caret" aria-hidden="true">▾</span>
-                            </button>
-                            <ul class="nav-dropdown-menu" role="menu">
-                                <li><a href="/pgbudget/reports/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem"><strong>All Reports</strong></a></li>
-                                <li><a href="/pgbudget/reports/cash-flow-projection.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Cash Flow</a></li>
-                                <li><a href="/pgbudget/reports/what-if-projection.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">What-If</a></li>
-                                <li><a href="/pgbudget/reports/spending-by-category.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Spending by Category</a></li>
-                                <li><a href="/pgbudget/reports/net-worth.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Net Worth</a></li>
-                                <li><a href="/pgbudget/reports/income-vs-expense.php?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Income vs Expense</a></li>
-                                <li><a href="/pgbudget/projected-events/?ledger=<?= htmlspecialchars($current_ledger) ?>" role="menuitem">Projected Events</a></li>
-                            </ul>
-                        </li>
-
+                    <?php if ($current_ledger !== ''): ?>
                         <li class="nav-item">
                             <a href="#" class="nav-link nav-quick-add" data-ledger="<?= htmlspecialchars($current_ledger) ?>" onclick="QuickAddModal.open();return false;"><i data-lucide="plus" aria-hidden="true"></i> Add</a>
                         </li>
-
                     <?php endif; ?>
-
-                    <li class="nav-item">
-                        <a href="/pgbudget/settings/" class="nav-link"><i data-lucide="settings" aria-hidden="true"></i> Settings</a>
-                    </li>
                     <li class="nav-item">
                         <span class="nav-user">Hello, <?= htmlspecialchars($_SESSION['user_id']) ?>!</span>
                     </li>
@@ -218,7 +180,6 @@
     <?php if (isset($_SESSION['user_id'])): ?>
     <!-- Left sidebar -->
     <?php
-    $current_ledger = $_GET['ledger'] ?? ($ledger_uuid ?? '');
     $current_path   = $_SERVER['PHP_SELF'] ?? '';
     function pgb_sidebar_active(string $segment): string {
         global $current_path;
@@ -259,6 +220,12 @@
             <a href="/pgbudget/accounts/list.php?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/accounts/') ?>">
                 <i data-lucide="wallet"></i> Accounts
             </a>
+            <a href="/pgbudget/categories/manage.php?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/categories/') ?>">
+                <i data-lucide="tags"></i> Categories
+            </a>
+            <a href="/pgbudget/credit-cards/?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/credit-cards/') ?>">
+                <i data-lucide="credit-card"></i> Credit Cards
+            </a>
             <?php endif; ?>
         </nav>
 
@@ -272,7 +239,7 @@
                 <i data-lucide="book"></i> Loans
             </a>
             <a href="/pgbudget/installments/?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/installments/') ?>">
-                <i data-lucide="credit-card"></i> Installments
+                <i data-lucide="layers"></i> Installments
             </a>
             <a href="/pgbudget/income-sources/?ledger=<?= urlencode($current_ledger) ?>" class="sidebar-nav-item<?= pgb_sidebar_active('/income-sources/') ?>">
                 <i data-lucide="trending-up"></i> Income Sources

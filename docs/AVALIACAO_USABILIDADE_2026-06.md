@@ -61,6 +61,7 @@ Os problemas restantes se concentram em **arquitetura de informação** (relató
 **Evidência:** navbar superior e sidebar oferecem conjuntos sobrepostos mas diferentes de links (navbar tem Categories e Credit Cards; sidebar tem Projected Events em "Plan"). Ambas só renderizam os links contextuais quando `$_GET['ledger']` ou `$ledger_uuid` existe (`header.php:85,105,191`).
 **Impacto:** duas hierarquias para aprender; se o usuário chega a uma página sem o parâmetro (link compartilhado, refresh em página de erro), o menu "encolhe" sem explicação — desorientação clássica.
 **Recomendação:** guardar o ledger corrente na sessão como fallback do parâmetro GET; consolidar a navegação em uma única fonte (sidebar como primária, navbar reduzida a busca + quick add + usuário).
+**Status:** ✅ **Resolvido em 2026-06-12** — `pgb_current_ledger()` (`config/database.php`) resolve o ledger por `?ledger=` → `$ledger_uuid` da página → fallback `$_SESSION['current_ledger']`, gravando o último ledger visto na sessão; todas as páginas `public/*` que liam `$_GET['ledger']` passaram a usá-la (sweep de ~55 arquivos), e `delete-ledger.php` esquece o ledger da sessão ao apagá-lo. A navbar foi reduzida a busca + Add + usuário/logout e a **sidebar é agora a única fonte de navegação** (Categories e Credit Cards migrados para ela; dropdowns "Finances"/"Reports" da navbar removidos). O ledger corrente é exposto em `<body data-ledger-uuid>` para que scripts (quick add, atalhos de teclado) sobrevivam a URLs sem `?ledger=`.
 
 #### U4. Erro técnico de banco exposto ao usuário
 **Heurística:** Ajudar usuários a reconhecer e se recuperar de erros
@@ -132,13 +133,13 @@ Recomendação: `tabindex="0"` + handler de Enter nas células editáveis; `aria
 | 3 | U8 — Títulos de página dinâmicos | Baixo | Médio | ✅ 2026-06-12 (`ae9825b`) |
 | 4 | U9 — Vendorizar libs do unpkg | Baixo | Médio | ✅ 2026-06-12 (`ae9825b`) |
 | 5 | U2 — Moeda/locale configurável | Médio | Alto | ✅ 2026-06-12 (`f8f1cbb`) — moeda; i18n de strings pendente |
-| 6 | U3 — Ledger na sessão + navegação única | Médio | Alto | Pendente |
+| 6 | U3 — Ledger na sessão + navegação única | Médio | Alto | ✅ 2026-06-12 |
 | 7 | U5 — Substituir alert/confirm nativos | Médio (mecânico) | Médio | Pendente |
 | 8 | U7 — Glossário de terminologia | Médio | Médio | Pendente |
 | 9 | U6 — Refatorar add.php com progressive disclosure | Alto | Médio | Pendente |
 | 10 | U12/U13/U14/U15 — Melhorias incrementais | Baixo cada | Baixo-Médio | Pendente |
 
-**Quick wins da semana:** ~~itens 1–4~~ ✅ concluídos em 2026-06-12, junto com o item 5 (U2). Os dois críticos restantes são U3 (navegação) e o i18n de strings remanescente de U2.
+**Quick wins da semana:** ~~itens 1–4~~ ✅ concluídos em 2026-06-12, junto com o item 5 (U2) e o item 6 (U3 — navegação única + ledger na sessão). Resta o i18n de strings remanescente de U2 e os itens 7–10.
 
 ---
 
