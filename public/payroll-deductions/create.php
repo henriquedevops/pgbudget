@@ -378,12 +378,12 @@ document.getElementById('createDeductionForm').addEventListener('submit', async 
         if (result.success) {
             window.location.href = '../income-sources/index.php?ledger=<?= $ledger_uuid ?>&tab=deductions&success=Payroll deduction created successfully';
         } else {
-            alert('Error creating deduction: ' + result.error);
+            Toast.error('Error creating deduction: ' + result.error);
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }
     } catch (error) {
-        alert('Error creating deduction: ' + error.message);
+        Toast.error('Error creating deduction: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }

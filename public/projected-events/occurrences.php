@@ -464,7 +464,7 @@ async function submitRealize(eventUuid, month, btn) {
     const accountUuid  = document.getElementById('account-' + key).value;
 
     if (!realizedDate) {
-        alert('Please enter the actual date.');
+        Toast.error('Please enter the actual date.');
         return;
     }
 
@@ -488,34 +488,39 @@ async function submitRealize(eventUuid, month, btn) {
         // Update row in-place
         updateRowToRealized(month, data.occurrence);
     } catch (err) {
-        alert('Error: ' + err.message);
+        Toast.error('Error: ' + err.message);
         btn.disabled = false;
         btn.textContent = 'Confirm';
     }
 }
 
-async function undoRealize(eventUuid, month, btn) {
-    if (!confirm('Remove realized status for ' + formatMonthLabel(month) + '? It will return to projected.')) return;
+function undoRealize(eventUuid, month, btn) {
+    ConfirmModal.show({
+        title: 'Remove Realized Status?',
+        message: 'Remove realized status for ' + formatMonthLabel(month) + '? It will return to projected.',
+        confirmText: 'Remove',
+        onConfirm: async function() {
+            btn.disabled = true;
+            btn.textContent = '…';
 
-    btn.disabled = true;
-    btn.textContent = '…';
+            const body = new FormData();
+            body.append('action',          'unrealize');
+            body.append('event_uuid',      eventUuid);
+            body.append('scheduled_month', month);
 
-    const body = new FormData();
-    body.append('action',          'unrealize');
-    body.append('event_uuid',      eventUuid);
-    body.append('scheduled_month', month);
+            try {
+                const res  = await fetch(API_URL, { method: 'POST', body });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || 'Unknown error');
 
-    try {
-        const res  = await fetch(API_URL, { method: 'POST', body });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Unknown error');
-
-        updateRowToProjected(month);
-    } catch (err) {
-        alert('Error: ' + err.message);
-        btn.disabled = false;
-        btn.textContent = 'Undo';
-    }
+                updateRowToProjected(month);
+            } catch (err) {
+                Toast.error('Error: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = 'Undo';
+            }
+        }
+    });
 }
 
 function updateRowToRealized(month, occ) {
@@ -589,7 +594,7 @@ async function restoreToActive() {
         // Hide the warning banner
         document.getElementById('realized-warning').remove();
     } catch (err) {
-        alert('Error: ' + err.message);
+        Toast.error('Error: ' + err.message);
         btn.disabled = false;
         btn.textContent = 'Restore to Active';
     }

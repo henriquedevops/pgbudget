@@ -76,6 +76,7 @@ Os problemas restantes se concentram em **arquitetura de informação** (relató
 **Evidência:** 178 ocorrências de `alert(` e 17 de `confirm(` nativos em `js/` e `public/`, apesar de existirem `confirm-modal.php`/`confirm-modal.js` e o sistema de mensagens.
 **Impacto:** experiência inconsistente (visual nativo do browser vs. design kit), `alert()` bloqueia a thread e não respeita dark mode/mobile.
 **Recomendação:** sweep para substituir por `ConfirmModal`/toasts; lint rule ou grep no CI para impedir regressão.
+**Status:** ✅ **Resolvido em 2026-06-13** — novo helper `Toast` (`public/js/toast.js`) reusa o markup/CSS `.message` do sistema de flash do servidor e substitui **todos os ~150 `alert()`**; tipo (success/error/warning/info) inferido do conteúdo, com `Toast.flash()` (via `sessionStorage`) para mensagens que precisam sobreviver a um `reload`/redirect. Todos os **18 `confirm()`** migraram para `ConfirmModal`: links/forms usam o atributo `data-confirm` (handler de `main.js`, agora respeitando validação HTML5 nativa via `reportValidity()`/`requestSubmit()`); funções JS usam `ConfirmModal.show({onConfirm})` ou, em fluxos `async`, um wrapper `Promise`. Restam 0 `alert(`/`confirm(` nativos fora de `vendor/`.
 
 #### U6. Formulário de transação monolítico e sobrecarregado
 **Evidência:** `transactions/add.php` tem **2.763 linhas** (HTML + CSS + JS inline) com 4 toggles opcionais empilhados: pagamento de empréstimo, vínculo a conta/obrigação, plano de parcelamento e split — todos visíveis na mesma página.
@@ -134,12 +135,12 @@ Recomendação: `tabindex="0"` + handler de Enter nas células editáveis; `aria
 | 4 | U9 — Vendorizar libs do unpkg | Baixo | Médio | ✅ 2026-06-12 (`ae9825b`) |
 | 5 | U2 — Moeda/locale configurável | Médio | Alto | ✅ 2026-06-12 (`f8f1cbb`) — moeda; i18n de strings pendente |
 | 6 | U3 — Ledger na sessão + navegação única | Médio | Alto | ✅ 2026-06-12 |
-| 7 | U5 — Substituir alert/confirm nativos | Médio (mecânico) | Médio | Pendente |
+| 7 | U5 — Substituir alert/confirm nativos | Médio (mecânico) | Médio | ✅ 2026-06-13 |
 | 8 | U7 — Glossário de terminologia | Médio | Médio | Pendente |
 | 9 | U6 — Refatorar add.php com progressive disclosure | Alto | Médio | Pendente |
 | 10 | U12/U13/U14/U15 — Melhorias incrementais | Baixo cada | Baixo-Médio | Pendente |
 
-**Quick wins da semana:** ~~itens 1–4~~ ✅ concluídos em 2026-06-12, junto com o item 5 (U2) e o item 6 (U3 — navegação única + ledger na sessão). Resta o i18n de strings remanescente de U2 e os itens 7–10.
+**Quick wins da semana:** ~~itens 1–4~~ ✅ concluídos em 2026-06-12, junto com o item 5 (U2) e o item 6 (U3 — navegação única + ledger na sessão). O item 7 (U5 — sweep alert/confirm) foi concluído em 2026-06-13. Resta o i18n de strings remanescente de U2 e os itens 8–10.
 
 ---
 

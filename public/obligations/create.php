@@ -739,7 +739,7 @@ document.getElementById('createObligationForm').addEventListener('submit', async
         });
 
         if (dueMonths.length === 0) {
-            alert('Please select at least one month for the payment.');
+            Toast.error('Please select at least one month for the payment.');
             return;
         }
 
@@ -766,12 +766,12 @@ document.getElementById('createObligationForm').addEventListener('submit', async
         if (result.success) {
             window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Obligation created successfully';
         } else {
-            alert('Error creating obligation: ' + result.error);
+            Toast.error('Error creating obligation: ' + result.error);
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }
     } catch (error) {
-        alert('Error creating obligation: ' + error.message);
+        Toast.error('Error creating obligation: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }

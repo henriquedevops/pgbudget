@@ -809,7 +809,7 @@ document.getElementById('what-if-form').addEventListener('submit', function(e) {
     const startDate = document.getElementById('what-if-start-date').value;
 
     if (!amount || !installments || !categoryUuid) {
-        alert('Please fill in all fields');
+        Toast.error('Please fill in all fields');
         return;
     }
 
@@ -819,7 +819,7 @@ document.getElementById('what-if-form').addEventListener('submit', function(e) {
     // Find selected category
     const category = budgetCategories.find(c => c.uuid === categoryUuid);
     if (!category) {
-        alert('Category not found');
+        Toast.error('Category not found');
         return;
     }
 

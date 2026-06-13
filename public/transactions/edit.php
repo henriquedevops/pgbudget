@@ -281,7 +281,7 @@ require_once '../../includes/header.php';
             <h3>Delete Transaction</h3>
             <p class="danger-warning">⚠️ This action cannot be undone. The transaction will be reversed with an audit trail.</p>
 
-            <form method="POST" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this transaction? This action cannot be undone.')">
+            <form method="POST" class="delete-form">
                 <input type="hidden" name="action" value="delete">
 
                 <div class="form-group">
@@ -290,7 +290,9 @@ require_once '../../includes/header.php';
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-danger">Delete Transaction</button>
+                    <button type="submit" class="btn btn-danger"
+                            data-confirm="Are you sure you want to delete this transaction? This action cannot be undone."
+                            data-confirm-title="Delete Transaction?">Delete Transaction</button>
                 </div>
             </form>
         </div>

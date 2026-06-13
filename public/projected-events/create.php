@@ -289,12 +289,12 @@ document.getElementById('createEventForm').addEventListener('submit', async func
         if (result.success) {
             window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Event created successfully';
         } else {
-            alert('Error creating event: ' + result.error);
+            Toast.error('Error creating event: ' + result.error);
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }
     } catch (error) {
-        alert('Error creating event: ' + error.message);
+        Toast.error('Error creating event: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }

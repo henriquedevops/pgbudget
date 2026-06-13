@@ -408,14 +408,23 @@ class InstallmentProcessor {
                 return;
             }
 
-            // Confirm batch processing
-            const confirmed = confirm(
-                `You are about to process ${overdueInstallments.length} overdue installment${overdueInstallments.length !== 1 ? 's' : ''}.\n\n` +
-                `Total amount: ${InstallmentCalculator.formatCurrency(
-                    overdueInstallments.reduce((sum, item) => sum + parseFloat(item.scheduled_amount), 0)
-                )}\n\n` +
-                `Continue?`
-            );
+            // Confirm batch processing (styled modal wrapped in a promise so we
+            // can keep this async flow linear)
+            const confirmed = await new Promise((resolve) => {
+                ConfirmModal.show({
+                    title: 'Process Overdue Installments?',
+                    message:
+                        `You are about to process ${overdueInstallments.length} overdue installment${overdueInstallments.length !== 1 ? 's' : ''}.\n\n` +
+                        `Total amount: ${InstallmentCalculator.formatCurrency(
+                            overdueInstallments.reduce((sum, item) => sum + parseFloat(item.scheduled_amount), 0)
+                        )}\n\n` +
+                        `Continue?`,
+                    confirmText: 'Process',
+                    confirmClass: 'btn-primary',
+                    onConfirm: () => resolve(true),
+                    onCancel: () => resolve(false)
+                });
+            });
 
             if (!confirmed) return;
 
@@ -533,20 +542,12 @@ class InstallmentProcessor {
      * @param {string} type - Notification type (success, error, warning, info)
      */
     showNotification(message, type = 'info') {
-        // Check if notification system exists
+        // Check if a host-page notification system exists
         if (typeof showNotification === 'function') {
             showNotification(message, type);
             return;
         }
-
-        // Fallback to alert
-        if (type === 'error') {
-            alert('Error: ' + message);
-        } else if (type === 'success') {
-            alert(message);
-        } else {
-            alert(message);
-        }
+        Toast.show(type === 'error' ? 'Error: ' + message : message, type);
     }
 
     /**

@@ -73,7 +73,7 @@ TransferModal = (function() {
 
         if (!currentLedgerUuid) {
             console.error('No ledger UUID provided to TransferModal.open()');
-            alert('Unable to open transfer modal: No ledger specified');
+            Toast.error('Unable to open transfer modal: No ledger specified');
             return;
         }
 
@@ -300,21 +300,21 @@ TransferModal = (function() {
                         callback();
                     } else {
                         console.error('Failed to load accounts:', response.error);
-                        alert('Failed to load accounts: ' + (response.error || 'Unknown error'));
+                        Toast.error('Failed to load accounts: ' + (response.error || 'Unknown error'));
                     }
                 } catch (e) {
                     console.error('Failed to parse accounts response:', e);
-                    alert('Failed to load accounts');
+                    Toast.error('Failed to load accounts');
                 }
             } else {
                 console.error('Failed to load accounts, status:', xhr.status);
-                alert('Failed to load accounts');
+                Toast.error('Failed to load accounts');
             }
         };
 
         xhr.onerror = function() {
             console.error('Network error loading accounts');
-            alert('Network error loading accounts');
+            Toast.error('Network error loading accounts');
         };
 
         xhr.send();

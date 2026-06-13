@@ -432,12 +432,12 @@ document.getElementById('editDeductionForm').addEventListener('submit', async fu
         if (result.success) {
             window.location.href = '../income-sources/index.php?ledger=<?= $ledger_uuid ?>&tab=deductions&success=Payroll deduction updated successfully';
         } else {
-            alert('Error updating deduction: ' + result.error);
+            Toast.error('Error updating deduction: ' + result.error);
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }
     } catch (error) {
-        alert('Error updating deduction: ' + error.message);
+        Toast.error('Error updating deduction: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }
@@ -462,12 +462,12 @@ document.getElementById('confirmDelete').addEventListener('click', async functio
         if (result.success) {
             window.location.href = '../income-sources/index.php?ledger=<?= $ledger_uuid ?>&tab=deductions&success=Payroll deduction deleted successfully';
         } else {
-            alert('Error deleting deduction: ' + result.error);
+            Toast.error('Error deleting deduction: ' + result.error);
             this.disabled = false;
             this.textContent = 'Delete Deduction';
         }
     } catch (error) {
-        alert('Error deleting deduction: ' + error.message);
+        Toast.error('Error deleting deduction: ' + error.message);
         this.disabled = false;
         this.textContent = 'Delete Deduction';
     }

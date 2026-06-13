@@ -572,17 +572,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Validation
         if (!paidDate) {
-            alert('Payment date is required');
+            Toast.error('Payment date is required');
             return;
         }
 
         if (!actualAmount || actualAmount <= 0) {
-            alert('Payment amount must be greater than 0');
+            Toast.error('Payment amount must be greater than 0');
             return;
         }
 
         if (!fromAccountUuid) {
-            alert('Please select an account to pay from');
+            Toast.error('Please select an account to pay from');
             return;
         }
 
@@ -619,12 +619,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = 'view.php?ledger=' + encodeURIComponent(ledgerUuid) +
                                       '&loan=' + encodeURIComponent(loanUuid);
             } else {
-                alert('Error recording payment: ' + result.error);
+                Toast.error('Error recording payment: ' + result.error);
                 submitBtn.disabled = false;
                 submitBtn.textContent = '✓ Record Payment';
             }
         } catch (error) {
-            alert('Error recording payment: ' + error.message);
+            Toast.error('Error recording payment: ' + error.message);
             submitBtn.disabled = false;
             submitBtn.textContent = '✓ Record Payment';
         }

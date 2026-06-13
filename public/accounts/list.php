@@ -1193,13 +1193,13 @@ async function fetchDeleteAccountPrecheck() {
         console.log('📦 Precheck data:', data);
 
         if (!response.ok || !data.success) {
-            alert('Error: ' + (data.error || 'Failed to check account deletion'));
+            Toast.error('Error: ' + (data.error || 'Failed to check account deletion'));
             closeDeleteAccountModal();
             return;
         }
 
         if (!data.can_delete) {
-            alert('Cannot delete this account: ' + data.reason);
+            Toast.error('Cannot delete this account: ' + data.reason);
             closeDeleteAccountModal();
             return;
         }
@@ -1207,7 +1207,7 @@ async function fetchDeleteAccountPrecheck() {
         deleteAccountWarnings = data.warnings || [];
         displayDeleteWarnings();
     } catch (error) {
-        alert('Error: ' + error.message);
+        Toast.error('Error: ' + error.message);
         closeDeleteAccountModal();
     }
 }
@@ -1233,7 +1233,7 @@ function displayDeleteWarnings() {
 }
 
 // Confirm account deletion
-async function confirmDeleteAccount() {
+function confirmDeleteAccount() {
     const hasTransactions = deleteAccountWarnings.some(w => w.includes('transaction'));
 
     let confirmMsg = `Are you sure you want to delete the account "${currentDeleteAccountName}"?\n\n`;
@@ -1244,46 +1244,49 @@ async function confirmDeleteAccount() {
 
     confirmMsg += 'This action cannot be easily undone!';
 
-    if (!confirm(confirmMsg)) {
-        return;
-    }
+    ConfirmModal.show({
+        title: 'Delete Account?',
+        message: confirmMsg,
+        confirmText: 'Delete Account',
+        onConfirm: async function() {
+            // Disable button and show loading
+            const btn = document.getElementById('confirm-delete-account-btn');
+            btn.disabled = true;
+            btn.textContent = 'Deleting...';
 
-    // Disable button and show loading
-    const btn = document.getElementById('confirm-delete-account-btn');
-    btn.disabled = true;
-    btn.textContent = 'Deleting...';
+            try {
+                const response = await fetch('/pgbudget/api/delete-account.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        account_uuid: currentDeleteAccountUuid
+                    })
+                });
 
-    try {
-        const response = await fetch('/pgbudget/api/delete-account.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                account_uuid: currentDeleteAccountUuid
-            })
-        });
+                const data = await response.json();
 
-        const data = await response.json();
+                if (!response.ok || !data.success) {
+                    Toast.error('Error: ' + (data.error || 'Failed to delete account'));
+                    btn.disabled = false;
+                    btn.textContent = 'Delete Account';
+                    return;
+                }
 
-        if (!response.ok || !data.success) {
-            alert('Error: ' + (data.error || 'Failed to delete account'));
-            btn.disabled = false;
-            btn.textContent = 'Delete Account';
-            return;
+                let successMsg = data.message;
+                if (data.deleted_transactions > 0) {
+                    successMsg += `\n\n${data.deleted_transactions} transaction(s) were also soft-deleted.`;
+                }
+
+                Toast.flash(successMsg, 'success');
+                window.location.reload();
+            } catch (error) {
+                Toast.error('Error: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = 'Delete Account';
+            }
         }
-
-        let successMsg = data.message;
-        if (data.deleted_transactions > 0) {
-            successMsg += `\n\n${data.deleted_transactions} transaction(s) were also soft-deleted.`;
-        }
-
-        alert(successMsg);
-        window.location.reload();
-    } catch (error) {
-        alert('Error: ' + error.message);
-        btn.disabled = false;
-        btn.textContent = 'Delete Account';
-    }
+    });
 }
 
 // Close modal when clicking outside
@@ -1341,7 +1344,7 @@ async function fetchDeletionImpact() {
         const data = await response.json();
 
         if (!response.ok) {
-            alert('Error: ' + (data.error || 'Failed to check deletion impact'));
+            Toast.error('Error: ' + (data.error || 'Failed to check deletion impact'));
             closeDeleteModal();
             return;
         }
@@ -1349,7 +1352,7 @@ async function fetchDeletionImpact() {
         impactData = data.impact;
         displayImpact(data.impact);
     } catch (error) {
-        alert('Error: ' + error.message);
+        Toast.error('Error: ' + error.message);
         closeDeleteModal();
     }
 }
@@ -1408,7 +1411,7 @@ async function confirmDelete() {
     if (strategy === 'reassign') {
         reassignTo = document.getElementById('reassign-category-select').value;
         if (!reassignTo) {
-            alert('Please select a category to reassign transactions to.');
+            Toast.error('Please select a category to reassign transactions to.');
             return;
         }
     }
@@ -1417,42 +1420,45 @@ async function confirmDelete() {
         ? `Are you sure you want to DELETE this category and all ${impactData.transaction_count} related transactions? This cannot be undone!`
         : `Are you sure you want to delete this category and reassign all ${impactData.transaction_count} transactions?`;
 
-    if (!confirm(confirmMsg)) {
-        return;
-    }
+    ConfirmModal.show({
+        title: 'Delete Category?',
+        message: confirmMsg,
+        confirmText: 'Delete Category',
+        onConfirm: async function() {
+            // Disable button and show loading
+            const btn = document.getElementById('confirm-delete-btn');
+            btn.disabled = true;
+            btn.textContent = 'Deleting...';
 
-    // Disable button and show loading
-    const btn = document.getElementById('confirm-delete-btn');
-    btn.disabled = true;
-    btn.textContent = 'Deleting...';
+            try {
+                const response = await fetch('../api/delete-category.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        category_uuid: currentCategoryUuid,
+                        action: 'delete',
+                        reassign_to_category_uuid: reassignTo
+                    })
+                });
 
-    try {
-        const response = await fetch('../api/delete-category.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                category_uuid: currentCategoryUuid,
-                action: 'delete',
-                reassign_to_category_uuid: reassignTo
-            })
-        });
+                const data = await response.json();
 
-        const data = await response.json();
+                if (!response.ok) {
+                    Toast.error('Error: ' + (data.error || 'Failed to delete category'));
+                    btn.disabled = false;
+                    btn.textContent = 'Delete Category';
+                    return;
+                }
 
-        if (!response.ok) {
-            alert('Error: ' + (data.error || 'Failed to delete category'));
-            btn.disabled = false;
-            btn.textContent = 'Delete Category';
-            return;
+                Toast.flash('Category deleted successfully!', 'success');
+                window.location.reload();
+            } catch (error) {
+                Toast.error('Error: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = 'Delete Category';
+            }
         }
-
-        alert('Category deleted successfully!');
-        window.location.reload();
-    } catch (error) {
-        alert('Error: ' + error.message);
-        btn.disabled = false;
-        btn.textContent = 'Delete Category';
-    }
+    });
 }
 
 // Format money helper
@@ -1529,7 +1535,7 @@ async function loadBankAccounts() {
         }
     } catch (error) {
         console.error('Failed to load bank accounts:', error);
-        alert('Failed to load bank accounts. Please refresh and try again.');
+        Toast.error('Failed to load bank accounts. Please refresh and try again.');
     }
 }
 
@@ -1561,26 +1567,35 @@ async function submitPayment() {
     const memo = document.getElementById('payment-memo').value;
 
     if (!bankAccountUuid) {
-        alert('Please select a bank account to pay from.');
+        Toast.error('Please select a bank account to pay from.');
         return;
     }
 
     if (amount <= 0) {
-        alert('Payment amount must be greater than zero.');
+        Toast.error('Payment amount must be greater than zero.');
         return;
     }
 
-    // Warn if paying more than budgeted
+    // Warn if paying more than budgeted, then proceed once confirmed
     if (amount > currentPaymentAvailable) {
         const overage = amount - currentPaymentAvailable;
         const confirmMsg = `You're paying $${(amount / 100).toFixed(2)}, but only have $${(currentPaymentAvailable / 100).toFixed(2)} budgeted.\n\n` +
                           `This will create $${(overage / 100).toFixed(2)} overspending in your payment category.\n\n` +
                           `Continue anyway?`;
-        if (!confirm(confirmMsg)) {
-            return;
-        }
+        ConfirmModal.show({
+            title: 'Overspend Payment Category?',
+            message: confirmMsg,
+            confirmText: 'Continue',
+            confirmClass: 'btn-primary',
+            onConfirm: function() { doSubmitPayment(bankAccountUuid, amount, date, memo); }
+        });
+        return;
     }
 
+    doSubmitPayment(bankAccountUuid, amount, date, memo);
+}
+
+async function doSubmitPayment(bankAccountUuid, amount, date, memo) {
     // Disable button and show loading
     const btn = document.getElementById('confirm-payment-btn');
     btn.disabled = true;
@@ -1602,16 +1617,16 @@ async function submitPayment() {
         const data = await response.json();
 
         if (!response.ok) {
-            alert('Error: ' + (data.error || 'Failed to process payment'));
+            Toast.error('Error: ' + (data.error || 'Failed to process payment'));
             btn.disabled = false;
             btn.textContent = 'Make Payment';
             return;
         }
 
-        alert('Payment processed successfully!');
+        Toast.flash('Payment processed successfully!', 'success');
         window.location.reload();
     } catch (error) {
-        alert('Error: ' + error.message);
+        Toast.error('Error: ' + error.message);
         btn.disabled = false;
         btn.textContent = 'Make Payment';
     }

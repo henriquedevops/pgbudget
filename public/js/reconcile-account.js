@@ -274,9 +274,12 @@ const ReconcileAccount = {
      * Cancel reconciliation
      */
     cancelReconcile() {
-        if (confirm('Are you sure you want to cancel this reconciliation? Your selections will be lost.')) {
-            window.location.reload();
-        }
+        ConfirmModal.show({
+            title: 'Cancel Reconciliation?',
+            message: 'Are you sure you want to cancel this reconciliation? Your selections will be lost.',
+            confirmText: 'Cancel Reconciliation',
+            onConfirm: function() { window.location.reload(); }
+        });
     },
 
     /**

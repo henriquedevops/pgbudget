@@ -187,7 +187,7 @@ const InstallmentReport = {
             }
         } catch (error) {
             console.error('Error loading data:', error);
-            alert('Error loading report data: ' + error.message);
+            Toast.error('Error loading report data: ' + error.message);
         }
     },
 

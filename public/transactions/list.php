@@ -622,7 +622,7 @@ function openLinkModal(txnUuid, txnDescription, txnAmountCents) {
 
 async function submitLinkEvent() {
     const eventUuid = document.getElementById('link-event-select').value;
-    if (!eventUuid) { alert('Please select a projected event.'); return; }
+    if (!eventUuid) { Toast.error('Please select a projected event.'); return; }
     const formData = new FormData();
     formData.append('action', 'update');
     formData.append('event_uuid', eventUuid);
@@ -632,8 +632,8 @@ async function submitLinkEvent() {
         const response = await fetch('/pgbudget/api/projected-events.php', { method: 'POST', body: formData });
         const data = await response.json();
         if (data.success) { closeBulkModal('link-event-modal'); window.location.reload(); }
-        else { alert('Error linking: ' + (data.error || 'Unknown error')); }
-    } catch (err) { alert('Error: ' + err.message); }
+        else { Toast.error('Error linking: ' + (data.error || 'Unknown error')); }
+    } catch (err) { Toast.error('Error: ' + err.message); }
 }
 
 async function deleteSingleTransaction(uuid, description) {
@@ -647,8 +647,8 @@ async function deleteSingleTransaction(uuid, description) {
                 const response = await fetch(`/pgbudget/api/delete-transaction.php?uuid=${encodeURIComponent(uuid)}`, { method: 'DELETE' });
                 const data = await response.json();
                 if (data.success) { window.location.reload(); }
-                else { alert('Error deleting transaction: ' + (data.error || 'Unknown error')); }
-            } catch (err) { alert('Error deleting transaction: ' + err.message); }
+                else { Toast.error('Error deleting transaction: ' + (data.error || 'Unknown error')); }
+            } catch (err) { Toast.error('Error deleting transaction: ' + err.message); }
         }
     });
 }

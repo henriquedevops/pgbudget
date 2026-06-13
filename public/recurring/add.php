@@ -444,7 +444,7 @@ document.getElementById('end_date').addEventListener('change', function() {
     const endDate = this.value;
 
     if (startDate && endDate && endDate < startDate) {
-        alert('End date must be after start date');
+        Toast.error('End date must be after start date');
         this.value = '';
     }
 });

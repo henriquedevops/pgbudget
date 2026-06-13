@@ -403,12 +403,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Validation
         if (!lenderName) {
-            alert('Lender name is required');
+            Toast.error('Lender name is required');
             return;
         }
 
         if (isNaN(interestRate) || interestRate < 0 || interestRate > 100) {
-            alert('Interest rate must be between 0 and 100');
+            Toast.error('Interest rate must be between 0 and 100');
             return;
         }
 
@@ -448,12 +448,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = 'view.php?ledger=' + encodeURIComponent(ledgerUuid) +
                                       '&loan=' + encodeURIComponent(loanUuid);
             } else {
-                alert('Error updating loan: ' + result.error);
+                Toast.error('Error updating loan: ' + result.error);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Update Loan';
             }
         } catch (error) {
-            alert('Error updating loan: ' + error.message);
+            Toast.error('Error updating loan: ' + error.message);
             submitBtn.disabled = false;
             submitBtn.textContent = 'Update Loan';
         }

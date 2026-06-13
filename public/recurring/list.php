@@ -150,11 +150,12 @@ require_once '../../includes/header.php';
                         </form>
                         <a href="edit.php?uuid=<?= $recurring['recurring_uuid'] ?>&ledger=<?= $ledger_uuid ?>"
                            class="btn btn-sm btn-secondary">Edit</a>
-                        <form method="POST" action="delete.php" style="display: inline;"
-                              onsubmit="return confirm('Are you sure you want to delete this recurring transaction?');">
+                        <form method="POST" action="delete.php" style="display: inline;">
                             <input type="hidden" name="recurring_uuid" value="<?= $recurring['recurring_uuid'] ?>">
                             <input type="hidden" name="ledger_uuid" value="<?= $ledger_uuid ?>">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    data-confirm="Are you sure you want to delete this recurring transaction?"
+                                    data-confirm-title="Delete Recurring Transaction?">Delete</button>
                         </form>
                     </td>
                 </tr>

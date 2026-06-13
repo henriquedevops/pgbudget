@@ -713,27 +713,30 @@ document.getElementById('card-filter')?.addEventListener('change', function() {
 });
 
 // Cancel plan
-async function cancelPlan(planUuid, description) {
-    if (!confirm(`Are you sure you want to cancel the installment plan for "${description}"?\n\nThis action cannot be undone.`)) {
-        return;
-    }
+function cancelPlan(planUuid, description) {
+    ConfirmModal.show({
+        title: 'Cancel Installment Plan?',
+        message: `Are you sure you want to cancel the installment plan for "${description}"?\n\nThis action cannot be undone.`,
+        confirmText: 'Cancel Plan',
+        onConfirm: async function() {
+            try {
+                const response = await fetch(`/pgbudget/api/installment-plans.php?plan_uuid=${planUuid}`, {
+                    method: 'DELETE'
+                });
 
-    try {
-        const response = await fetch(`/pgbudget/api/installment-plans.php?plan_uuid=${planUuid}`, {
-            method: 'DELETE'
-        });
+                const result = await response.json();
 
-        const result = await response.json();
-
-        if (result.success) {
-            window.location.reload();
-        } else {
-            alert('Error: ' + (result.error || 'Failed to cancel plan'));
+                if (result.success) {
+                    window.location.reload();
+                } else {
+                    Toast.error('Error: ' + (result.error || 'Failed to cancel plan'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Toast.error('An error occurred. Please try again.');
+            }
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
-    }
+    });
 }
 </script>
 

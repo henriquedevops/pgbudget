@@ -361,7 +361,7 @@ document.getElementById('end_date').addEventListener('change', function() {
     const endDate = this.value;
 
     if (nextDate && endDate && endDate < nextDate) {
-        alert('End date must be after next date');
+        Toast.error('End date must be after next date');
         this.value = '';
     }
 });

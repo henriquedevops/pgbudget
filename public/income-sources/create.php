@@ -340,7 +340,7 @@ document.getElementById('createIncomeForm').addEventListener('submit', async fun
             months.push(cb.value);
         });
         if (months.length === 0) {
-            alert('Please select at least one occurrence month.');
+            Toast.error('Please select at least one occurrence month.');
             return;
         }
         formData.set('occurrence_months', months.join(','));
@@ -364,12 +364,12 @@ document.getElementById('createIncomeForm').addEventListener('submit', async fun
         if (result.success) {
             window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Income source created successfully';
         } else {
-            alert('Error creating income source: ' + result.error);
+            Toast.error('Error creating income source: ' + result.error);
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }
     } catch (error) {
-        alert('Error creating income source: ' + error.message);
+        Toast.error('Error creating income source: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }

@@ -93,12 +93,12 @@ function completeStep(stepNumber, nextUrl) {
             window.location.href = nextUrl;
         } else {
             console.error('Failed to complete step:', data.error);
-            alert('Failed to save progress. Please try again.');
+            Toast.error('Failed to save progress. Please try again.');
         }
     })
     .catch(error => {
         console.error('Error completing step:', error);
-        alert('An error occurred. Please try again.');
+        Toast.error('An error occurred. Please try again.');
     });
 }
 </script>

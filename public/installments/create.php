@@ -712,13 +712,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success) {
                 window.location.href = 'view.php?plan=' + result.plan.uuid + '&ledger=' + data.ledger_uuid;
             } else {
-                alert('Error: ' + (result.error || 'Failed to create installment plan'));
+                Toast.error('Error: ' + (result.error || 'Failed to create installment plan'));
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Create Installment Plan';
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            Toast.error('An error occurred. Please try again.');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Create Installment Plan';
         }

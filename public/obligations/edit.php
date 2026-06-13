@@ -651,7 +651,14 @@ require_once '../../includes/header.php';
     const clearBtn = document.getElementById('clearFutureAmountBtn');
     if (clearBtn) {
         clearBtn.addEventListener('click', async function () {
-            if (!confirm('Remove the scheduled amount change? The current amount will remain unchanged.')) return;
+            const ok = await new Promise((resolve) => ConfirmModal.show({
+                title: 'Remove Scheduled Change?',
+                message: 'Remove the scheduled amount change? The current amount will remain unchanged.',
+                confirmText: 'Remove',
+                onConfirm: () => resolve(true),
+                onCancel: () => resolve(false)
+            }));
+            if (!ok) return;
             clearBtn.disabled = true;
             clearBtn.textContent = 'Removing…';
             const fd = new FormData();
@@ -664,12 +671,12 @@ require_once '../../includes/header.php';
                 if (data.success) {
                     document.getElementById('futureAmountBanner').remove();
                 } else {
-                    alert('Error: ' + data.error);
+                    Toast.error('Error: ' + data.error);
                     clearBtn.disabled = false;
                     clearBtn.textContent = 'Remove scheduled change';
                 }
             } catch (err) {
-                alert('Error: ' + err.message);
+                Toast.error('Error: ' + err.message);
                 clearBtn.disabled = false;
                 clearBtn.textContent = 'Remove scheduled change';
             }
@@ -719,12 +726,12 @@ document.getElementById('editObligationForm').addEventListener('submit', async f
         if (result.success) {
             window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Obligation updated successfully';
         } else {
-            alert('Error updating obligation: ' + result.error);
+            Toast.error('Error updating obligation: ' + result.error);
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }
     } catch (error) {
-        alert('Error updating obligation: ' + error.message);
+        Toast.error('Error updating obligation: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }
@@ -760,12 +767,12 @@ confirmDeleteBtn.addEventListener('click', async function() {
         if (result.success) {
             window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Obligation deleted successfully';
         } else {
-            alert('Error deleting obligation: ' + result.error);
+            Toast.error('Error deleting obligation: ' + result.error);
             confirmDeleteBtn.disabled = false;
             confirmDeleteBtn.textContent = 'Delete Obligation';
         }
     } catch (error) {
-        alert('Error deleting obligation: ' + error.message);
+        Toast.error('Error deleting obligation: ' + error.message);
         confirmDeleteBtn.disabled = false;
         confirmDeleteBtn.textContent = 'Delete Obligation';
     }

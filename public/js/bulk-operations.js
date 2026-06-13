@@ -298,13 +298,12 @@ class BulkOperations {
     }
 
     showSuccessMessage(message) {
-        // You can implement a toast notification system here
-        alert(message);
+        // Always followed by reloadPage(); flash so it survives the reload
+        Toast.flash(message, 'success');
     }
 
     showErrorMessage(message) {
-        // You can implement a toast notification system here
-        alert('Error: ' + message);
+        Toast.error('Error: ' + message);
     }
 
     reloadPage() {
@@ -332,7 +331,7 @@ function submitBulkCategorize() {
     const categoryUuid = categorySelect.value;
 
     if (!categoryUuid) {
-        alert('Please select a category');
+        Toast.error('Please select a category');
         return;
     }
 
@@ -345,7 +344,7 @@ function submitBulkEditDate() {
     const newDate = dateInput.value;
 
     if (!newDate) {
-        alert('Please select a date');
+        Toast.error('Please select a date');
         return;
     }
 
@@ -358,7 +357,7 @@ function submitBulkEditAccount() {
     const accountUuid = accountSelect.value;
 
     if (!accountUuid) {
-        alert('Please select an account');
+        Toast.error('Please select an account');
         return;
     }
 

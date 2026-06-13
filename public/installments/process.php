@@ -149,7 +149,7 @@ require_once '../../includes/header.php';
         <div class="alert alert-info">
             <strong>📋 Multiple Overdue Installments</strong>
             <p>You have <?= count($overdue_installments) ?> overdue installments for this plan. You can process them individually or all at once.</p>
-            <button class="btn btn-primary" onclick="processBatch()">
+            <button class="btn btn-primary" onclick="processBatch(event)">
                 Process All <?= count($overdue_installments) ?> Overdue Installments
             </button>
         </div>
@@ -280,7 +280,7 @@ require_once '../../includes/header.php';
             </div>
 
             <div class="action-section">
-                <button class="btn btn-primary btn-large" onclick="processInstallment()">
+                <button class="btn btn-primary btn-large" onclick="processInstallment(event)">
                     ✓ Process Installment #<?= $schedule['installment_number'] ?>
                 </button>
                 <button class="btn btn-secondary" onclick="window.history.back()">
@@ -752,61 +752,66 @@ const planUuid = '<?= $schedule['plan_uuid'] ?>';
 const installmentNumber = <?= $schedule['installment_number'] ?>;
 const amount = '<?= formatCurrency($schedule['scheduled_amount']) ?>';
 
-async function processInstallment() {
-    if (!confirm(`Process installment #${installmentNumber} for ${amount}?\n\nThis will create a budget transaction and update the installment schedule.`)) {
-        return;
-    }
-
-    // Show loading state
+function processInstallment(event) {
     const btn = event.target;
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Processing...';
+    ConfirmModal.show({
+        title: `Process Installment #${installmentNumber}?`,
+        message: `Process installment #${installmentNumber} for ${amount}?\n\nThis will create a budget transaction and update the installment schedule.`,
+        confirmText: 'Process',
+        confirmClass: 'btn-primary',
+        onConfirm: async function() {
+            // Show loading state
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Processing...';
 
-    try {
-        const response = await fetch('/pgbudget/api/process-installment.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                schedule_uuid: scheduleUuid
-            })
-        });
+            try {
+                const response = await fetch('/pgbudget/api/process-installment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        schedule_uuid: scheduleUuid
+                    })
+                });
 
-        const result = await response.json();
+                const result = await response.json();
 
-        if (result.success) {
-            alert(`✅ Installment #${installmentNumber} processed successfully!\n\nTransaction created: ${result.data.transaction_description}`);
-            window.location.href = `view.php?ledger=${ledgerUuid}&plan=${planUuid}`;
-        } else {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-            alert('Error: ' + (result.error || 'Failed to process installment'));
+                if (result.success) {
+                    Toast.flash(`✅ Installment #${installmentNumber} processed successfully!\n\nTransaction created: ${result.data.transaction_description}`, 'success');
+                    window.location.href = `view.php?ledger=${ledgerUuid}&plan=${planUuid}`;
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    Toast.error('Error: ' + (result.error || 'Failed to process installment'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                Toast.error('An error occurred. Please try again.');
+            }
         }
-    } catch (error) {
-        console.error('Error:', error);
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-        alert('An error occurred. Please try again.');
-    }
+    });
 }
 
-async function processBatch() {
+function processBatch(event) {
     const overdueCount = <?= count($overdue_installments) ?>;
-
-    if (!confirm(`Process all ${overdueCount} overdue installments?\n\nThis will create ${overdueCount} budget transactions.`)) {
-        return;
-    }
-
-    // Show loading state
     const btn = event.target;
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Processing...';
+    ConfirmModal.show({
+        title: 'Process All Overdue?',
+        message: `Process all ${overdueCount} overdue installments?\n\nThis will create ${overdueCount} budget transactions.`,
+        confirmText: 'Process All',
+        confirmClass: 'btn-primary',
+        onConfirm: async function() {
+            // Show loading state
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Processing...';
 
-    try {
-        const scheduleUuids = <?= json_encode(array_column($overdue_installments, 'uuid')) ?>;
+            try {
+                const scheduleUuids = <?= json_encode(array_column($overdue_installments, 'uuid')) ?>;
         let successCount = 0;
         let failCount = 0;
 
@@ -835,19 +840,21 @@ async function processBatch() {
         }
 
         if (successCount > 0) {
-            alert(`✅ Processed ${successCount} installment${successCount > 1 ? 's' : ''} successfully!${failCount > 0 ? `\n⚠️ ${failCount} failed.` : ''}`);
+            Toast.flash(`✅ Processed ${successCount} installment${successCount > 1 ? 's' : ''} successfully!${failCount > 0 ? `\n⚠️ ${failCount} failed.` : ''}`, failCount > 0 ? 'warning' : 'success');
             window.location.href = `view.php?ledger=${ledgerUuid}&plan=${planUuid}`;
         } else {
             btn.disabled = false;
             btn.innerHTML = originalText;
-            alert('Failed to process installments. Please try again.');
+            Toast.error('Failed to process installments. Please try again.');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-        alert('An error occurred. Please try again.');
-    }
+            } catch (error) {
+                console.error('Error:', error);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                Toast.error('An error occurred. Please try again.');
+            }
+        }
+    });
 }
 </script>
 

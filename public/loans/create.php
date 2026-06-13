@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const term = parseInt(document.getElementById('loan_term_months').value);
 
         if (!principal || !term || annualRate === undefined) {
-            alert('Please fill in principal amount, interest rate, and loan term');
+            Toast.error('Please fill in principal amount, interest rate, and loan term');
             return;
         }
 
@@ -654,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!lenderName || !loanType || !principal || interestRate === undefined ||
             !loanTerm || !startDate || !firstPaymentDate || !paymentFrequency) {
-            alert('Please fill in all required fields');
+            Toast.error('Please fill in all required fields');
             return;
         }
 
@@ -692,12 +692,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const initialAmountPaid = parseFloat(document.getElementById('initial_amount_paid').value);
 
             if (!initialPaymentsMade || !initialPaidDate) {
-                alert('Please fill in the number of payments already made and the date');
+                Toast.error('Please fill in the number of payments already made and the date');
                 return;
             }
 
             if (initialPaymentsMade >= loanTerm) {
-                alert('Initial payments made cannot exceed or equal the loan term');
+                Toast.error('Initial payments made cannot exceed or equal the loan term');
                 return;
             }
 
@@ -707,7 +707,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Include initial amount paid if provided
             if (initialAmountPaid && initialAmountPaid > 0) {
                 if (initialAmountPaid > principal) {
-                    alert('Initial amount paid cannot exceed the principal amount');
+                    Toast.error('Initial amount paid cannot exceed the principal amount');
                     return;
                 }
                 formData.initial_amount_paid = initialAmountPaid;
@@ -732,12 +732,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success) {
                 window.location.href = 'index.php?ledger=' + encodeURIComponent(formData.ledger_uuid);
             } else {
-                alert('Error creating loan: ' + result.error);
+                Toast.error('Error creating loan: ' + result.error);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Create Loan';
             }
         } catch (error) {
-            alert('Error creating loan: ' + error.message);
+            Toast.error('Error creating loan: ' + error.message);
             submitBtn.disabled = false;
             submitBtn.textContent = 'Create Loan';
         }

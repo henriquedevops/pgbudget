@@ -407,11 +407,11 @@ async function moveCategory() {
             // Reload page to show updated grouping
             window.location.reload();
         } else {
-            alert('Error: ' + (result.error || 'Failed to move category'));
+            Toast.error('Error: ' + (result.error || 'Failed to move category'));
         }
     } catch (error) {
         console.error('Error moving category:', error);
-        alert('Error moving category. Please try again.');
+        Toast.error('Error moving category. Please try again.');
     }
 
     closeMoveDialog();

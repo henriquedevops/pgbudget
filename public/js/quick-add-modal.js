@@ -128,7 +128,7 @@ QuickAddModal = (function() {
         // Set ledger UUID (from options or from page)
         currentLedgerUuid = options.ledger_uuid || getLedgerUuidFromPage();
         if (!currentLedgerUuid) {
-            alert('No budget selected. Please select a budget first.');
+            Toast.error('No budget selected. Please select a budget first.');
             return;
         }
 
@@ -654,7 +654,7 @@ QuickAddModal = (function() {
                     if (callback) callback();
                 } catch (e) {
                     console.error('Error parsing ledger data:', e);
-                    alert('Failed to load accounts and categories.');
+                    Toast.error('Failed to load accounts and categories.');
                 }
             }
         };

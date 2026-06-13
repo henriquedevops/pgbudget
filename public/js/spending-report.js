@@ -38,7 +38,7 @@ const SpendingReport = {
             }
         } catch (error) {
             console.error('Error loading data:', error);
-            alert('Error loading report data');
+            Toast.error('Error loading report data');
         }
     },
 

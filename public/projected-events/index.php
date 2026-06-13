@@ -499,22 +499,27 @@ require_once '../../includes/header.php';
 </style>
 
 <script>
-async function deleteEvent(eventUuid, eventName) {
-    if (!confirm(`Delete projected event "${eventName}"? This action cannot be undone.`)) return;
-
-    try {
-        const response = await fetch('../api/projected-events.php?event_uuid=' + encodeURIComponent(eventUuid), {
-            method: 'DELETE'
-        });
-        const result = await response.json();
-        if (result.success) {
-            window.location.reload();
-        } else {
-            alert('Error deleting event: ' + result.error);
+function deleteEvent(eventUuid, eventName) {
+    ConfirmModal.show({
+        title: 'Delete Projected Event?',
+        message: `Delete projected event "${eventName}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        onConfirm: async function() {
+            try {
+                const response = await fetch('../api/projected-events.php?event_uuid=' + encodeURIComponent(eventUuid), {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    window.location.reload();
+                } else {
+                    Toast.error('Error deleting event: ' + result.error);
+                }
+            } catch (err) {
+                Toast.error('Error deleting event: ' + err.message);
+            }
         }
-    } catch (err) {
-        alert('Error deleting event: ' + err.message);
-    }
+    });
 }
 </script>
 

@@ -461,12 +461,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success) {
                 window.location.reload();
             } else {
-                alert('Error deleting loan: ' + result.error);
+                Toast.error('Error deleting loan: ' + result.error);
                 confirmBtn.disabled = false;
                 confirmBtn.textContent = 'Delete Loan';
             }
         } catch (error) {
-            alert('Error deleting loan: ' + error.message);
+            Toast.error('Error deleting loan: ' + error.message);
             confirmBtn.disabled = false;
             confirmBtn.textContent = 'Delete Loan';
         }

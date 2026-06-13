@@ -210,25 +210,30 @@ function getActionIcon($actionType) {
 
 <script>
 function clearActionHistory() {
-    if (confirm('Are you sure you want to clear all action history? This cannot be undone.')) {
-        // Clear session storage
-        sessionStorage.removeItem('pgbudget-undo-stack');
-        sessionStorage.removeItem('pgbudget-redo-stack');
+    ConfirmModal.show({
+        title: 'Clear Action History?',
+        message: 'Are you sure you want to clear all action history? This cannot be undone.',
+        confirmText: 'Clear History',
+        onConfirm: function() {
+            // Clear session storage
+            sessionStorage.removeItem('pgbudget-undo-stack');
+            sessionStorage.removeItem('pgbudget-redo-stack');
 
-        // Call cleanup API (optional: implement this endpoint)
-        fetch('/pgbudget/api/cleanup-action-history.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ days: 0 }) // Clear all
-        })
-        .then(() => {
-            window.location.reload();
-        })
-        .catch(err => {
-            console.error('Failed to clear history:', err);
-            alert('Failed to clear history. Please try again.');
-        });
-    }
+            // Call cleanup API (optional: implement this endpoint)
+            fetch('/pgbudget/api/cleanup-action-history.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ days: 0 }) // Clear all
+            })
+            .then(() => {
+                window.location.reload();
+            })
+            .catch(err => {
+                console.error('Failed to clear history:', err);
+                Toast.error('Failed to clear history. Please try again.');
+            });
+        }
+    });
 }
 </script>
 

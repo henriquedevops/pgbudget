@@ -400,12 +400,12 @@ document.getElementById('editIncomeForm').addEventListener('submit', async funct
         if (result.success) {
             window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Income source updated successfully';
         } else {
-            alert('Error updating income source: ' + result.error);
+            Toast.error('Error updating income source: ' + result.error);
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }
     } catch (error) {
-        alert('Error updating income source: ' + error.message);
+        Toast.error('Error updating income source: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }
@@ -430,12 +430,12 @@ document.getElementById('confirmDelete').addEventListener('click', async functio
         if (result.success) {
             window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Income source deleted successfully';
         } else {
-            alert('Error deleting income source: ' + result.error);
+            Toast.error('Error deleting income source: ' + result.error);
             this.disabled = false;
             this.textContent = 'Delete Income Source';
         }
     } catch (error) {
-        alert('Error deleting income source: ' + error.message);
+        Toast.error('Error deleting income source: ' + error.message);
         this.disabled = false;
         this.textContent = 'Delete Income Source';
     }

@@ -811,57 +811,64 @@ require_once '../../includes/header.php';
 </style>
 
 <script>
-async function processInstallment(scheduleUuid, installmentNumber, amount) {
-    if (!confirm(`Process installment #${installmentNumber} for ${amount}?\n\nThis will create a budget transaction to spread this payment across your categories.`)) {
-        return;
-    }
+function processInstallment(scheduleUuid, installmentNumber, amount) {
+    ConfirmModal.show({
+        title: `Process Installment #${installmentNumber}?`,
+        message: `Process installment #${installmentNumber} for ${amount}?\n\nThis will create a budget transaction to spread this payment across your categories.`,
+        confirmText: 'Process',
+        confirmClass: 'btn-primary',
+        onConfirm: async function() {
+            try {
+                const response = await fetch('/pgbudget/api/process-installment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        schedule_uuid: scheduleUuid
+                    })
+                });
 
-    try {
-        const response = await fetch('/pgbudget/api/process-installment.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                schedule_uuid: scheduleUuid
-            })
-        });
+                const result = await response.json();
 
-        const result = await response.json();
-
-        if (result.success) {
-            alert(`✅ Installment #${installmentNumber} processed successfully!\n\nTransaction created: ${result.data.transaction_description}`);
-            window.location.reload();
-        } else {
-            alert('Error: ' + (result.error || 'Failed to process installment'));
+                if (result.success) {
+                    Toast.flash(`✅ Installment #${installmentNumber} processed successfully!\n\nTransaction created: ${result.data.transaction_description}`, 'success');
+                    window.location.reload();
+                } else {
+                    Toast.error('Error: ' + (result.error || 'Failed to process installment'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Toast.error('An error occurred. Please try again.');
+            }
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
-    }
+    });
 }
 
-async function cancelPlan() {
-    if (!confirm('Are you sure you want to cancel this installment plan?\n\nThis action cannot be undone. The plan will be marked as cancelled and no further installments can be processed.')) {
-        return;
-    }
+function cancelPlan() {
+    ConfirmModal.show({
+        title: 'Cancel Installment Plan?',
+        message: 'Are you sure you want to cancel this installment plan?\n\nThis action cannot be undone. The plan will be marked as cancelled and no further installments can be processed.',
+        confirmText: 'Cancel Plan',
+        onConfirm: async function() {
+            try {
+                const response = await fetch('/pgbudget/api/installment-plans.php?plan_uuid=<?= $plan_uuid ?>', {
+                    method: 'DELETE'
+                });
 
-    try {
-        const response = await fetch('/pgbudget/api/installment-plans.php?plan_uuid=<?= $plan_uuid ?>', {
-            method: 'DELETE'
-        });
+                const result = await response.json();
 
-        const result = await response.json();
-
-        if (result.success) {
-            window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>';
-        } else {
-            alert('Error: ' + (result.error || 'Failed to cancel plan'));
+                if (result.success) {
+                    window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>';
+                } else {
+                    Toast.error('Error: ' + (result.error || 'Failed to cancel plan'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Toast.error('An error occurred. Please try again.');
+            }
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
-    }
+    });
 }
 </script>
 

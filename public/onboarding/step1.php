@@ -53,7 +53,7 @@ function skipOnboarding() {
     .then(response => {
         if (response.status === 401) {
             // Not logged in, redirect to login
-            alert('You need to be logged in to skip the setup wizard. Redirecting to login page.');
+            Toast.flash('You need to be logged in to skip the setup wizard. Redirecting to login page.', 'info');
             window.location.href = '/pgbudget/auth/login.php';
             return null;
         }
@@ -64,13 +64,13 @@ function skipOnboarding() {
             if (data.success) {
                 window.location.href = '/pgbudget/';
             } else {
-                alert(data.error || 'An error occurred.');
+                Toast.error(data.error || 'An error occurred.');
             }
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('A network error occurred.');
+        Toast.error('A network error occurred.');
     });
 }
 </script>

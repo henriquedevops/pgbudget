@@ -79,7 +79,8 @@ require_once '../../includes/header.php';
                             <td class="actions">
                                 <a href="edit.php?payee=<?= urlencode($payee['uuid']) ?>" class="btn btn-sm btn-secondary">Edit</a>
                                 <a href="delete.php?payee=<?= urlencode($payee['uuid']) ?>" class="btn btn-sm btn-danger"
-                                   onclick="return confirm('Are you sure you want to delete this payee? This will unlink it from <?= $payee['transaction_count'] ?> transaction(s).');">Delete</a>
+                                   data-confirm="Are you sure you want to delete this payee? This will unlink it from <?= $payee['transaction_count'] ?> transaction(s)."
+                                   data-confirm-title="Delete Payee?">Delete</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

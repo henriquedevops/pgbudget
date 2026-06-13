@@ -35,22 +35,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // Confirm delete actions via styled modal
     document.querySelectorAll('[data-confirm]').forEach(function(button) {
         button.addEventListener('click', function(e) {
+            // Allow a second, programmatic click to go through after confirming
+            if (this.dataset.confirmed === '1') {
+                this.dataset.confirmed = '';
+                return;
+            }
             e.preventDefault();
-            const message = this.dataset.confirm || 'Are you sure you want to delete this item?';
-            const title   = this.dataset.confirmTitle || 'Confirm Action';
-            const self    = this;
+            const self = this;
+            // Respect native HTML5 validation before prompting (the old inline
+            // onsubmit="return confirm()" only fired after the form was valid)
+            if (self.form && typeof self.form.reportValidity === 'function' && !self.form.reportValidity()) {
+                return;
+            }
             ConfirmModal.show({
-                title:        title,
-                message:      message,
+                title:        this.dataset.confirmTitle || 'Confirm Action',
+                message:      this.dataset.confirm || 'Are you sure you want to delete this item?',
                 confirmText:  self.dataset.confirmText  || 'Delete',
                 confirmClass: self.dataset.confirmClass || 'btn-danger',
                 onConfirm: function() {
-                    // If it's a link, follow it; if a button inside a form, submit; else click
+                    // If it's a link, follow it; if a button inside a form, submit
+                    // (requestSubmit re-runs validation); else replay the click
                     if (self.tagName === 'A') {
                         window.location.href = self.href;
                     } else if (self.form) {
-                        self.removeEventListener('click', arguments.callee);
-                        self.form.submit();
+                        if (typeof self.form.requestSubmit === 'function') {
+                            self.form.requestSubmit(self.type === 'submit' ? self : undefined);
+                        } else {
+                            self.form.submit();
+                        }
                     } else {
                         self.dataset.confirmed = '1';
                         self.click();

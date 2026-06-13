@@ -252,7 +252,7 @@ function showSavePresetModal(ledgerUuid, form) {
     const currentFilters = FilterFormHelper.getCurrentFilters(form);
 
     if (Object.keys(currentFilters).length === 0) {
-        alert('No filters are currently active. Apply some filters first, then save them as a preset.');
+        Toast.info('No filters are currently active. Apply some filters first, then save them as a preset.');
         return;
     }
 
@@ -262,10 +262,10 @@ function showSavePresetModal(ledgerUuid, form) {
         const success = FilterPresets.savePreset(ledgerUuid, presetName.trim(), currentFilters);
 
         if (success) {
-            alert(`Filter preset "${presetName}" saved successfully!`);
+            Toast.flash(`Filter preset "${presetName}" saved successfully!`, 'success');
             location.reload(); // Reload to show the new preset in the dropdown
         } else {
-            alert('Failed to save filter preset. Please try again.');
+            Toast.error('Failed to save filter preset. Please try again.');
         }
     }
 }

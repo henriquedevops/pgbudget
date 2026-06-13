@@ -1509,7 +1509,7 @@ document.querySelector('.transaction-form').addEventListener('submit', function(
 
     if (isNaN(numValue) || numValue <= 0) {
         e.preventDefault();
-        alert('Please enter a valid amount greater than 0');
+        Toast.error('Please enter a valid amount greater than 0');
         amountInput.focus();
         return false;
     }
@@ -2475,17 +2475,17 @@ document.querySelector('.transaction-form').addEventListener('submit', function(
         .then(data => {
             if (data.success) {
                 // Show success message and redirect
-                alert(data.message || 'Transaction and installment plan created successfully!');
+                Toast.flash(data.message || 'Transaction and installment plan created successfully!', 'success');
                 window.location.href = '../budget/dashboard.php?ledger=' + formData.ledger_uuid;
             } else {
                 // Show error
-                alert('Error: ' + (data.error || 'Failed to create transaction and installment plan'));
+                Toast.error('Error: ' + (data.error || 'Failed to create transaction and installment plan'));
                 submitButton.disabled = false;
                 submitButton.textContent = originalText;
             }
         })
         .catch(error => {
-            alert('Error: ' + error.message);
+            Toast.error('Error: ' + error.message);
             submitButton.disabled = false;
             submitButton.textContent = originalText;
         });
@@ -2515,7 +2515,7 @@ document.querySelector('.transaction-form').addEventListener('submit', function(
 
         if (remaining > 0.01) {
             e.preventDefault();
-            alert(`Split amounts must equal total transaction amount. Remaining: $${remaining.toFixed(2)}`);
+            Toast.error(`Split amounts must equal total transaction amount. Remaining: $${remaining.toFixed(2)}`);
             return false;
         }
 
@@ -2530,7 +2530,7 @@ document.querySelector('.transaction-form').addEventListener('submit', function(
 
         if (hasEmptyCategory) {
             e.preventDefault();
-            alert('Please select a category for all splits.');
+            Toast.error('Please select a category for all splits.');
             return false;
         }
     }
@@ -2740,7 +2740,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // "Move Money" button (to be implemented)
         document.getElementById('move-money-btn').addEventListener('click', function() {
-            alert('"Move Money" functionality is not yet implemented.');
+            Toast.info('"Move Money" functionality is not yet implemented.');
         });
 
         function repopulateForm(form, data) {

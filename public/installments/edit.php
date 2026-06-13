@@ -779,7 +779,7 @@ async function handleSubmit(event) {
     event.preventDefault();
 
     if (!hasChanges) {
-        alert('No changes were made.');
+        Toast.info('No changes were made.');
         return false;
     }
 
@@ -790,12 +790,12 @@ async function handleSubmit(event) {
 
     // Validate
     if (!description.trim()) {
-        alert('Description is required.');
+        Toast.error('Description is required.');
         return false;
     }
 
     if (remainingInstallments < 1 || remainingInstallments > planData.remainingInstallments) {
-        alert(`Remaining installments must be between 1 and ${planData.remainingInstallments}.`);
+        Toast.error(`Remaining installments must be between 1 and ${planData.remainingInstallments}.`);
         return false;
     }
 
@@ -832,18 +832,18 @@ async function handleSubmit(event) {
         const result = await response.json();
 
         if (result.success) {
-            alert('✅ Installment plan updated successfully!');
+            Toast.flash('✅ Installment plan updated successfully!', 'success');
             window.location.href = `view.php?ledger=${planData.ledgerUuid}&plan=${planData.uuid}`;
         } else {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
-            alert('Error: ' + (result.error || 'Failed to update plan'));
+            Toast.error('Error: ' + (result.error || 'Failed to update plan'));
         }
     } catch (error) {
         console.error('Error:', error);
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
-        alert('An error occurred. Please try again.');
+        Toast.error('An error occurred. Please try again.');
     }
 
     return false;

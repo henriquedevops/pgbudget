@@ -358,33 +358,38 @@ document.getElementById('editEventForm').addEventListener('submit', async functi
         if (result.success) {
             window.location.href = '../reports/cash-flow-projection.php?ledger=<?= $ledger_uuid ?>';
         } else {
-            alert('Error updating event: ' + result.error);
+            Toast.error('Error updating event: ' + result.error);
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }
     } catch (error) {
-        alert('Error updating event: ' + error.message);
+        Toast.error('Error updating event: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }
 });
 
-async function deleteEvent(eventUuid, eventName) {
-    if (!confirm(`Delete projected event "${eventName}"? This action cannot be undone.`)) return;
-
-    try {
-        const response = await fetch('../api/projected-events.php?event_uuid=' + encodeURIComponent(eventUuid), {
-            method: 'DELETE'
-        });
-        const result = await response.json();
-        if (result.success) {
-            window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Event deleted successfully';
-        } else {
-            alert('Error deleting event: ' + result.error);
+function deleteEvent(eventUuid, eventName) {
+    ConfirmModal.show({
+        title: 'Delete Projected Event?',
+        message: `Delete projected event "${eventName}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        onConfirm: async function() {
+            try {
+                const response = await fetch('../api/projected-events.php?event_uuid=' + encodeURIComponent(eventUuid), {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = 'index.php?ledger=<?= $ledger_uuid ?>&success=Event deleted successfully';
+                } else {
+                    Toast.error('Error deleting event: ' + result.error);
+                }
+            } catch (err) {
+                Toast.error('Error deleting event: ' + err.message);
+            }
         }
-    } catch (err) {
-        alert('Error deleting event: ' + err.message);
-    }
+    });
 }
 </script>
 

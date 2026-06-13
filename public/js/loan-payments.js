@@ -513,7 +513,7 @@ class PaymentFormHandler {
         // Validate
         const validation = this.paymentHandler.validatePaymentData(formData);
         if (!validation.isValid) {
-            alert('Validation errors:\n' + validation.errors.join('\n'));
+            Toast.error('Validation errors:\n' + validation.errors.join('\n'));
             return;
         }
 

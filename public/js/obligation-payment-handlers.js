@@ -51,12 +51,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const confirmationNumber = document.getElementById('modalConfirmationNumber').value;
 
         if (!actualAmount || actualAmount <= 0) {
-            alert('Please enter a valid payment amount.');
+            Toast.error('Please enter a valid payment amount.');
             return;
         }
 
         if (!paidDate) {
-            alert('Please select a payment date.');
+            Toast.error('Please select a payment date.');
             return;
         }
 
@@ -83,12 +83,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success) {
                 window.location.reload();
             } else {
-                alert('Error marking payment as paid: ' + result.error);
+                Toast.error('Error marking payment as paid: ' + result.error);
                 confirmMarkPaidBtn.disabled = false;
                 confirmMarkPaidBtn.textContent = 'Mark as Paid';
             }
         } catch (error) {
-            alert('Error marking payment as paid: ' + error.message);
+            Toast.error('Error marking payment as paid: ' + error.message);
             confirmMarkPaidBtn.disabled = false;
             confirmMarkPaidBtn.textContent = 'Mark as Paid';
         }
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const status = document.getElementById('editStatus').value;
 
             if (!actualAmount || actualAmount <= 0) {
-                alert('Please enter a valid payment amount.');
+                Toast.error('Please enter a valid payment amount.');
                 return;
             }
 
@@ -182,12 +182,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (result.success) {
                     window.location.reload();
                 } else {
-                    alert('Error updating payment: ' + result.error);
+                    Toast.error('Error updating payment: ' + result.error);
                     confirmEditPaymentBtn.disabled = false;
                     confirmEditPaymentBtn.textContent = 'Update Payment';
                 }
             } catch (error) {
-                alert('Error updating payment: ' + error.message);
+                Toast.error('Error updating payment: ' + error.message);
                 confirmEditPaymentBtn.disabled = false;
                 confirmEditPaymentBtn.textContent = 'Update Payment';
             }

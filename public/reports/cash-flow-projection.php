@@ -1174,10 +1174,10 @@ async function cfpDeleteTransaction(uuid, description) {
                 if (data.success) {
                     window.location.reload();
                 } else {
-                    alert('Error deleting transaction: ' + (data.error || 'Unknown error'));
+                    Toast.error('Error deleting transaction: ' + (data.error || 'Unknown error'));
                 }
             } catch (err) {
-                alert('Error deleting transaction: ' + err.message);
+                Toast.error('Error deleting transaction: ' + err.message);
             }
         }
     });
@@ -1496,7 +1496,7 @@ async function cfpDeleteTransaction(uuid, description) {
                 if (b) b.disabled = false;
             });
             if (confirmBtn) confirmBtn.textContent = 'Link Transaction';
-            alert('Error linking: ' + err.message);
+            Toast.error('Error linking: ' + err.message);
         }
     }
 
