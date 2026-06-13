@@ -362,10 +362,13 @@ require_once '../../includes/header.php';
                                     <span style="font-weight:600;"><?= htmlspecialchars($category['category_name']) ?></span>
                                 </td>
                                 <td class="num budget-amount-editable"
+                                    role="button"
+                                    tabindex="0"
+                                    aria-label="Assign budget for <?= htmlspecialchars($category['category_name']) ?>"
                                     data-category-uuid="<?= htmlspecialchars($category['category_uuid']) ?>"
                                     data-category-name="<?= htmlspecialchars($category['category_name']) ?>"
                                     data-current-amount="<?= $category['budgeted'] ?>"
-                                    title="Click to assign budget">
+                                    title="Click or press Enter to assign budget">
                                     <span class="tnum"><?= formatCurrency($category['budgeted']) ?></span>
                                 </td>
                                 <td class="num">
@@ -480,10 +483,13 @@ require_once '../../includes/header.php';
                                             <span style="font-weight:600;"><?= htmlspecialchars($category_budget['category_name']) ?></span>
                                         </td>
                                         <td class="num budget-amount-editable"
+                                            role="button"
+                                            tabindex="0"
+                                            aria-label="Assign budget for <?= htmlspecialchars($category_budget['category_name']) ?>"
                                             data-category-uuid="<?= htmlspecialchars($category_budget['category_uuid']) ?>"
                                             data-category-name="<?= htmlspecialchars($category_budget['category_name']) ?>"
                                             data-current-amount="<?= $category_budget['budgeted'] ?>"
-                                            title="Click to assign budget">
+                                            title="Click or press Enter to assign budget">
                                             <span class="tnum"><?= formatCurrency($category_budget['budgeted']) ?></span>
                                         </td>
                                         <td class="num"><span class="money <?= $act_cls ?> tnum"><?= formatCurrency($category_budget['activity']) ?></span></td>

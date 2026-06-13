@@ -56,6 +56,19 @@
                 saveEdit();
             }
         });
+
+        // Keyboard activation for the editable cells (U15 accessibility):
+        // the cells are focusable (tabindex=0, role=button) so Enter/Space
+        // opens the inline editor just like a click would.
+        document.addEventListener('keydown', function(e) {
+            if (currentlyEditing) return;
+            if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+            const cell = e.target.closest && e.target.closest(config.editableSelector);
+            if (cell && document.activeElement === cell) {
+                e.preventDefault();
+                startEdit(cell);
+            }
+        });
     }
 
     /**

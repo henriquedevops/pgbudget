@@ -616,7 +616,7 @@
 /* =====================================================
    Dark mode overrides
    ===================================================== */
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
     .settings-section h3 {
         border-bottom-color: var(--color-border);
     }

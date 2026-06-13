@@ -101,6 +101,24 @@ require_once '../../includes/header.php';
         </div>
     </div>
 
+    <!-- Appearance Section -->
+    <div class="settings-section">
+        <div class="section-header">
+            <h2>🎨 Appearance</h2>
+        </div>
+        <div class="settings-card">
+            <div class="card-content">
+                <h3>Theme</h3>
+                <p>Choose a light or dark theme, or follow your device setting. Saved on this device.</p>
+                <div class="theme-toggle" role="radiogroup" aria-label="Theme">
+                    <button type="button" class="theme-option" role="radio" aria-checked="false" data-theme-value="light">☀️ Light</button>
+                    <button type="button" class="theme-option" role="radio" aria-checked="false" data-theme-value="auto">🖥️ Auto</button>
+                    <button type="button" class="theme-option" role="radio" aria-checked="false" data-theme-value="dark">🌙 Dark</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification Settings Section -->
     <div class="settings-section">
         <div class="section-header">
@@ -295,6 +313,36 @@ require_once '../../includes/header.php';
     color: var(--color-text-muted);
 }
 
+.theme-toggle {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background: var(--gray-50, #f7fafc);
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-radius: 8px;
+}
+
+.theme-option {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.theme-option:hover {
+    color: var(--color-text-primary);
+}
+
+.theme-option[aria-checked="true"] {
+    background: var(--color-surface, #fff);
+    color: var(--color-text-primary);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
@@ -312,5 +360,31 @@ require_once '../../includes/header.php';
     }
 }
 </style>
+
+<script>
+(function () {
+    var group = document.querySelector('.theme-toggle');
+    if (!group) return;
+    var options = group.querySelectorAll('.theme-option');
+
+    function sync() {
+        var pref = window.pgbGetThemePref ? window.pgbGetThemePref() : 'auto';
+        options.forEach(function (btn) {
+            var on = btn.getAttribute('data-theme-value') === pref;
+            btn.setAttribute('aria-checked', on ? 'true' : 'false');
+            btn.tabIndex = on ? 0 : -1;
+        });
+    }
+
+    options.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (window.pgbSetTheme) window.pgbSetTheme(btn.getAttribute('data-theme-value'));
+            sync();
+        });
+    });
+
+    sync();
+})();
+</script>
 
 <?php require_once '../../includes/footer.php'; ?>

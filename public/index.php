@@ -73,22 +73,29 @@ $showOnboardingSuccess = isset($_GET['onboarding_complete']);
             <div class="ledgers-grid">
                 <?php foreach ($ledgers as $ledger): ?>
                     <div class="ledger-card">
-                        <h3><a href="budget/dashboard.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>"><?= htmlspecialchars($ledger['name']) ?></a></h3>
+                        <div class="ledger-card-head">
+                            <h3><a href="budget/dashboard.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>"><?= htmlspecialchars($ledger['name']) ?></a></h3>
+                            <div class="card-menu">
+                                <button type="button" class="card-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="More options for <?= htmlspecialchars($ledger['name']) ?>">⋯</button>
+                                <div class="card-menu-dropdown" role="menu" hidden>
+                                    <button
+                                        type="button"
+                                        class="card-menu-item card-menu-item-danger delete-ledger-btn"
+                                        role="menuitem"
+                                        data-ledger-uuid="<?= htmlspecialchars($ledger['uuid']) ?>"
+                                        data-ledger-name="<?= htmlspecialchars($ledger['name']) ?>"
+                                    >
+                                        🗑️ Delete budget
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         <?php if ($ledger['description']): ?>
                             <p class="description"><?= htmlspecialchars($ledger['description']) ?></p>
                         <?php endif; ?>
                         <div class="ledger-actions">
                             <a href="budget/dashboard.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-primary">Open Budget</a>
                             <a href="accounts/list.php?ledger=<?= htmlspecialchars($ledger['uuid']) ?>" class="btn btn-secondary">Accounts</a>
-                            <button
-                                type="button"
-                                class="btn btn-delete delete-ledger-btn"
-                                data-ledger-uuid="<?= htmlspecialchars($ledger['uuid']) ?>"
-                                data-ledger-name="<?= htmlspecialchars($ledger['name']) ?>"
-                                title="Delete this budget"
-                            >
-                                🗑️ Delete
-                            </button>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -96,5 +103,42 @@ $showOnboardingSuccess = isset($_GET['onboarding_complete']);
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+// Overflow ("⋯") menu on budget cards — keeps the destructive Delete out of
+// the primary action row (U11).
+(function () {
+    function closeAll(except) {
+        document.querySelectorAll('.card-menu.open').forEach(function (menu) {
+            if (menu === except) return;
+            menu.classList.remove('open');
+            var btn = menu.querySelector('.card-menu-btn');
+            var dd = menu.querySelector('.card-menu-dropdown');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+            if (dd) dd.hidden = true;
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.card-menu-btn');
+        if (btn) {
+            e.preventDefault();
+            var menu = btn.closest('.card-menu');
+            var dd = menu.querySelector('.card-menu-dropdown');
+            var willOpen = !menu.classList.contains('open');
+            closeAll(menu);
+            menu.classList.toggle('open', willOpen);
+            btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            if (dd) dd.hidden = !willOpen;
+            return;
+        }
+        if (!e.target.closest('.card-menu-dropdown')) closeAll(null);
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAll(null);
+    });
+})();
+</script>
 
 <?php require_once '../includes/footer.php'; ?>

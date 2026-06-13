@@ -411,7 +411,7 @@
    DARK MODE SUPPORT
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
     .action-history-list {
         background: #2d3748;
     }

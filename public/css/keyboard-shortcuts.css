@@ -300,7 +300,7 @@ kbd {
    DARK MODE SUPPORT (FUTURE)
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
     .shortcut-feedback {
         background: #4a5568;
         color: #f7fafc;

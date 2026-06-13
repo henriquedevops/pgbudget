@@ -337,7 +337,7 @@
 /* =====================================================
    Dark mode
    ===================================================== */
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
     .filter-card,
     .chart-card,
     .data-table-card,

@@ -292,7 +292,7 @@
 }
 
 /* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
     .confirmation-section p {
         color: #d1d5db;
     }

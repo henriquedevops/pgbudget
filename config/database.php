@@ -73,6 +73,38 @@ function pgb_current_ledger($explicit = null) {
     return $session_ok ? ($_SESSION['current_ledger'] ?? '') : '';
 }
 
+/**
+ * Friendly name for the logged-in user (usability item U7): prefer the
+ * person's first name over the internal username/identifier. The result is
+ * cached in the session so the lookup runs at most once per login. Falls
+ * back to the username when no name is on file.
+ */
+function pgb_display_name() {
+    $username = $_SESSION['user_id'] ?? '';
+    if ($username === '' || $username === 'demo_user') {
+        return $username;
+    }
+    if (array_key_exists('display_name', $_SESSION)) {
+        return $_SESSION['display_name'] !== '' ? $_SESSION['display_name'] : $username;
+    }
+    $name = '';
+    try {
+        $db = getDbConnection();
+        if (function_exists('setUserContext')) {
+            setUserContext($db);
+        }
+        $stmt = $db->prepare("SELECT first_name FROM data.users WHERE username = ?");
+        $stmt->execute([$username]);
+        $name = trim((string) ($stmt->fetchColumn() ?: ''));
+    } catch (PDOException $e) {
+        error_log('pgb_display_name lookup failed: ' . $e->getMessage());
+    }
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        $_SESSION['display_name'] = $name;
+    }
+    return $name !== '' ? $name : $username;
+}
+
 function parseCurrency($amount) {
     // Remove currency symbols, keeping only digits, comma, and period
     $amount = preg_replace('/[^0-9,.-]/', '', $amount);

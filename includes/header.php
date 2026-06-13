@@ -10,6 +10,42 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PGBudget">
+
+    <!-- Theme: set data-theme before CSS applies to avoid a flash of the wrong theme (U12) -->
+    <script>
+        (function () {
+            try {
+                var s = localStorage.getItem('pgb-theme');
+                var mode = (s === 'light' || s === 'dark')
+                    ? s
+                    : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', mode);
+            } catch (e) {}
+        })();
+        // Follow the OS theme while the saved preference is "auto"
+        try {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+                var s = localStorage.getItem('pgb-theme');
+                if (s !== 'light' && s !== 'dark') {
+                    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+                }
+            });
+        } catch (e) {}
+        // Helpers used by Settings → Appearance
+        window.pgbGetThemePref = function () {
+            var s = localStorage.getItem('pgb-theme');
+            return (s === 'light' || s === 'dark') ? s : 'auto';
+        };
+        window.pgbSetTheme = function (mode) {
+            if (mode === 'light' || mode === 'dark') {
+                localStorage.setItem('pgb-theme', mode);
+            } else {
+                localStorage.removeItem('pgb-theme');
+                mode = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', mode);
+        };
+    </script>
     <?php
     // Page title: explicit $page_title (set before this include) wins;
     // otherwise derive a section title from the URL path
@@ -46,7 +82,7 @@
     <link rel="manifest" href="/pgbudget/manifest.json">
 
     <!-- Stylesheets -->
-    <?php $cv = '20260415a'; ?>
+    <?php $cv = '20260613a'; ?>
     <link rel="stylesheet" href="/pgbudget/css/core.css?v=<?= $cv ?>">
     <link rel="stylesheet" href="/pgbudget/css/components.css?v=<?= $cv ?>">
 
@@ -168,7 +204,7 @@ $current_ledger = function_exists('pgb_current_ledger')
                         </li>
                     <?php endif; ?>
                     <li class="nav-item">
-                        <span class="nav-user">Hello, <?= htmlspecialchars($_SESSION['user_id']) ?>!</span>
+                        <span class="nav-user">Hello, <?= htmlspecialchars(function_exists('pgb_display_name') ? pgb_display_name() : $_SESSION['user_id']) ?>!</span>
                     </li>
                     <li class="nav-item">
                         <a href="/pgbudget/auth/logout.php" class="nav-link nav-logout">Logout</a>
@@ -200,7 +236,8 @@ $current_ledger = function_exists('pgb_current_ledger')
         global $current_path;
         return str_contains($current_path, $segment) ? ' active' : '';
     }
-    $user_initials = strtoupper(substr($_SESSION['user_id'], 0, 2));
+    $pgb_user_display = function_exists('pgb_display_name') ? pgb_display_name() : $_SESSION['user_id'];
+    $user_initials = strtoupper(substr($pgb_user_display, 0, 2));
     ?>
     <aside class="app-sidebar" id="app-sidebar">
         <a href="/pgbudget/" class="sidebar-brand">
@@ -211,7 +248,7 @@ $current_ledger = function_exists('pgb_current_ledger')
         <?php if (!empty($current_ledger)): ?>
         <a href="/pgbudget/ledgers/" class="sidebar-ledger-link">
             <div>
-                <div class="sidebar-ledger-label">Ledger</div>
+                <div class="sidebar-ledger-label">Budget</div>
                 <div class="sidebar-ledger-name"><?= htmlspecialchars(isset($ledger['name']) ? $ledger['name'] : $current_ledger) ?></div>
             </div>
             <i data-lucide="chevron-down" style="width:16px;height:16px;flex-shrink:0;"></i>
@@ -279,7 +316,7 @@ $current_ledger = function_exists('pgb_current_ledger')
         <div class="sidebar-user">
             <div class="sidebar-user-avatar"><?= htmlspecialchars($user_initials) ?></div>
             <div style="min-width:0;flex:1;">
-                <div class="sidebar-user-name"><?= htmlspecialchars($_SESSION['user_id']) ?></div>
+                <div class="sidebar-user-name"><?= htmlspecialchars($pgb_user_display) ?></div>
             </div>
         </div>
     </aside>

@@ -2356,8 +2356,8 @@ td.balance-cell {
 /* =====================================================
    Dark mode token layer
    ===================================================== */
-@media (prefers-color-scheme: dark) {
-    :root {
+:root[data-theme="dark"] {
+    & {
         --color-surface:      #0f172a;
         --color-surface-alt:  #1e293b;
         --color-border:       #334155;
@@ -2864,7 +2864,7 @@ td.balance-cell {
 }
 
 /* Dark mode sidebar/rail */
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
     .app-sidebar,
     .app-rail {
         background: var(--color-surface);
