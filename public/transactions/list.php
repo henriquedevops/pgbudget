@@ -51,10 +51,36 @@ try {
     $where_conditions = ["l.uuid = ?"];
     $params = [$ledger_uuid];
 
-    // Text search in description
+    // Text search: description, obligation payee/name and — when the term looks
+    // numeric — the transaction amount (U13). Numeric terms accept "1.234,56" or
+    // "1,234.56"; matched against amount in cents with a ±1 cent tolerance.
     if (!empty($search)) {
-        $where_conditions[] = "t.description ILIKE ?";
+        $text_conditions = ["t.description ILIKE ?", "o.payee_name ILIKE ?", "o.name ILIKE ?"];
         $params[] = "%$search%";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
+
+        // Detect a numeric search term (strip currency symbols/spaces). Treat the
+        // last separator as decimal so both BR (1.234,56) and US (1,234.56) parse.
+        $numeric = preg_replace('/[^0-9.,]/', '', $search);
+        if ($numeric !== '' && preg_match('/[0-9]/', $numeric)) {
+            $last_sep = max(strrpos($numeric, ','), strrpos($numeric, '.'));
+            if ($last_sep !== false) {
+                $int_part = preg_replace('/[.,]/', '', substr($numeric, 0, $last_sep));
+                $dec_part = preg_replace('/[^0-9]/', '', substr($numeric, $last_sep + 1));
+                $normalized = $int_part . '.' . $dec_part;
+            } else {
+                $normalized = preg_replace('/[^0-9]/', '', $numeric);
+            }
+            if (is_numeric($normalized)) {
+                $search_cents = (int) round(floatval($normalized) * 100);
+                $text_conditions[] = "ABS(t.amount) BETWEEN ? AND ?";
+                $params[] = $search_cents - 1;
+                $params[] = $search_cents + 1;
+            }
+        }
+
+        $where_conditions[] = "(" . implode(" OR ", $text_conditions) . ")";
     }
 
     // Account filter
@@ -123,6 +149,8 @@ try {
         JOIN data.accounts da ON t.debit_account_id = da.id
         JOIN data.accounts ca ON t.credit_account_id = ca.id
         JOIN data.ledgers l ON t.ledger_id = l.id
+        LEFT JOIN data.obligation_payments op ON t.id = op.transaction_id
+        LEFT JOIN data.obligations o ON op.obligation_id = o.id
         LEFT JOIN data.transaction_log tl ON t.id = tl.original_transaction_id
         WHERE $where_clause AND t.deleted_at IS NULL
         AND t.description NOT LIKE 'DELETED:%'
@@ -236,7 +264,7 @@ function type_url(array $base, string $type): string {
                        name="search"
                        class="search-input"
                        value="<?= htmlspecialchars($search) ?>"
-                       placeholder="Search transactions…">
+                       placeholder="Search description, payee or amount…">
             </div>
 
             <!-- Filter row 1 -->

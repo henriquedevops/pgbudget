@@ -74,25 +74,40 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/pgbudget/images/icon-192x192.png">
 
     <script>
-        // Auto-dismiss messages after 5 seconds
+        // Auto-dismiss success/info messages. Time is proportional to the text
+        // length (~50ms/char, min 4s, max 15s) so long messages stay readable,
+        // and the countdown pauses while the pointer hovers the message (U14).
         document.addEventListener('DOMContentLoaded', function() {
             const messages = document.querySelectorAll('.message');
             messages.forEach(function(message) {
-                // Auto-dismiss success and info messages after 5 seconds
-                if (message.classList.contains('message-success') || message.classList.contains('message-info')) {
-                    setTimeout(function() {
-                        if (message.parentElement) {
-                            message.style.transition = 'opacity 0.3s, transform 0.3s';
-                            message.style.opacity = '0';
-                            message.style.transform = 'translateX(100%)';
-                            setTimeout(function() {
-                                if (message.parentElement) {
-                                    message.remove();
-                                }
-                            }, 300);
-                        }
-                    }, 5000);
+                if (!message.classList.contains('message-success') && !message.classList.contains('message-info')) {
+                    return;
                 }
+                const chars = (message.textContent || '').trim().length;
+                const delay = Math.min(15000, Math.max(4000, chars * 50));
+
+                function fadeOut() {
+                    if (!message.parentElement) return;
+                    message.style.transition = 'opacity 0.3s, transform 0.3s';
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateX(100%)';
+                    setTimeout(function() {
+                        if (message.parentElement) message.remove();
+                    }, 300);
+                }
+
+                let remaining = delay;
+                let startedAt = Date.now();
+                let timer = setTimeout(fadeOut, remaining);
+
+                message.addEventListener('mouseenter', function() {
+                    clearTimeout(timer);
+                    remaining -= (Date.now() - startedAt);
+                });
+                message.addEventListener('mouseleave', function() {
+                    startedAt = Date.now();
+                    timer = setTimeout(fadeOut, Math.max(500, remaining));
+                });
             });
             lucide.createIcons();
         });
