@@ -68,7 +68,7 @@ try {
     http_response_code(200);
     echo json_encode([
         'success' => true,
-        'message' => 'Ledger deleted successfully',
+        'message' => 'Budget deleted successfully',
         'ledger_name' => $deleteResult['ledger_name'],
         'deleted_counts' => $deleteResult['deleted_counts']
     ]);
@@ -80,7 +80,7 @@ try {
     // Check for specific error messages
     if (strpos($e->getMessage(), 'not found or access denied') !== false) {
         http_response_code(404);
-        echo json_encode(['error' => 'Ledger not found or access denied']);
+        echo json_encode(['error' => 'Budget not found or access denied']);
     } else {
         http_response_code(500);
         echo json_encode(['error' => 'Database error occurred']);

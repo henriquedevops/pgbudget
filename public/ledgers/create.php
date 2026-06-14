@@ -47,7 +47,7 @@ require_once '../../includes/header.php';
 <div class="container">
     <div class="header">
         <h1>Create New Budget</h1>
-        <p>Set up a new zero-sum budget ledger</p>
+        <p>Set up a new zero-sum budget</p>
     </div>
 
     <div class="form-container">

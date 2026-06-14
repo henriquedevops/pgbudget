@@ -773,6 +773,25 @@
     background: #fee2e2;
 }
 
+/* Dashboard hero & stat utilities — promoted from repeated inline styles (U10) */
+.dashboard-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+.stat-value {
+    font-size: var(--text-xl);
+    font-weight: 700;
+}
+
+/* Translucent button used on the colored hero card */
+.btn-on-hero {
+    background: rgba(255, 255, 255, 0.2);
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
 /* Keyboard affordance for click-to-edit budget cells (U15) */
 .budget-amount-editable {
     cursor: pointer;

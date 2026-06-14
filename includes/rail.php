@@ -73,7 +73,7 @@ $rail_month_label = date('F');
         <div>
             <?php foreach ($rail_recent as $rt): ?>
             <div class="rail-activity-row">
-                <div class="cat-icon" style="width:30px;height:30px;font-size:13px;flex-shrink:0;">
+                <div class="cat-icon" aria-hidden="true" style="width:30px;height:30px;font-size:13px;flex-shrink:0;">
                     <?= htmlspecialchars(strtoupper(substr($rt['description'] ?: '?', 0, 1))) ?>
                 </div>
                 <div style="flex:1;min-width:0;">

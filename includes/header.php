@@ -82,7 +82,7 @@
     <link rel="manifest" href="/pgbudget/manifest.json">
 
     <!-- Stylesheets -->
-    <?php $cv = '20260613a'; ?>
+    <?php $cv = '20260613b'; ?>
     <link rel="stylesheet" href="/pgbudget/css/core.css?v=<?= $cv ?>">
     <link rel="stylesheet" href="/pgbudget/css/components.css?v=<?= $cv ?>">
 
@@ -190,7 +190,7 @@ $current_ledger = function_exists('pgb_current_ledger')
                                class="nav-search-input"
                                placeholder="Search..."
                                title="Press / to focus (Ctrl+K)">
-                        <button type="submit" class="nav-search-btn" title="Search"><i data-lucide="search" aria-hidden="true"></i></button>
+                        <button type="submit" class="nav-search-btn" title="Search" aria-label="Search"><i data-lucide="search" aria-hidden="true"></i></button>
                     </form>
                 </div>
             <?php endif; ?>

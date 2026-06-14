@@ -56,7 +56,7 @@ require_once '../../includes/header.php';
         <div class="settings-card">
             <div class="card-content">
                 <h3>Your Budgets</h3>
-                <p>Manage and create budget ledgers <?php renderHelpIcon("A Budget (or Ledger) is the top-level container for all your financial data, including accounts, categories, and transactions."); ?></p>
+                <p>Manage and create budgets <?php renderHelpIcon("A Budget (sometimes called a \"ledger\" in URLs and the API) is the top-level container for all your financial data, including accounts, categories, and transactions."); ?></p>
 
                 <?php if (empty($ledgers)): ?>
                     <div class="empty-state">

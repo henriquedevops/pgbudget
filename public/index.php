@@ -66,7 +66,7 @@ $showOnboardingSuccess = isset($_GET['onboarding_complete']);
         <?php if (empty($ledgers)): ?>
             <div class="welcome-card">
                 <h2>Welcome to PgBudget!</h2>
-                <p>Get started by creating your first budget ledger.</p>
+                <p>Get started by creating your first budget.</p>
                 <a href="/onboarding/wizard.php?step=1" class="btn btn-primary">Create Your First Budget</a>
             </div>
         <?php else: ?>

@@ -142,7 +142,7 @@ try {
                         <div class="category-row system-category">
                             <div class="category-info">
                                 <div class="category-name">
-                                    <span class="category-icon">🔧</span>
+                                    <span class="category-icon" aria-hidden="true">🔧</span>
                                     <strong><?= htmlspecialchars($category['category_name']) ?></strong>
                                     <span class="badge badge-system">System</span>
                                 </div>
@@ -267,7 +267,7 @@ try {
                         <div class="category-row user-category">
                             <div class="category-info">
                                 <div class="category-name">
-                                    <span class="category-icon">📊</span>
+                                    <span class="category-icon" aria-hidden="true">📊</span>
                                     <span><?= htmlspecialchars($category['category_name']) ?></span>
                                 </div>
                             </div>

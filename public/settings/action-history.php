@@ -114,7 +114,7 @@ function getActionIcon($actionType) {
         </div>
         <div class="action-history-controls">
             <?php if ($ledger_uuid): ?>
-                <a href="action-history.php" class="btn btn-secondary">All Ledgers</a>
+                <a href="action-history.php" class="btn btn-secondary">All Budgets</a>
             <?php endif; ?>
             <button onclick="clearActionHistory()" class="btn btn-secondary">Clear History</button>
             <a href="/pgbudget/" class="btn btn-primary">Back to Dashboard</a>

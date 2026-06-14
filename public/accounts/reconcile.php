@@ -61,7 +61,7 @@ require_once '../../includes/header.php';
             <h1>Reconcile: <?= htmlspecialchars($account['name']) ?></h1>
             <p class="account-info">
                 <strong>Type:</strong> <?= ucfirst($account['type']) ?> &nbsp;|&nbsp;
-                <strong>Ledger:</strong> <?= htmlspecialchars($ledger['name']) ?>
+                <strong>Budget:</strong> <?= htmlspecialchars($ledger['name']) ?>
             </p>
         </div>
         <div class="reconcile-actions">

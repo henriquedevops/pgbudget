@@ -415,7 +415,7 @@ function type_url(array $base, string $type): string {
                                 </td>
                                 <td data-label="Payee" style="max-width:220px;">
                                     <div style="display:flex;align-items:center;gap:var(--space-2);">
-                                        <div class="cat-icon" style="width:28px;height:28px;font-size:12px;flex-shrink:0;">
+                                        <div class="cat-icon" aria-hidden="true" style="width:28px;height:28px;font-size:12px;flex-shrink:0;">
                                             <?= htmlspecialchars(strtoupper(substr($txn['description'] ?: '?', 0, 1))) ?>
                                         </div>
                                         <div style="min-width:0;">

@@ -259,7 +259,7 @@ require_once '../../includes/header.php';
     <?php endif; ?>
 
     <?php if ($budget_totals): ?>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);" class="dashboard-hero-grid">
+    <div class="dashboard-hero-grid">
         <!-- Hero: left to assign -->
         <div class="hero-card">
             <div class="eyebrow"><?= htmlspecialchars($ledger['name']) ?></div>
@@ -269,17 +269,14 @@ require_once '../../includes/header.php';
             </div>
             <div style="font-size:var(--text-sm);opacity:0.8;margin-bottom:var(--space-5);">Ready to assign</div>
             <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
-                <button type="button" class="btn btn-sm"
-                        style="background:rgba(255,255,255,0.2);color:inherit;border:1px solid rgba(255,255,255,0.35);"
+                <button type="button" class="btn btn-sm btn-on-hero"
                         onclick="QuickAddModal.open({ledger_uuid:'<?= htmlspecialchars($ledger_uuid) ?>'})">
                     Quick Add
                 </button>
-                <a href="../transactions/assign.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-sm"
-                   style="background:rgba(255,255,255,0.2);color:inherit;border:1px solid rgba(255,255,255,0.35);">
+                <a href="../transactions/assign.php?ledger=<?= urlencode($ledger_uuid) ?>" class="btn btn-sm btn-on-hero">
                     Assign Money
                 </a>
-                <button type="button" class="btn btn-sm"
-                        style="background:rgba(255,255,255,0.2);color:inherit;border:1px solid rgba(255,255,255,0.35);"
+                <button type="button" class="btn btn-sm btn-on-hero"
                         onclick="TransferModal.open({ledger_uuid:'<?= htmlspecialchars($ledger_uuid) ?>'})">
                     Transfer
                 </button>
@@ -290,19 +287,19 @@ require_once '../../includes/header.php';
         <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5);align-content:center;">
             <div>
                 <div class="eyebrow">Income</div>
-                <div class="money pos tnum" style="font-size:var(--text-xl);font-weight:700;"><?= formatCurrency($budget_totals['income']) ?></div>
+                <div class="money pos tnum stat-value"><?= formatCurrency($budget_totals['income']) ?></div>
             </div>
             <div>
                 <div class="eyebrow">Budgeted</div>
-                <div class="tnum" style="font-size:var(--text-xl);font-weight:700;"><?= formatCurrency($budget_totals['budgeted']) ?></div>
+                <div class="tnum stat-value"><?= formatCurrency($budget_totals['budgeted']) ?></div>
             </div>
             <div>
                 <div class="eyebrow">Spent</div>
-                <div class="money neg tnum" style="font-size:var(--text-xl);font-weight:700;"><?= formatCurrency($total_activity) ?></div>
+                <div class="money neg tnum stat-value"><?= formatCurrency($total_activity) ?></div>
             </div>
             <div>
                 <div class="eyebrow">Left to Assign</div>
-                <div class="money <?= $ltb > 0 ? 'pos' : ($ltb < 0 ? 'neg' : 'zero') ?> tnum" style="font-size:var(--text-xl);font-weight:700;"><?= formatCurrency($ltb) ?></div>
+                <div class="money <?= $ltb > 0 ? 'pos' : ($ltb < 0 ? 'neg' : 'zero') ?> tnum stat-value"><?= formatCurrency($ltb) ?></div>
             </div>
         </div>
     </div>
@@ -354,7 +351,7 @@ require_once '../../includes/header.php';
                             ?>
                             <tr class="category-row">
                                 <td>
-                                    <div class="cat-icon" style="width:28px;height:28px;font-size:14px;">
+                                    <div class="cat-icon" aria-hidden="true" style="width:28px;height:28px;font-size:14px;">
                                         <?= getCategoryIcon($category['category_name']) ?>
                                     </div>
                                 </td>
@@ -475,7 +472,7 @@ require_once '../../includes/header.php';
                                     ?>
                                     <tr class="category-row grouped-category-row" data-parent-group="<?= htmlspecialchars($group_uuid) ?>">
                                         <td>
-                                            <div class="cat-icon" style="width:28px;height:28px;font-size:14px;">
+                                            <div class="cat-icon" aria-hidden="true" style="width:28px;height:28px;font-size:14px;">
                                                 <?= getCategoryIcon($category_budget['category_name']) ?>
                                             </div>
                                         </td>
@@ -536,7 +533,7 @@ require_once '../../includes/header.php';
                 <div style="display:flex;flex-direction:column;gap:var(--space-2);">
                     <?php foreach ($ledger_accounts as $acc): ?>
                     <div class="account-card">
-                        <div class="cat-icon" style="background:var(--primary-100,#dbeafe);color:var(--color-primary);">
+                        <div class="cat-icon" aria-hidden="true" style="background:var(--primary-100,#dbeafe);color:var(--color-primary);">
                             <?= htmlspecialchars(strtoupper(substr($acc['name'], 0, 1))) ?>
                         </div>
                         <div class="meta">
@@ -600,7 +597,7 @@ require_once '../../includes/header.php';
                             $prefix = $txn['type'] === 'transfer' ? '⇄' : ($txn['type'] === 'inflow' ? '+' : '−');
                         ?>
                         <div style="display:flex;align-items:center;gap:var(--space-3);">
-                            <div class="cat-icon" style="width:30px;height:30px;font-size:13px;flex-shrink:0;">
+                            <div class="cat-icon" aria-hidden="true" style="width:30px;height:30px;font-size:13px;flex-shrink:0;">
                                 <?= htmlspecialchars(strtoupper(substr($txn['description'] ?: '?', 0, 1))) ?>
                             </div>
                             <div style="flex:1;min-width:0;">
