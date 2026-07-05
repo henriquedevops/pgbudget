@@ -1,5 +1,16 @@
 DirectoryIndex index.php
 
+# Block source disclosure via temp/backup/editor artifacts and dotfiles.
+# These are served as plaintext by Apache (not parsed by PHP), leaking source.
+<FilesMatch "(\.(tmp|bak|old|orig|swp|swo|save|inc|log|sql|dist|example)$|~$|\.php\..+$)">
+    Require all denied
+</FilesMatch>
+
+# Deny dotfiles (.env, .git, .htaccess itself, etc.)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
