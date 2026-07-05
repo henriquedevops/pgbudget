@@ -210,6 +210,41 @@ function validateRequired(form) {
     return isValid;
 }
 
+// Overflow ("⋯") menu on cards — keeps destructive actions out of the
+// primary action row (U11). Used on the home and Budgets pages.
+(function setupCardMenus() {
+    function closeAll(except) {
+        document.querySelectorAll('.card-menu.open').forEach(function(menu) {
+            if (menu === except) return;
+            menu.classList.remove('open');
+            var btn = menu.querySelector('.card-menu-btn');
+            var dd = menu.querySelector('.card-menu-dropdown');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+            if (dd) dd.hidden = true;
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.card-menu-btn');
+        if (btn) {
+            e.preventDefault();
+            var menu = btn.closest('.card-menu');
+            var dd = menu.querySelector('.card-menu-dropdown');
+            var willOpen = !menu.classList.contains('open');
+            closeAll(menu);
+            menu.classList.toggle('open', willOpen);
+            btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            if (dd) dd.hidden = !willOpen;
+            return;
+        }
+        if (!e.target.closest('.card-menu-dropdown')) closeAll(null);
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeAll(null);
+    });
+})();
+
 // Expose globals needed by inline scripts and other modules
 window.formatCurrency = formatCurrency;
 
