@@ -7,7 +7,7 @@ from datetime import date, datetime
 from pathlib import Path
 import sys
 
-VAULT = Path("/home/pgbudget/obsidian-vault")
+VAULT = Path("/home/pgbudget/obsidian/pgbudget")
 LEDGER_UUID = "eNF2EkfD"
 USER_DATA = "m43str0"
 DSN = "host=/var/run/postgresql dbname=pgbudget user=pgbudget sslmode=disable"
