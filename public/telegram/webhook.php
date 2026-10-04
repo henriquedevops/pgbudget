@@ -22,8 +22,10 @@ http_response_code(200);
 header('Content-Type: application/json');
 echo '{"ok":true}';
 
-$cfg_path = __DIR__ . '/../../config/telegram.php';
-if (!file_exists($cfg_path)) { error_log('pgbudget Telegram: config/telegram.php not found'); exit; }
+// Secrets live outside the web tree; the in-tree file is a local/dev fallback.
+$cfg_path = getenv('PGBUDGET_TELEGRAM_CONFIG') ?: '/etc/pgbudget/telegram.php';
+if (!is_readable($cfg_path)) { $cfg_path = __DIR__ . '/../../config/telegram.php'; }
+if (!is_readable($cfg_path)) { error_log('pgbudget Telegram: telegram.php not found in /etc/pgbudget or config/'); exit; }
 $cfg = require $cfg_path;
 
 $incoming_secret = $_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN'] ?? '';

@@ -1,6 +1,6 @@
 <?php
 // Google OAuth 2.0 configuration
-// Reads GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET from .env (loaded by database.php)
+// Reads GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET from /etc/pgbudget/pgbudget.env (loaded by database.php)
 
 $google_cfg = [
     'client_id'     => $_ENV['GOOGLE_CLIENT_ID']     ?? '',

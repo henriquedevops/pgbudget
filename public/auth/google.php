@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../config/google.php';
 
 if (empty($google_cfg['client_id'])) {
-    die('Google Sign-In is not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to .env');
+    die('Google Sign-In is not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to /etc/pgbudget/pgbudget.env');
 }
 
 // Generate and store CSRF state token

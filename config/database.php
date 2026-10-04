@@ -3,9 +3,15 @@
 // Set timezone to GMT-3 (America/Sao_Paulo - Brazil)
 date_default_timezone_set('America/Sao_Paulo');
 
-// Load environment variables from .env file if it exists
-if (file_exists(__DIR__ . '/../.env')) {
-    $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+// Load environment variables. Secrets live outside the web tree in
+// /etc/pgbudget/pgbudget.env (override with PGBUDGET_ENV_FILE); the in-tree
+// .env is only a fallback for local/dev setups.
+$pgb_env_file = getenv('PGBUDGET_ENV_FILE') ?: '/etc/pgbudget/pgbudget.env';
+if (!is_readable($pgb_env_file)) {
+    $pgb_env_file = __DIR__ . '/../.env';
+}
+if (is_readable($pgb_env_file)) {
+    $lines = file($pgb_env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
         if (strpos(trim($line), '#') === 0) {
             continue; // Skip comments
@@ -32,7 +38,7 @@ function getDbConnection() {
 
         // Validate required environment variables
         if (!$host || !$dbname || !$username || !$password) {
-            die("Database configuration missing. Please check your .env file contains DB_HOST, DB_NAME, DB_USER, and DB_PASSWORD.");
+            die("Database configuration missing. Please check /etc/pgbudget/pgbudget.env (or the dev fallback .env) contains DB_HOST, DB_NAME, DB_USER, and DB_PASSWORD.");
         }
 
         $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";

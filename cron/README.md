@@ -40,7 +40,7 @@ Logs are stored in `/var/www/html/pgbudget/logs/`:
 ## Requirements
 
 - PHP CLI
-- Database connection configured in `.env`
+- Database connection configured in `/etc/pgbudget/pgbudget.env` (fallback: `.env` in the repo root)
 - Write permissions to `logs/` directory
 
 ## Support

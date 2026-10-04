@@ -69,6 +69,7 @@ The repository includes a PHP-based web interface for interacting with the budge
      ```
 
 2. **Security Note:** 
+   - **Production:** keep secrets outside the web tree in `/etc/pgbudget/pgbudget.env` (and the Telegram config in `/etc/pgbudget/telegram.php`), dir `750` / files `640`, owner `pgbudget`, group `www-data`. `config/database.php` reads that path first (override: `PGBUDGET_ENV_FILE`; Telegram: `PGBUDGET_TELEGRAM_CONFIG`) and falls back to the repo-root `.env` for local development.
    - Never commit `.env` to version control (it's already in `.gitignore`)
    - The `.env` file contains sensitive database credentials
    - Share `.env.example` with other developers, not `.env`
