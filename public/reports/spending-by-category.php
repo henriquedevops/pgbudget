@@ -265,7 +265,7 @@ const SpendingReport = {
                 <tbody>
                     ${this.spendingData.map(row => `
                         <tr>
-                            <td><strong>${row.category_name}</strong></td>
+                            <td><strong>${pgbEscapeHtml(row.category_name)}</strong></td>
                             <td class="num"><span class="money neg tnum">${this.formatCurrency(row.total_spent)}</span></td>
                             <td class="num">${row.transaction_count}</td>
                             <td class="num">${row.percentage}%</td>
@@ -311,8 +311,8 @@ const SpendingReport = {
                             ${data.transactions.map(t => `
                                 <tr>
                                     <td>${new Date(t.transaction_date).toLocaleDateString()}</td>
-                                    <td>${t.description}</td>
-                                    <td>${t.other_account_name}</td>
+                                    <td>${pgbEscapeHtml(t.description)}</td>
+                                    <td>${pgbEscapeHtml(t.other_account_name)}</td>
                                     <td class="num"><span class="money neg tnum">${this.formatCurrency(t.amount)}</span></td>
                                 </tr>
                             `).join('')}

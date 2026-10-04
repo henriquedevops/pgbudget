@@ -1584,7 +1584,7 @@ function loadLoans() {
                 data.loans.forEach(loan => {
                     const displayName = `${loan.lender_name} - ${loan.loan_type.charAt(0).toUpperCase() + loan.loan_type.slice(1)}`;
                     const balanceDisplay = `(Balance: $${parseFloat(loan.current_balance).toFixed(2)})`;
-                    options += `<option value="${loan.uuid}">${displayName} ${balanceDisplay}</option>`;
+                    options += `<option value="${pgbEscapeHtml(loan.uuid)}">${pgbEscapeHtml(displayName)} ${balanceDisplay}</option>`;
                 });
                 loanSelect.innerHTML = options;
                 loanSelect.disabled = false;
@@ -1997,14 +1997,14 @@ function loadObligationSuggestions() {
         html += `
             <div class="obligation-suggestion-item" data-payment-uuid="${suggestion.payment_uuid}" onclick="selectSuggestion('${suggestion.payment_uuid}')">
                 <div class="obligation-suggestion-name">
-                    ${suggestion.obligation_name}
+                    ${pgbEscapeHtml(suggestion.obligation_name)}
                     <span class="obligation-suggestion-match-badge">${matchScore}% match</span>
                 </div>
                 <div class="obligation-suggestion-details">
-                    <span>👤 ${suggestion.payee_name}</span>
+                    <span>👤 ${pgbEscapeHtml(suggestion.payee_name)}</span>
                     <span>📅 Due: ${dueDate}</span>
                     <span>💰 $${parseFloat(suggestion.scheduled_amount).toFixed(2)}</span>
-                    <span>✓ ${matchReasons}</span>
+                    <span>✓ ${pgbEscapeHtml(matchReasons)}</span>
                 </div>
             </div>
         `;
@@ -2309,7 +2309,7 @@ function addSplitRow(categoryUuid = '', amount = '', memo = '') {
     let categoryOptions = '<option value="">Choose category...</option>';
     categories.forEach(cat => {
         const selected = cat.uuid === categoryUuid ? 'selected' : '';
-        categoryOptions += `<option value="${cat.uuid}" ${selected}>${cat.name}</option>`;
+        categoryOptions += `<option value="${pgbEscapeHtml(cat.uuid)}" ${selected}>${pgbEscapeHtml(cat.name)}</option>`;
     });
 
     row.innerHTML = `
@@ -2327,7 +2327,7 @@ function addSplitRow(categoryUuid = '', amount = '', memo = '') {
         <div class="form-group">
             <label class="form-label">Memo (optional)</label>
             <input type="text" name="split_memo[]" class="form-input split-memo"
-                   placeholder="Notes..." value="${memo}">
+                   placeholder="Notes..." value="${pgbEscapeHtml(memo)}">
         </div>
         <button type="button" class="remove-split" onclick="removeSplitRow(${rowId})">Remove</button>
     `;

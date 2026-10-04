@@ -746,7 +746,7 @@ function checkForChanges() {
 
     if (hasChanges) {
         changeSummary.style.display = 'block';
-        changeList.innerHTML = changes.map(c => `<li>${c}</li>`).join('');
+        changeList.innerHTML = changes.map(c => `<li>${pgbEscapeHtml(c)}</li>`).join('');
     } else {
         changeSummary.style.display = 'none';
     }

@@ -133,7 +133,15 @@ function parseCurrency($amount) {
     return intval(floatval($amount) * 100);
 }
 
+/**
+ * Normalize user input before storing it: trims whitespace only.
+ *
+ * Values are stored raw (all queries use prepared statements) and must be
+ * escaped at output time: htmlspecialchars() in PHP, pgbEscapeHtml() or
+ * textContent in JS. HTML-escaping here used to persist entities such as
+ * "&amp;" in names and descriptions.
+ */
 function sanitizeInput($input) {
-    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+    return trim((string) $input);
 }
 ?>

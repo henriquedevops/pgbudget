@@ -103,6 +103,7 @@
         ) ?>;
     </script>
     <script src="/pgbudget/js/currency.js?v=<?= $cv ?>"></script>
+    <script src="/pgbudget/js/escape-html.js?v=<?= $cv ?>"></script>
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/pgbudget/images/icon-192x192.png">
