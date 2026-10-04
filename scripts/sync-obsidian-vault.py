@@ -3,7 +3,7 @@
 
 import psycopg2
 import psycopg2.extras
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 import sys
 
@@ -93,6 +93,31 @@ def get_balances(cur):
     return rows
 
 
+# ── Category spending helper ──────────────────────────────────────────────────
+# Budget categories in this app are mostly type 'equity' (only a few are
+# 'expense'). Spending = outflows from real (asset/liability) accounts into a
+# category, net of refunds; internal budget moves between categories are ignored,
+# as are DELETED:/REVERSAL: rows and corrected originals (same rule as balances).
+SPENDING_SQL = """
+    SELECT CASE WHEN cat.name = 'Unassigned' THEN 'Unassigned (sem categoria)' ELSE cat.name END AS name,
+           SUM(CASE WHEN t.debit_account_id = cat.id THEN t.amount ELSE -t.amount END) AS total
+    FROM data.transactions t
+    JOIN data.ledgers l ON l.id = t.ledger_id AND l.uuid = %(ledger)s
+    JOIN data.accounts cat ON cat.id IN (t.debit_account_id, t.credit_account_id)
+    JOIN data.accounts other ON other.id = CASE WHEN t.debit_account_id = cat.id
+                                                THEN t.credit_account_id ELSE t.debit_account_id END
+    LEFT JOIN data.transaction_log tl ON tl.original_transaction_id = t.id
+    WHERE t.user_data = %(u)s AND t.deleted_at IS NULL AND tl.id IS NULL
+      AND t.description NOT LIKE 'DELETED:%%' AND t.description NOT LIKE 'REVERSAL:%%'
+      AND cat.type IN ('expense', 'equity')  -- groups too: some get postings directly
+      AND cat.name NOT IN ('Income', 'Off-budget') AND cat.name NOT LIKE 'CC Payment:%%'
+      AND other.type IN ('asset', 'liability')
+      AND t.date >= %(start)s AND t.date < %(end)s
+    GROUP BY 1
+    HAVING SUM(CASE WHEN t.debit_account_id = cat.id THEN t.amount ELSE -t.amount END) > 0
+    ORDER BY 2 DESC
+"""
+
 # ── Home.md ───────────────────────────────────────────────────────────────────
 
 def gen_home(cur):
@@ -146,18 +171,10 @@ def gen_home(cur):
     """, {"u": USER_DATA})
 
     # Top spending current month
-    top_rows = q(cur, """
-        SELECT cat.name, SUM(t.amount) AS total
-        FROM data.transactions t
-        JOIN data.accounts cat ON cat.id = t.debit_account_id
-        WHERE t.user_data = %(u)s
-          AND t.deleted_at IS NULL
-          AND cat.type = 'expense'
-          AND t.date >= date_trunc('month', CURRENT_DATE)
-        GROUP BY cat.name
-        ORDER BY SUM(t.amount) DESC
-        LIMIT 8
-    """, {"u": USER_DATA})
+    _m0 = date.today().replace(day=1)
+    _m1 = (_m0.replace(day=28) + timedelta(days=4)).replace(day=1)
+    top_rows = q(cur, SPENDING_SQL, {"u": USER_DATA, "ledger": LEDGER_UUID,
+                                     "start": _m0, "end": _m1})[:8]
 
     cur_month = month_name(date.today())
     cur_year = date.today().year
@@ -175,7 +192,6 @@ def gen_home(cur):
     # Navigation: last 4 months
     months_nav = []
     for i in range(4):
-        from datetime import timedelta
         d = date.today().replace(day=1)
         for _ in range(i):
             d = (d - timedelta(days=1)).replace(day=1)
@@ -504,7 +520,8 @@ def gen_budget_overview(cur):
         LEFT JOIN data.accounts p ON p.id = a.parent_category_id
         JOIN data.ledgers l ON l.id = a.ledger_id
         WHERE l.uuid = %(ledger)s AND a.user_data = %(u)s
-          AND a.type = 'expense' AND a.is_group = false
+          AND a.type IN ('expense', 'equity') AND a.is_group = false AND a.deleted_at IS NULL
+          AND a.name NOT IN ('Income', 'Off-budget', 'Unassigned') AND a.name NOT LIKE 'CC Payment:%%'
         ORDER BY p.name NULLS LAST, a.name
     """, {"u": USER_DATA, "ledger": LEDGER_UUID})
 
@@ -516,7 +533,6 @@ def gen_budget_overview(cur):
     # Last 4 months nav
     month_links = []
     d = date.today().replace(day=1)
-    from datetime import timedelta
     for _ in range(4):
         month_links.append(f"| {month_name(d)} {d.year} | [[{month_name(d)} {d.year}]] |")
         d = (d - timedelta(days=1)).replace(day=1)
@@ -548,7 +564,6 @@ def gen_budget_overview(cur):
 # ── Monthly Budget ────────────────────────────────────────────────────────────
 
 def gen_monthly_budget(cur, year, month):
-    from datetime import timedelta
     month_start = date(year, month, 1)
     if month == 12:
         month_end = date(year + 1, 1, 1)
@@ -578,16 +593,8 @@ def gen_monthly_budget(cur, year, month):
     )
 
     # Expenses by category
-    expense_rows = q(cur, """
-        SELECT cat.name, SUM(t.amount) AS total
-        FROM data.transactions t
-        JOIN data.accounts cat ON cat.id = t.debit_account_id
-        WHERE t.user_data = %(u)s AND t.deleted_at IS NULL
-          AND cat.type = 'expense'
-          AND t.date >= %(start)s AND t.date < %(end)s
-        GROUP BY cat.name
-        ORDER BY SUM(t.amount) DESC
-    """, {"u": USER_DATA, "start": month_start, "end": month_end})
+    expense_rows = q(cur, SPENDING_SQL, {"u": USER_DATA, "ledger": LEDGER_UUID,
+                                         "start": month_start, "end": month_end})
 
     total_expenses = sum(r["total"] for r in expense_rows)
 
@@ -894,7 +901,6 @@ def main():
     print("  ✓ Budget Overview")
 
     # Current month + last 3 months
-    from datetime import timedelta
     d = date.today().replace(day=1)
     for _ in range(4):
         gen_monthly_budget(cur, d.year, d.month)
