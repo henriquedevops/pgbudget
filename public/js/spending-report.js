@@ -106,10 +106,10 @@ const SpendingReport = {
         
         this.spendingData.forEach(row => {
             const rowJson = JSON.stringify(row);
-            const escapedJson = rowJson.replace(/'/g, "\\'");
+            const escapedJson = pgbEscapeHtml(rowJson);  // HTML-escaped: safe inside the onclick attribute
             tableHtml += `
                 <tr>
-                    <td><strong>${row.category_name}</strong></td>
+                    <td><strong>${pgbEscapeHtml(row.category_name)}</strong></td>
                     <td class="amount negative">${this.formatCurrency(row.total_spent)}</td>
                     <td>${row.transaction_count}</td>
                     <td>${row.percentage}%</td>
@@ -144,8 +144,8 @@ const SpendingReport = {
                     html += `
                         <tr>
                             <td>${date}</td>
-                            <td>${t.description}</td>
-                            <td>${t.other_account_name}</td>
+                            <td>${pgbEscapeHtml(t.description)}</td>
+                            <td>${pgbEscapeHtml(t.other_account_name)}</td>
                             <td class="amount negative">${this.formatCurrency(t.amount)}</td>
                         </tr>
                     `;

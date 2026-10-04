@@ -195,7 +195,7 @@
                             <label for="quick-account">From account:</label>
                             <select id="quick-account" class="form-select" required>
                                 <option value="">Choose account...</option>
-                                ${accounts.map(acc => `<option value="${acc.uuid}">${acc.name}</option>`).join('')}
+                                ${accounts.map(acc => `<option value="${pgbEscapeHtml(acc.uuid)}">${pgbEscapeHtml(acc.name)}</option>`).join('')}
                             </select>
                         </div>
 
@@ -203,7 +203,7 @@
                             <label for="quick-category">Category:</label>
                             <select id="quick-category" class="form-select" required>
                                 <option value="">Choose category...</option>
-                                ${categories.map(cat => `<option value="${cat.uuid}">${cat.name}</option>`).join('')}
+                                ${categories.map(cat => `<option value="${pgbEscapeHtml(cat.uuid)}">${pgbEscapeHtml(cat.name)}</option>`).join('')}
                             </select>
                         </div>
 
@@ -590,7 +590,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="overspending-summary">
-                        <p><strong>${categoryName}</strong> is overspent by <span class="negative">${window.pgbFormatAmount(overspentAmount)}</span></p>
+                        <p><strong>${pgbEscapeHtml(categoryName)}</strong> is overspent by <span class="negative">${window.pgbFormatAmount(overspentAmount)}</span></p>
                         <p class="modal-description">Choose how you want to handle this overspending.</p>
                     </div>
 
@@ -634,8 +634,8 @@
                                 <select id="cover-from-category" class="form-select" required>
                                     <option value="">Choose category...</option>
                                     ${availableCategories.map(cat => `
-                                        <option value="${cat.uuid}" data-balance="${cat.balance}">
-                                            ${cat.name} (Available: ${formatCurrency(cat.balance)})
+                                        <option value="${pgbEscapeHtml(cat.uuid)}" data-balance="${pgbEscapeHtml(cat.balance)}">
+                                            ${pgbEscapeHtml(cat.name)} (Available: ${formatCurrency(cat.balance)})
                                         </option>
                                     `).join('')}
                                 </select>
